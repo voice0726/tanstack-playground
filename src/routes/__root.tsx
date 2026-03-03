@@ -4,6 +4,7 @@ import { AppShell, Badge, createTheme, Group, MantineProvider, Text, Title } fro
 import { TanStackDevtools } from '@tanstack/react-devtools';
 import { createRootRoute, Link, Outlet } from '@tanstack/react-router';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
+import { TICKETS_SEARCH_DEFAULT } from '#/features/tickets/schema/search.ts';
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -37,7 +38,9 @@ function RootComponent() {
             </Group>
             <Group gap="md">
               <Link to="/">Home</Link>
-              <Link to="/tickets">Tickets</Link>
+              <Link to="/tickets" search={TICKETS_SEARCH_DEFAULT}>
+                Tickets
+              </Link>
             </Group>
           </Group>
         </AppShell.Header>
