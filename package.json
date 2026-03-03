@@ -8,13 +8,14 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
-    "preview": "vite preview",
-    "test": "vitest run",
     "lint": "biome check .",
     "ci": "biome ci .",
     "lint:fix": "biome check . --write",
     "typecheck": "tsgo --project tsconfig.json --noEmit",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "preview": "pnpm run build && wrangler dev",
+    "test": "vitest run",
+    "deploy": "pnpm run build && wrangler deploy"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
@@ -44,7 +45,8 @@
     "typescript": "^5.7.2",
     "vite": "^7.1.7",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.0.5"
+    "vitest": "^3.0.5",
+    "wrangler": "^4.69.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
