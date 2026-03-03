@@ -50,4 +50,22 @@ describe('validateAndNormalizeSearch', () => {
 
     expect(result).toEqual(TICKETS_SEARCH_DEFAULT);
   });
+
+  it('falls back to defaults when numeric params are below min', () => {
+    const result = ticketsSearchSchema.parse({
+      page: '0',
+      pageSize: '-5',
+    });
+
+    expect(result).toEqual(TICKETS_SEARCH_DEFAULT);
+  });
+
+  it('falls back to defaults when numeric params are not integers', () => {
+    const result = ticketsSearchSchema.parse({
+      page: '1.5',
+      pageSize: '2.2',
+    });
+
+    expect(result).toEqual(TICKETS_SEARCH_DEFAULT);
+  });
 });
