@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "ja-JP"
+early_access: false
+
+reviews:
+  profile: "chill"
+  high_level_summary: true
+  review_status: true
+  auto_review:
+    enabled: true
+    drafts: false
+  tools:
+    biome:
+      enabled: true
+  path_instructions:
+    - path: "src/**/*.{ts,tsx,js,jsx}"
+      instructions: |
+        Follow repository conventions for TypeScript and React:
+        - Keep imports sorted according to Biome settings.
+        - Prefer Mantine components over adding new global CSS.
+        - Use absolute imports via the `@/` alias when possible.
+    - path: ".github/workflows/**/*.yml"
+      instructions: |
+        Focus on CI reliability and maintainability:
+        - Keep GitHub Actions versions current and pinned to major versions.
+        - Ensure workflow steps align with package scripts (`pnpm run ci`, `pnpm typecheck`).
+
+chat:
+  auto_reply: true
