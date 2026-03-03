@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-
 import {
   normalizeTicketsSearchURL,
   TICKETS_SEARCH_DEFAULT,
