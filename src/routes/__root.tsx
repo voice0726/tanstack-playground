@@ -37,9 +37,7 @@ function RootComponent() {
             </Group>
             <Group gap="md">
               <Link to="/">Home</Link>
-              <a href="https://mantine.dev" target="_blank" rel="noreferrer">
-                Mantine Docs
-              </a>
+              <Link to="/tickets">Tickets</Link>
             </Group>
           </Group>
         </AppShell.Header>
