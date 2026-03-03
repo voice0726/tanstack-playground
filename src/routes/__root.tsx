@@ -12,7 +12,7 @@ export const Route = createRootRoute({
 
 const theme = createTheme({
   primaryColor: 'teal',
-  defaultRadius: 'md',
+  defaultRadius: 'sm',
   fontFamily: '"Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif',
 });
 
