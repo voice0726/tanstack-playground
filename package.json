@@ -8,6 +8,11 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
+    "lint": "biome check .",
+    "ci": "biome ci .",
+    "lint:fix": "biome check . --write",
+    "typecheck": "tsgo --project tsconfig.json --noEmit",
+    "prepare": "lefthook install",
     "preview": "pnpm run build && wrangler dev",
     "test": "vitest run",
     "deploy": "pnpm run build && wrangler deploy"
@@ -33,7 +38,10 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.4",
+    "@biomejs/biome": "2.4.5",
+    "@typescript/native-preview": "7.0.0-dev.20260302.1",
     "jsdom": "^27.0.0",
+    "lefthook": "1.13.6",
     "typescript": "^5.7.2",
     "vite": "^7.1.7",
     "vite-tsconfig-paths": "^5.1.4",
@@ -43,7 +51,8 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "esbuild",
-      "lightningcss"
+      "lightningcss",
+      "lefthook"
     ]
   }
 }
