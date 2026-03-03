@@ -10,7 +10,7 @@ tanstack routerとqueryを主にした簡易業務アプリ作成プロジェク
 
 ### TODO
 
-- [ ] チケット機能CURD実装
+- [ ] チケット機能CRUD実装
   - [ ] List
     - [ ] Page and components 
     - [ ] Search
