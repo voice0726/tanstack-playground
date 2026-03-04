@@ -10,7 +10,7 @@ type Ticket = {
   updatedAt: string;
 };
 
-const TICKETS: Ticket[] = [
+const BASE_TICKETS: Ticket[] = [
   {
     id: '1',
     title: 'Login bug',
@@ -36,6 +36,26 @@ const TICKETS: Ticket[] = [
     updatedAt: '2026-03-04T08:20:00Z',
   },
 ];
+
+const ASSIGNEES = ['aki', 'mika', 'sora', 'nao'] as const;
+
+const GENERATED_TICKETS: Ticket[] = Array.from({ length: 37 }, (_, index) => {
+  const ticketNumber = index + 4;
+  const createdAt = new Date(Date.UTC(2026, 0, 1, 0, 0, 0) + index * 8 * 60 * 60 * 1000);
+  const updatedAt = new Date(createdAt.getTime() + ((index % 6) + 1) * 3 * 60 * 60 * 1000);
+  const titlePrefix = ['Bugfix', 'Feature', 'Refactor', 'Ops'][index % 4];
+
+  return {
+    id: String(ticketNumber),
+    title: `${titlePrefix} task #${ticketNumber}`,
+    status: index % 3 === 0 ? 'closed' : 'open',
+    assignee: index % 5 === 0 ? null : ASSIGNEES[index % ASSIGNEES.length],
+    createdAt: createdAt.toISOString(),
+    updatedAt: updatedAt.toISOString(),
+  };
+});
+
+const TICKETS: Ticket[] = [...BASE_TICKETS, ...GENERATED_TICKETS];
 
 const sortConfig: Record<
   TicketsSearch['sort'],

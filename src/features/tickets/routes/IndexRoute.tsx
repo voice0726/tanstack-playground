@@ -1,9 +1,21 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Badge, Button, Group, Paper, Select, Stack, Table, Text, TextInput } from '@mantine/core';
+import {
+  Badge,
+  Button,
+  Group,
+  Pagination,
+  Paper,
+  Select,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+} from '@mantine/core';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { Controller, useForm } from 'react-hook-form';
 import { useTickets } from '#/features/tickets/hooks/useTickets.ts';
 import {
+  type TicketsSearch,
   type TicketsSearchFormInput,
   type TicketsSearchFormOutput,
   ticketsSearchFormValuesSchema,
@@ -11,10 +23,20 @@ import {
 } from '#/features/tickets/schema/search.ts';
 import { formatDateTime } from '#/shared/utils/date.ts';
 
+const pageSizeOptions = [
+  { label: '10', value: '10' },
+  { label: '20', value: '20' },
+  { label: '50', value: '50' },
+];
+
 // TODO: split form and table
 export function IndexRoute() {
   const search = useSearch({ from: '/tickets/' });
   const navigate = useNavigate();
+
+  const normalizedSearch = ticketsSearchSchema.parse(search);
+  const updateSearch = (patch: Partial<TicketsSearch>) =>
+    ticketsSearchSchema.parse({ ...normalizedSearch, ...patch });
 
   const {
     control,
@@ -27,7 +49,7 @@ export function IndexRoute() {
   });
 
   const { data, isLoading, isError } = useTickets({
-    filters: ticketsSearchSchema.parse(search),
+    filters: normalizedSearch,
   });
   if (isLoading) {
     return <div>Loading...</div>;
@@ -38,12 +60,16 @@ export function IndexRoute() {
 
   const { items, total } = data;
 
+  const totalPages = Math.max(1, Math.ceil(total / normalizedSearch.pageSize));
+  const from = total === 0 ? 0 : (normalizedSearch.page - 1) * normalizedSearch.pageSize + 1;
+  const to = Math.min(total, normalizedSearch.page * normalizedSearch.pageSize);
+
   return (
     <Stack gap="lg">
       <Paper p="lg" shadow="sm">
         <form
           onSubmit={handleSubmit((v) => {
-            navigate({ to: '/tickets', search: ticketsSearchSchema.parse({ ...v, page: 1 }) });
+            navigate({ to: '/tickets', search: updateSearch({ ...v, page: 1 }) });
           })}
         >
           <Stack gap="md">
@@ -86,11 +112,30 @@ export function IndexRoute() {
 
       <Paper p="lg" shadow="sm">
         <Stack gap="md">
-          <Group justify="space-between">
+          <Group justify="space-between" wrap="wrap">
             <Text fw={600}>チケット一覧</Text>
-            <Text c="dimmed" size="sm">
-              total: {total}
-            </Text>
+            <Group gap="sm">
+              <Text c="dimmed" size="sm">
+                total: {total}
+              </Text>
+              <Select
+                allowDeselect={false}
+                data={pageSizeOptions}
+                label="表示件数"
+                value={String(normalizedSearch.pageSize)}
+                w={100}
+                onChange={(value) => {
+                  if (!value) {
+                    return;
+                  }
+
+                  navigate({
+                    to: '/tickets',
+                    search: updateSearch({ page: 1, pageSize: Number(value) }),
+                  });
+                }}
+              />
+            </Group>
           </Group>
 
           <Table.ScrollContainer minWidth={720} type="native">
@@ -133,6 +178,20 @@ export function IndexRoute() {
               </Table.Tbody>
             </Table>
           </Table.ScrollContainer>
+
+          <Group justify="space-between" wrap="wrap">
+            <Text c="dimmed" size="sm">
+              {from}-{to} / {total}
+            </Text>
+            <Pagination
+              total={totalPages}
+              value={normalizedSearch.page}
+              withEdges
+              onChange={(page) => {
+                navigate({ to: '/tickets', search: updateSearch({ page }) });
+              }}
+            />
+          </Group>
         </Stack>
       </Paper>
     </Stack>
