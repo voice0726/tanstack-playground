@@ -30,3 +30,10 @@ tanstack routerとqueryを主にした簡易業務アプリ作成プロジェク
     - [ ] Form
     - [ ] Mutation
     - [ ] Test
+
+### 環境変数
+
+- `VITE_API_BASE_URL`: フロントエンドが参照する Backend API のベース URL
+  - 開発時は `.env.development` の `http://localhost:3000`
+  - 本番時は `.env.production` の Cloud Run URL
+- `MODE` / `DEV` / `PROD` は `.env` に定義する値ではなく、Vite が実行時に自動で populate する built-in 値

@@ -1,6 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 import { RouterProvider } from '@tanstack/react-router';
 import ReactDOM from 'react-dom/client';
+import { env } from '#/shared/config/env.ts';
 import { createRouter } from '@/router';
 
 const queryClient = new QueryClient();
@@ -9,7 +10,7 @@ const router = createRouter(queryClient);
 const rootElement = document.getElementById('app');
 
 async function enableMocking() {
-  if (!import.meta.env.DEV) {
+  if (!env.DEV) {
     return;
   }
 
