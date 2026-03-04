@@ -2,9 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { ticketsQueryKey } from '#/features/tickets/queryKeys.ts';
 import { type TicketsResponse, ticketsResponseSchema } from '#/features/tickets/schema/index.ts';
 import type { TicketsSearch } from '#/features/tickets/schema/search.ts';
+import { withQuery } from '#/shared/utils/url.ts';
 
 async function fetchTickets(filters?: TicketsSearch): Promise<TicketsResponse> {
-  const url = `/api/tickets${filters ? `?${new URLSearchParams({ ...filters, page: String(filters.page), pageSize: String(filters.pageSize) }).toString()}` : ''}`;
+  const url = withQuery('/api/tickets', filters);
   const response = await fetch(url);
   const data = await response.json();
 
