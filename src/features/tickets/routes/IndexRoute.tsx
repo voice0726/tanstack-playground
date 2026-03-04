@@ -43,7 +43,7 @@ export function IndexRoute() {
       <Paper p="lg" shadow="sm">
         <form
           onSubmit={handleSubmit((v) => {
-            navigate({ to: '/tickets', search: ticketsSearchSchema.parse(v) });
+            navigate({ to: '/tickets', search: ticketsSearchSchema.parse({ ...v, page: 1 }) });
           })}
         >
           <Stack gap="md">
