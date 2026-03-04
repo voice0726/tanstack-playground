@@ -48,7 +48,8 @@ describe('listTickets', () => {
       parseSearch({
         q: 'refactor',
         status: 'closed',
-        sort: 'created_at_dsc',
+        sortBy: 'created_at',
+        sortOrder: 'dsc',
         page: '1',
         pageSize: '10',
       }),
@@ -62,7 +63,8 @@ describe('listTickets', () => {
     const result = listTickets(
       TICKETS,
       parseSearch({
-        sort: 'updated_at_asc',
+        sortBy: 'updated_at',
+        sortOrder: 'asc',
         status: 'all',
         page: '1',
         pageSize: '10',
@@ -76,7 +78,8 @@ describe('listTickets', () => {
     const result = listTickets(
       TICKETS,
       parseSearch({
-        sort: 'id_dsc',
+        sortBy: 'id',
+        sortOrder: 'dsc',
         status: 'all',
         page: '1',
         pageSize: '10',
@@ -90,7 +93,8 @@ describe('listTickets', () => {
     const result = listTickets(
       TICKETS,
       parseSearch({
-        sort: 'created_at_dsc',
+        sortBy: 'created_at',
+        sortOrder: 'dsc',
         status: 'all',
         page: '2',
         pageSize: '1',

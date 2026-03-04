@@ -6,7 +6,8 @@ describe('validateAndNormalizeSearch', () => {
     const result = ticketsSearchSchema.parse({
       q: 'bug',
       status: 'closed',
-      sort: 'id_dsc',
+      sortBy: 'id',
+      sortOrder: 'dsc',
       page: '3',
       pageSize: '50',
     });
@@ -14,18 +15,21 @@ describe('validateAndNormalizeSearch', () => {
     expect(result).toEqual({
       q: 'bug',
       status: 'closed',
-      sort: 'id_dsc',
+      sortBy: 'id',
+      sortOrder: 'dsc',
       page: 3,
       pageSize: 50,
     });
   });
 
-  it('accepts id sort options', () => {
-    const asc = ticketsSearchSchema.parse({ sort: 'id_asc' });
-    const dsc = ticketsSearchSchema.parse({ sort: 'id_dsc' });
+  it('accepts sortBy and sortOrder options', () => {
+    const asc = ticketsSearchSchema.parse({ sortBy: 'id', sortOrder: 'asc' });
+    const dsc = ticketsSearchSchema.parse({ sortBy: 'updated_at', sortOrder: 'dsc' });
 
-    expect(asc.sort).toBe('id_asc');
-    expect(dsc.sort).toBe('id_dsc');
+    expect(asc.sortBy).toBe('id');
+    expect(asc.sortOrder).toBe('asc');
+    expect(dsc.sortBy).toBe('updated_at');
+    expect(dsc.sortOrder).toBe('dsc');
   });
 
   it('trims whitespace from q param', () => {
@@ -44,7 +48,8 @@ describe('validateAndNormalizeSearch', () => {
   it('falls back to defaults for invalid enum params', () => {
     const result = ticketsSearchSchema.parse({
       status: 'in_progress',
-      sort: 'priority_asc',
+      sortBy: 'priority',
+      sortOrder: 'desc',
     });
 
     expect(result).toEqual(TICKETS_SEARCH_DEFAULT);

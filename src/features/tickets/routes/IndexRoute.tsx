@@ -48,6 +48,7 @@ export function IndexRoute() {
     resolver: zodResolver(ticketsSearchFormValuesSchema),
   });
 
+  // TODO: keepPreviousData
   const { data, isLoading, isError } = useTickets({
     filters: normalizedSearch,
   });
@@ -89,24 +90,37 @@ export function IndexRoute() {
                 />
               )}
             />
-            <Controller
-              control={control}
-              name="sort"
-              render={({ field }) => (
-                <Select
-                  data={[
-                    { label: 'ID（昇順）', value: 'id_asc' },
-                    { label: 'ID（降順）', value: 'id_dsc' },
-                    { label: '作成日（昇順）', value: 'created_at_asc' },
-                    { label: '作成日（降順）', value: 'created_at_dsc' },
-                    { label: '更新日（昇順）', value: 'updated_at_asc' },
-                    { label: '更新日（降順）', value: 'updated_at_dsc' },
-                  ]}
-                  label="ソート"
-                  {...field}
-                />
-              )}
-            />
+            <Group grow>
+              <Controller
+                control={control}
+                name="sortBy"
+                render={({ field }) => (
+                  <Select
+                    data={[
+                      { label: 'ID', value: 'id' },
+                      { label: '作成日', value: 'created_at' },
+                      { label: '更新日', value: 'updated_at' },
+                    ]}
+                    label="ソート項目"
+                    {...field}
+                  />
+                )}
+              />
+              <Controller
+                control={control}
+                name="sortOrder"
+                render={({ field }) => (
+                  <Select
+                    data={[
+                      { label: '昇順', value: 'asc' },
+                      { label: '降順', value: 'dsc' },
+                    ]}
+                    label="順序"
+                    {...field}
+                  />
+                )}
+              />
+            </Group>
             <Button type="submit">Search</Button>
           </Stack>
         </form>
