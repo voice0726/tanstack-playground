@@ -59,8 +59,10 @@ const TICKETS: Ticket[] = [...BASE_TICKETS, ...GENERATED_TICKETS];
 
 const sortConfig: Record<
   TicketsSearch['sort'],
-  { field: 'createdAt' | 'updatedAt'; order: 'asc' | 'dsc' }
+  { field: 'id' | 'createdAt' | 'updatedAt'; order: 'asc' | 'dsc' }
 > = {
+  id_asc: { field: 'id', order: 'asc' },
+  id_dsc: { field: 'id', order: 'dsc' },
   created_at_asc: { field: 'createdAt', order: 'asc' },
   created_at_dsc: { field: 'createdAt', order: 'dsc' },
   updated_at_asc: { field: 'updatedAt', order: 'asc' },
@@ -82,7 +84,8 @@ export const listTickets = (tickets: Ticket[], search: TicketsSearch) => {
 
   const { field, order } = sortConfig[search.sort];
   const sorted = [...filtered].sort((a, b) => {
-    const diff = Date.parse(a[field]) - Date.parse(b[field]);
+    const diff =
+      field === 'id' ? Number(a.id) - Number(b.id) : Date.parse(a[field]) - Date.parse(b[field]);
     return order === 'asc' ? diff : -diff;
   });
 

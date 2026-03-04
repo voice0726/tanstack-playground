@@ -72,6 +72,20 @@ describe('listTickets', () => {
     expect(result.items.map((ticket) => ticket.id)).toEqual(['2', '1', '3']);
   });
 
+  it('sorts by id descending', () => {
+    const result = listTickets(
+      TICKETS,
+      parseSearch({
+        sort: 'id_dsc',
+        status: 'all',
+        page: '1',
+        pageSize: '10',
+      }),
+    );
+
+    expect(result.items.map((ticket) => ticket.id)).toEqual(['3', '2', '1']);
+  });
+
   it('applies pagination after filtering and sorting', () => {
     const result = listTickets(
       TICKETS,

@@ -6,7 +6,7 @@ describe('validateAndNormalizeSearch', () => {
     const result = ticketsSearchSchema.parse({
       q: 'bug',
       status: 'closed',
-      sort: 'created_at_dsc',
+      sort: 'id_dsc',
       page: '3',
       pageSize: '50',
     });
@@ -14,10 +14,18 @@ describe('validateAndNormalizeSearch', () => {
     expect(result).toEqual({
       q: 'bug',
       status: 'closed',
-      sort: 'created_at_dsc',
+      sort: 'id_dsc',
       page: 3,
       pageSize: 50,
     });
+  });
+
+  it('accepts id sort options', () => {
+    const asc = ticketsSearchSchema.parse({ sort: 'id_asc' });
+    const dsc = ticketsSearchSchema.parse({ sort: 'id_dsc' });
+
+    expect(asc.sort).toBe('id_asc');
+    expect(dsc.sort).toBe('id_dsc');
   });
 
   it('trims whitespace from q param', () => {

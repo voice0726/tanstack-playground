@@ -95,6 +95,8 @@ export function IndexRoute() {
               render={({ field }) => (
                 <Select
                   data={[
+                    { label: 'ID（昇順）', value: 'id_asc' },
+                    { label: 'ID（降順）', value: 'id_dsc' },
                     { label: '作成日（昇順）', value: 'created_at_asc' },
                     { label: '作成日（降順）', value: 'created_at_dsc' },
                     { label: '更新日（昇順）', value: 'updated_at_asc' },

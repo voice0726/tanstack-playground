@@ -13,7 +13,14 @@ export const ticketsSearchSchema = z.object({
   status: z.enum(['all', 'open', 'closed']).catch(TICKETS_SEARCH_DEFAULT.status),
   // TODO: sortのパターンの生成をts-patternでできないか検討
   sort: z
-    .enum(['created_at_asc', 'created_at_dsc', 'updated_at_asc', 'updated_at_dsc'])
+    .enum([
+      'id_asc',
+      'id_dsc',
+      'created_at_asc',
+      'created_at_dsc',
+      'updated_at_asc',
+      'updated_at_dsc',
+    ])
     .catch(TICKETS_SEARCH_DEFAULT.sort),
   page: z.coerce.number().int().min(1).catch(TICKETS_SEARCH_DEFAULT.page),
   pageSize: z.coerce.number().int().min(1).catch(TICKETS_SEARCH_DEFAULT.pageSize),
@@ -30,7 +37,14 @@ export const TICKETS_SEARCH_FORM_VALUES_DEFAULT = {
 export const ticketsSearchFormValuesSchema = z.object({
   q: z.string().trim(),
   status: z.enum(['all', 'open', 'closed']),
-  sort: z.enum(['created_at_asc', 'created_at_dsc', 'updated_at_asc', 'updated_at_dsc']),
+  sort: z.enum([
+    'id_asc',
+    'id_dsc',
+    'created_at_asc',
+    'created_at_dsc',
+    'updated_at_asc',
+    'updated_at_dsc',
+  ]),
 });
 
 export type TicketsSearchFormInput = z.input<typeof ticketsSearchFormValuesSchema>;
