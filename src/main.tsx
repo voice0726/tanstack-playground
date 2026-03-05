@@ -1,22 +1,31 @@
-import { createRouter, RouterProvider } from '@tanstack/react-router';
+import { QueryClient } from '@tanstack/react-query';
+import { RouterProvider } from '@tanstack/react-router';
 import ReactDOM from 'react-dom/client';
-import { routeTree } from '@/routeTree.gen';
+import { env } from '#/shared/config/env.ts';
+import { createRouter } from '@/router';
 
-const router = createRouter({
-  routeTree,
-  defaultPreload: 'intent',
-  scrollRestoration: true,
-});
-
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router;
-  }
-}
+const queryClient = new QueryClient();
+const router = createRouter(queryClient);
 
 const rootElement = document.getElementById('app');
 
-if (rootElement && !rootElement.innerHTML) {
+async function enableMocking() {
+  if (!env.DEV) {
+    return;
+  }
+
+  const { worker } = await import('@/mocks/browser');
+  await worker.start({ onUnhandledRequest: 'bypass' });
+}
+
+async function bootstrap() {
+  if (!rootElement || rootElement.innerHTML) {
+    return;
+  }
+
+  await enableMocking();
   const root = ReactDOM.createRoot(rootElement);
   root.render(<RouterProvider router={router} />);
 }
+
+void bootstrap();
