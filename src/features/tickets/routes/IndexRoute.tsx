@@ -44,7 +44,7 @@ export function IndexRoute() {
     handleSubmit,
     formState: { errors },
   } = useForm<TicketsSearchFormInput, unknown, TicketsSearchFormOutput>({
-    defaultValues: search,
+    values: { ...normalizedSearch, q: normalizedSearch.q ?? '' },
     resolver: zodResolver(ticketsSearchFormValuesSchema),
   });
 
@@ -52,17 +52,14 @@ export function IndexRoute() {
   const { data, isLoading, isError } = useTickets({
     filters: normalizedSearch,
   });
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-  if (isError || !data) {
-    return <div>Error...</div>;
-  }
-
-  const { items, total } = data;
+  const isTableLoading = isLoading;
+  const hasTableError = isError || (!isLoading && !data);
+  const items = data?.items ?? [];
+  const total = data?.total ?? 0;
 
   const totalPages = Math.max(1, Math.ceil(total / normalizedSearch.pageSize));
-  const from = total === 0 ? 0 : (normalizedSearch.page - 1) * normalizedSearch.pageSize + 1;
+  const from =
+    total === 0 ? 0 : Math.min((normalizedSearch.page - 1) * normalizedSearch.pageSize + 1, total);
   const to = Math.min(total, normalizedSearch.page * normalizedSearch.pageSize);
 
   return (
@@ -167,7 +164,23 @@ export function IndexRoute() {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {items.length > 0 ? (
+                {isTableLoading ? (
+                  <Table.Tr>
+                    <Table.Td colSpan={6}>
+                      <Text c="dimmed" ta="center">
+                        Loading...
+                      </Text>
+                    </Table.Td>
+                  </Table.Tr>
+                ) : hasTableError ? (
+                  <Table.Tr>
+                    <Table.Td colSpan={6}>
+                      <Text c="red" ta="center">
+                        チケット一覧の取得に失敗しました
+                      </Text>
+                    </Table.Td>
+                  </Table.Tr>
+                ) : items.length > 0 ? (
                   items.map((ticket) => (
                     <Table.Tr key={ticket.id}>
                       <Table.Td>{ticket.id}</Table.Td>

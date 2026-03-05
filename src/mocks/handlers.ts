@@ -1,4 +1,4 @@
-import { HttpResponse, http } from 'msw';
+import { delay, HttpResponse, http } from 'msw';
 import { type TicketsSearch, ticketsSearchSchema } from '#/features/tickets/schema/search.ts';
 
 type Ticket = {
@@ -93,8 +93,12 @@ export const listTickets = (tickets: Ticket[], search: TicketsSearch) => {
   };
 };
 
+const MOCK_DELAY_MS = 1500;
+
 export const handlers = [
-  http.get('/api/tickets', ({ request }) => {
+  http.get('/api/tickets', async ({ request }) => {
+    await delay(MOCK_DELAY_MS);
+
     const url = new URL(request.url);
     const search = ticketsSearchSchema.parse(Object.fromEntries(url.searchParams.entries()));
     const result = listTickets(TICKETS, search);

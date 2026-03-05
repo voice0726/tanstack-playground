@@ -10,7 +10,12 @@ export const TICKETS_SEARCH_DEFAULT = {
 } as const;
 
 export const ticketsSearchSchema = z.object({
-  q: z.string().trim().optional().catch(undefined),
+  q: z
+    .string()
+    .trim()
+    .transform((v) => v || undefined)
+    .optional()
+    .catch(undefined),
   status: z.enum(['all', 'open', 'closed']).catch(TICKETS_SEARCH_DEFAULT.status),
   sortBy: z.enum(['id', 'created_at', 'updated_at']).catch(TICKETS_SEARCH_DEFAULT.sortBy),
   sortOrder: z.enum(['asc', 'dsc']).catch(TICKETS_SEARCH_DEFAULT.sortOrder),
