@@ -1,7 +1,9 @@
-export const normalizeSearchParam = (searchParam: string | string[]) => {
+export const normalizeSearchParam = (searchParam: string | string[]): string => {
   if (Array.isArray(searchParam)) {
-    return searchParam[0];
+    return searchParam[0] ?? '';
   }
+  return searchParam;
+};
   return searchParam;
 };
 
