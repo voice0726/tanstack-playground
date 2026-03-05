@@ -3,8 +3,8 @@ import * as z from 'zod';
 export const TICKETS_SEARCH_DEFAULT = {
   q: undefined,
   status: 'all',
-  sortBy: 'created_at',
-  sortOrder: 'dsc',
+  sortBy: 'id',
+  sortOrder: 'asc',
   page: 1,
   pageSize: 10,
 } as const;
@@ -28,8 +28,8 @@ export type TicketsSearch = z.infer<typeof ticketsSearchSchema>;
 export const TICKETS_SEARCH_FORM_VALUES_DEFAULT = {
   q: '',
   status: 'all',
-  sortBy: 'created_at',
-  sortOrder: 'dsc',
+  sortBy: 'id',
+  sortOrder: 'asc',
 } as const;
 
 export const ticketsSearchFormValuesSchema = z.object({
