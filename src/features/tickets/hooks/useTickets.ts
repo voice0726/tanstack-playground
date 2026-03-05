@@ -9,7 +9,13 @@ const API_BASE_URL = env.VITE_API_BASE_URL;
 
 async function fetchTickets(filters?: TicketsSearch): Promise<TicketsResponse> {
   const url = `${API_BASE_URL}${withQuery('/api/tickets', filters)}`;
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    credentials: 'include',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch tickets: ${response.status}`);
