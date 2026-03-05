@@ -1,5 +1,5 @@
 import { delay, HttpResponse, http } from 'msw';
-import { type TicketsSearch, ticketsSearchSchema } from '#/features/tickets/schema/search.ts';
+import { type TicketsSearch, ticketsSearchSchema } from '@/features/tickets/schema/search.ts';
 
 type Ticket = {
   id: string;
