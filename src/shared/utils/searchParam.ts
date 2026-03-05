@@ -4,6 +4,10 @@ export const normalizeSearchParam = (searchParam: string | string[]): string => 
   }
   return searchParam;
 };
+export const normalizeSearchParam = (searchParam: string | string[]): string => {
+  if (Array.isArray(searchParam)) {
+    return searchParam[0] ?? '';
+  }
   return searchParam;
 };
 
