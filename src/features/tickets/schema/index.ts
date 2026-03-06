@@ -17,3 +17,18 @@ export const ticketsResponseSchema = z.object({
 });
 
 export type TicketsResponse = z.infer<typeof ticketsResponseSchema>;
+
+export const CreateTicketRequest = ticketsSchema.pick({
+  title: true,
+  status: true,
+  assignee: true,
+});
+export type CreateTicketRequest = z.infer<typeof CreateTicketRequest>;
+
+export const UpdateTicketRequest = ticketsSchema.pick({
+  id: true,
+  title: true,
+  status: true,
+  assignee: true,
+});
+export type UpdateTicketRequest = z.infer<typeof UpdateTicketRequest>;

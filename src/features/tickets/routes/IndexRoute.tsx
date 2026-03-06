@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  Badge,
   Button,
   Group,
   Pagination,
@@ -11,9 +10,15 @@ import {
   Text,
   TextInput,
 } from '@mantine/core';
+import { IconEdit, IconEye, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { TicketDeleteModal } from '#/features/tickets/components/TicketDeleteModal.tsx';
+import { TicketStatusBadge } from '#/features/tickets/components/TicketStatusBadge.tsx';
+import { useDeleteTicket } from '#/features/tickets/hooks/useDeleteTicket.ts';
 import { useTickets } from '#/features/tickets/hooks/useTickets.ts';
+import type { Ticket } from '#/features/tickets/schema/index.ts';
 import {
   type TicketsSearch,
   type TicketsSearchFormInput,
@@ -21,7 +26,9 @@ import {
   ticketsSearchFormValuesSchema,
   ticketsSearchSchema,
 } from '#/features/tickets/schema/search.ts';
+import { useToast } from '#/shared/ui/toast.tsx';
 import { formatDateTime } from '#/shared/utils/date.ts';
+import { getErrorMessage } from './helpers.tsx';
 
 const pageSizeOptions = [
   { label: '10', value: '10' },
@@ -33,6 +40,9 @@ const pageSizeOptions = [
 export function IndexRoute() {
   const search = useSearch({ from: '/tickets/' });
   const navigate = useNavigate();
+  const { showToast } = useToast();
+  const deleteTicket = useDeleteTicket();
+  const [deleteTarget, setDeleteTarget] = useState<Pick<Ticket, 'id' | 'title'> | null>(null);
 
   const normalizedSearch = ticketsSearchSchema.parse(search);
   const updateSearch = (patch: Partial<TicketsSearch>) =>
@@ -71,7 +81,7 @@ export function IndexRoute() {
           })}
         >
           <Stack gap="md">
-            <TextInput label="Title" {...register('q')} error={errors.q?.message} />
+            <TextInput label="タイトル" {...register('q')} error={errors.q?.message} />
             <Controller
               control={control}
               name="status"
@@ -118,23 +128,38 @@ export function IndexRoute() {
                 )}
               />
             </Group>
-            <Button type="submit">Search</Button>
+            <Button type="submit">検索する</Button>
           </Stack>
         </form>
       </Paper>
 
       <Paper p="lg" shadow="sm">
         <Stack gap="md">
-          <Group justify="space-between" wrap="wrap">
+          <Group align="center" justify="space-between" wrap="wrap">
             <Text fw={600}>チケット一覧</Text>
-            <Group gap="sm">
+            <Button
+              leftSection={<IconPlus size={16} />}
+              onClick={() => {
+                void navigate({ to: '/tickets/new', search: normalizedSearch });
+              }}
+              variant="light"
+            >
+              新規作成
+            </Button>
+          </Group>
+
+          <Group justify="flex-end" wrap="wrap">
+            <Group align="center" gap="sm" justify="flex-end">
               <Text c="dimmed" size="sm">
                 total: {total}
               </Text>
+              <Text c="dimmed" size="sm">
+                表示件数
+              </Text>
               <Select
                 allowDeselect={false}
+                aria-label="表示件数"
                 data={pageSizeOptions}
-                label="表示件数"
                 value={String(normalizedSearch.pageSize)}
                 w={100}
                 onChange={(value) => {
@@ -161,12 +186,13 @@ export function IndexRoute() {
                   <Table.Th>担当者</Table.Th>
                   <Table.Th>作成日</Table.Th>
                   <Table.Th>更新日</Table.Th>
+                  <Table.Th>操作</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
                 {isTableLoading ? (
                   <Table.Tr>
-                    <Table.Td colSpan={6}>
+                    <Table.Td colSpan={7}>
                       <Text c="dimmed" ta="center">
                         Loading...
                       </Text>
@@ -174,7 +200,7 @@ export function IndexRoute() {
                   </Table.Tr>
                 ) : hasTableError ? (
                   <Table.Tr>
-                    <Table.Td colSpan={6}>
+                    <Table.Td colSpan={7}>
                       <Text c="red" ta="center">
                         チケット一覧の取得に失敗しました
                       </Text>
@@ -186,18 +212,62 @@ export function IndexRoute() {
                       <Table.Td>{ticket.id}</Table.Td>
                       <Table.Td>{ticket.title}</Table.Td>
                       <Table.Td>
-                        <Badge color={ticket.status === 'open' ? 'teal' : 'gray'} variant="light">
-                          {ticket.status}
-                        </Badge>
+                        <TicketStatusBadge status={ticket.status} />
                       </Table.Td>
                       <Table.Td>{ticket.assignee ?? '-'}</Table.Td>
                       <Table.Td>{formatDateTime(ticket.createdAt)}</Table.Td>
                       <Table.Td>{formatDateTime(ticket.updatedAt)}</Table.Td>
+                      <Table.Td>
+                        <Group gap={6} wrap="nowrap">
+                          <Button
+                            leftSection={<IconEye size={14} />}
+                            onClick={() => {
+                              void navigate({
+                                to: '/tickets/$ticketId',
+                                params: { ticketId: String(ticket.id) },
+                                search: normalizedSearch,
+                              });
+                            }}
+                            size="xs"
+                            variant="light"
+                          >
+                            詳細
+                          </Button>
+                          <Button
+                            leftSection={<IconEdit size={14} />}
+                            onClick={() => {
+                              void navigate({
+                                to: '/tickets/$ticketId/edit',
+                                params: { ticketId: String(ticket.id) },
+                                search: normalizedSearch,
+                              });
+                            }}
+                            size="xs"
+                            variant="default"
+                          >
+                            編集
+                          </Button>
+                          <Button
+                            color="red"
+                            leftSection={<IconTrash size={14} />}
+                            onClick={() => {
+                              setDeleteTarget({
+                                id: ticket.id,
+                                title: ticket.title,
+                              });
+                            }}
+                            size="xs"
+                            variant="subtle"
+                          >
+                            削除
+                          </Button>
+                        </Group>
+                      </Table.Td>
                     </Table.Tr>
                   ))
                 ) : (
                   <Table.Tr>
-                    <Table.Td colSpan={6}>
+                    <Table.Td colSpan={7}>
                       <Text c="dimmed" ta="center">
                         表示できるチケットがありません
                       </Text>
@@ -223,6 +293,41 @@ export function IndexRoute() {
           </Group>
         </Stack>
       </Paper>
+
+      <TicketDeleteModal
+        isDeleting={deleteTicket.isPending}
+        opened={deleteTarget !== null}
+        ticket={deleteTarget}
+        onClose={() => {
+          if (deleteTicket.isPending) {
+            return;
+          }
+
+          setDeleteTarget(null);
+        }}
+        onConfirm={() => {
+          if (!deleteTarget) {
+            return;
+          }
+
+          deleteTicket.mutate(deleteTarget.id, {
+            onError: (error) => {
+              showToast({
+                title: '削除に失敗しました',
+                message: getErrorMessage(error, '再試行してください'),
+                color: 'red',
+              });
+            },
+            onSuccess: () => {
+              showToast({
+                title: 'チケットを削除しました',
+                message: `#${deleteTarget.id} ${deleteTarget.title}`,
+              });
+              setDeleteTarget(null);
+            },
+          });
+        }}
+      />
     </Stack>
   );
 }

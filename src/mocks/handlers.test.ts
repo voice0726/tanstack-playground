@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { type TicketsSearch, ticketsSearchSchema } from '#/features/tickets/schema/search.ts';
-import { listTickets } from './handlers';
+import { createTicketItem, deleteTicketItem, listTickets, updateTicketItem } from './handlers';
 
 type MockTicket = {
   id: number;
@@ -103,5 +103,58 @@ describe('listTickets', () => {
 
     expect(result.total).toBe(3);
     expect(result.items.map((ticket) => ticket.id)).toEqual([1]);
+  });
+
+  it('creates a ticket with generated id and timestamps', () => {
+    const tickets = structuredClone(TICKETS);
+    const result = createTicketItem(
+      tickets,
+      {
+        title: 'Write docs',
+        status: 'open',
+        assignee: 'sora',
+      },
+      '2026-03-06T10:00:00Z',
+    );
+
+    expect(result).toMatchObject({
+      id: 4,
+      title: 'Write docs',
+      status: 'open',
+      assignee: 'sora',
+      createdAt: '2026-03-06T10:00:00Z',
+      updatedAt: '2026-03-06T10:00:00Z',
+    });
+    expect(tickets[0]?.id).toBe(4);
+  });
+
+  it('updates an existing ticket and refreshes updatedAt', () => {
+    const tickets = structuredClone(TICKETS);
+    const result = updateTicketItem(
+      tickets,
+      {
+        id: 2,
+        title: 'Refactor search filters',
+        status: 'open',
+        assignee: 'nao',
+      },
+      '2026-03-06T11:00:00Z',
+    );
+
+    expect(result).toMatchObject({
+      id: 2,
+      title: 'Refactor search filters',
+      status: 'open',
+      assignee: 'nao',
+      updatedAt: '2026-03-06T11:00:00Z',
+    });
+  });
+
+  it('deletes an existing ticket by id', () => {
+    const tickets = structuredClone(TICKETS);
+    const removed = deleteTicketItem(tickets, 1);
+
+    expect(removed?.id).toBe(1);
+    expect(tickets.map((ticket) => ticket.id)).toEqual([2, 3]);
   });
 });

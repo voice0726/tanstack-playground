@@ -59,6 +59,7 @@
       "esbuild",
       "lefthook",
       "lightningcss",
+      "msw",
       "sharp",
       "workerd"
     ]

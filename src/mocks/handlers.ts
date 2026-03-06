@@ -1,4 +1,10 @@
 import { delay, HttpResponse, http } from 'msw';
+import {
+  CreateTicketRequest,
+  type CreateTicketRequest as CreateTicketRequestType,
+  UpdateTicketRequest,
+  type UpdateTicketRequest as UpdateTicketRequestType,
+} from '@/features/tickets/schema/index.ts';
 import { type TicketsSearch, ticketsSearchSchema } from '@/features/tickets/schema/search.ts';
 
 type Ticket = {
@@ -55,7 +61,15 @@ const GENERATED_TICKETS: Ticket[] = Array.from({ length: 37 }, (_, index) => {
   };
 });
 
-const TICKETS: Ticket[] = [...BASE_TICKETS, ...GENERATED_TICKETS];
+const cloneTickets = (tickets: Ticket[]) => tickets.map((ticket) => structuredClone(ticket));
+
+const createTicketStore = () => [...cloneTickets(BASE_TICKETS), ...cloneTickets(GENERATED_TICKETS)];
+
+let ticketsStore: Ticket[] = createTicketStore();
+
+export const resetTicketsStore = () => {
+  ticketsStore = createTicketStore();
+};
 
 const sortFieldConfig: Record<TicketsSearch['sortBy'], 'id' | 'createdAt' | 'updatedAt'> = {
   id: 'id',
@@ -92,7 +106,70 @@ export const listTickets = (tickets: Ticket[], search: TicketsSearch) => {
   };
 };
 
+export const getTicketById = (tickets: Ticket[], id: Ticket['id']) =>
+  tickets.find((ticket) => ticket.id === id);
+
+export const createTicketItem = (
+  tickets: Ticket[],
+  input: CreateTicketRequestType,
+  now: string,
+): Ticket => {
+  const nextId = tickets.reduce((maxId, ticket) => Math.max(maxId, ticket.id), 0) + 1;
+  const ticket: Ticket = {
+    id: nextId,
+    title: input.title,
+    status: input.status,
+    assignee: input.assignee ?? null,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  tickets.unshift(ticket);
+
+  return ticket;
+};
+
+export const updateTicketItem = (
+  tickets: Ticket[],
+  input: UpdateTicketRequestType,
+  now: string,
+): Ticket | null => {
+  const ticket = tickets.find((item) => item.id === input.id);
+
+  if (!ticket) {
+    return null;
+  }
+
+  ticket.title = input.title;
+  ticket.status = input.status;
+  ticket.assignee = input.assignee ?? null;
+  ticket.updatedAt = now;
+
+  return ticket;
+};
+
+export const deleteTicketItem = (tickets: Ticket[], id: Ticket['id']) => {
+  const index = tickets.findIndex((ticket) => ticket.id === id);
+
+  if (index < 0) {
+    return null;
+  }
+
+  const [removedTicket] = tickets.splice(index, 1);
+
+  return removedTicket;
+};
+
 const MOCK_DELAY_MS = 1500;
+const parseTicketId = (value: string | readonly string[] | undefined) => {
+  if (Array.isArray(value)) {
+    return null;
+  }
+
+  const id = Number(value);
+
+  return Number.isInteger(id) && id > 0 ? id : null;
+};
 
 export const handlers = [
   http.get('/api/tickets', async ({ request }) => {
@@ -100,8 +177,74 @@ export const handlers = [
 
     const url = new URL(request.url);
     const search = ticketsSearchSchema.parse(Object.fromEntries(url.searchParams.entries()));
-    const result = listTickets(TICKETS, search);
+    const result = listTickets(ticketsStore, search);
 
     return HttpResponse.json(result);
+  }),
+  http.get('/api/tickets/:id', async ({ params }) => {
+    await delay(MOCK_DELAY_MS);
+
+    const id = parseTicketId(params.id);
+
+    if (id === null) {
+      return HttpResponse.json({ message: 'Invalid ticket id' }, { status: 400 });
+    }
+
+    const ticket = getTicketById(ticketsStore, id);
+
+    if (!ticket) {
+      return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+    }
+
+    return HttpResponse.json(ticket);
+  }),
+  http.post('/api/tickets', async ({ request }) => {
+    await delay(MOCK_DELAY_MS);
+
+    const body = CreateTicketRequest.parse(await request.json());
+    const now = new Date().toISOString();
+    const ticket = createTicketItem(ticketsStore, body, now);
+
+    return HttpResponse.json(ticket, { status: 201 });
+  }),
+  http.put('/api/tickets/:id', async ({ params, request }) => {
+    await delay(MOCK_DELAY_MS);
+
+    const id = parseTicketId(params.id);
+
+    if (id === null) {
+      return HttpResponse.json({ message: 'Invalid ticket id' }, { status: 400 });
+    }
+
+    const body = UpdateTicketRequest.parse(await request.json());
+
+    if (body.id !== id) {
+      return HttpResponse.json({ message: 'Ticket id mismatch' }, { status: 400 });
+    }
+
+    const ticket = updateTicketItem(ticketsStore, body, new Date().toISOString());
+
+    if (!ticket) {
+      return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+    }
+
+    return HttpResponse.json(ticket);
+  }),
+  http.delete('/api/tickets/:id', async ({ params }) => {
+    await delay(MOCK_DELAY_MS);
+
+    const id = parseTicketId(params.id);
+
+    if (id === null) {
+      return HttpResponse.json({ message: 'Invalid ticket id' }, { status: 400 });
+    }
+
+    const removedTicket = deleteTicketItem(ticketsStore, id);
+
+    if (!removedTicket) {
+      return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+    }
+
+    return HttpResponse.json({ id: removedTicket.id });
   }),
 ];
