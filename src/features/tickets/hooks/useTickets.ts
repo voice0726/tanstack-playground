@@ -5,9 +5,11 @@ import type { TicketsSearch } from '#/features/tickets/schema/search.ts';
 import { env } from '#/shared/config/env.ts';
 import { withQuery } from '#/shared/utils/url.ts';
 
+const TICKETS_STALE_TIME = 30_000;
+const TICKETS_GC_TIME = 5 * 60_000;
 const API_BASE_URL = env.VITE_API_BASE_URL;
 
-async function fetchTickets(filters?: TicketsSearch): Promise<TicketsResponse> {
+async function fetchTickets(filters: TicketsSearch): Promise<TicketsResponse> {
   const url = `${API_BASE_URL}${withQuery('/api/tickets', filters)}`;
   const response = await fetch(url, {
     credentials: 'include',
@@ -36,5 +38,7 @@ export const useTickets = (opts: UseTicketsOptions) => {
   return useQuery<TicketsResponse>({
     queryKey: ticketsQueryKey.list(filters),
     queryFn: () => fetchTickets(filters),
+    staleTime: TICKETS_STALE_TIME,
+    gcTime: TICKETS_GC_TIME,
   });
 };
