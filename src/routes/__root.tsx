@@ -7,6 +7,8 @@ import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
 import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 import { TICKETS_SEARCH_DEFAULT } from '#/features/tickets/schema/search.ts';
+import { env } from '#/shared/config/env.ts';
+import { ToastProvider } from '#/shared/ui/toast.tsx';
 import type { RouterContext } from '@/router';
 
 export const Route = createRootRouteWithContext<RouterContext>()({
@@ -24,56 +26,61 @@ const appShellBackground =
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const shouldRenderDevtools = env.MODE !== 'test';
 
   return (
     <QueryClientProvider client={queryClient}>
       <MantineProvider theme={theme} defaultColorScheme="light">
-        <AppShell
-          header={{ height: 72 }}
-          mih="100dvh"
-          padding="lg"
-          style={{ background: appShellBackground }}
-        >
-          <AppShell.Header>
-            <Group h="100%" justify="space-between" px="lg">
-              <Group gap="sm">
-                <Badge color="teal" variant="light">
-                  Migration
-                </Badge>
-                <Title order={4}>TanStack Playground</Title>
+        <ToastProvider>
+          <AppShell
+            header={{ height: 72 }}
+            mih="100dvh"
+            padding="lg"
+            style={{ background: appShellBackground }}
+          >
+            <AppShell.Header>
+              <Group h="100%" justify="space-between" px="lg">
+                <Group gap="sm">
+                  <Badge color="teal" variant="light">
+                    Migration
+                  </Badge>
+                  <Title order={4}>TanStack Playground</Title>
+                </Group>
+                <Group gap="md">
+                  <Link to="/">Home</Link>
+                  <Link to="/tickets" search={TICKETS_SEARCH_DEFAULT}>
+                    Tickets
+                  </Link>
+                </Group>
               </Group>
-              <Group gap="md">
-                <Link to="/">Home</Link>
-                <Link to="/tickets" search={TICKETS_SEARCH_DEFAULT}>
-                  Tickets
-                </Link>
-              </Group>
-            </Group>
-          </AppShell.Header>
+            </AppShell.Header>
 
-          <AppShell.Main>
-            <Outlet />
-            <Text c="dimmed" mt="xl" size="sm">
-              Tailwind pages were replaced with temporary Mantine pages.
-            </Text>
-          </AppShell.Main>
-        </AppShell>
+            <AppShell.Main>
+              <Outlet />
+              <Text c="dimmed" mt="xl" size="sm">
+                Tailwind pages were replaced with temporary Mantine pages.
+              </Text>
+            </AppShell.Main>
+          </AppShell>
 
-        <TanStackDevtools
-          config={{
-            position: 'bottom-right',
-          }}
-          plugins={[
-            {
-              name: 'TanStack Query',
-              render: <ReactQueryDevtoolsPanel />,
-            },
-            {
-              name: 'TanStack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
+          {shouldRenderDevtools ? (
+            <TanStackDevtools
+              config={{
+                position: 'bottom-right',
+              }}
+              plugins={[
+                {
+                  name: 'TanStack Query',
+                  render: <ReactQueryDevtoolsPanel />,
+                },
+                {
+                  name: 'TanStack Router',
+                  render: <TanStackRouterDevtoolsPanel />,
+                },
+              ]}
+            />
+          ) : null}
+        </ToastProvider>
       </MantineProvider>
     </QueryClientProvider>
   );

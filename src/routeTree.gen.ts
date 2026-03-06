@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TicketsIndexRouteImport } from './routes/tickets/index'
+import { Route as TicketsNewRouteImport } from './routes/tickets/new'
+import { Route as TicketsTicketIdIndexRouteImport } from './routes/tickets/$ticketId/index'
+import { Route as TicketsTicketIdEditRouteImport } from './routes/tickets/$ticketId/edit'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +25,74 @@ const TicketsIndexRoute = TicketsIndexRouteImport.update({
   path: '/tickets/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TicketsNewRoute = TicketsNewRouteImport.update({
+  id: '/tickets/new',
+  path: '/tickets/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TicketsTicketIdIndexRoute = TicketsTicketIdIndexRouteImport.update({
+  id: '/tickets/$ticketId/',
+  path: '/tickets/$ticketId/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TicketsTicketIdEditRoute = TicketsTicketIdEditRouteImport.update({
+  id: '/tickets/$ticketId/edit',
+  path: '/tickets/$ticketId/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/tickets/new': typeof TicketsNewRoute
   '/tickets/': typeof TicketsIndexRoute
+  '/tickets/$ticketId/edit': typeof TicketsTicketIdEditRoute
+  '/tickets/$ticketId/': typeof TicketsTicketIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/tickets/new': typeof TicketsNewRoute
   '/tickets': typeof TicketsIndexRoute
+  '/tickets/$ticketId/edit': typeof TicketsTicketIdEditRoute
+  '/tickets/$ticketId': typeof TicketsTicketIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/tickets/new': typeof TicketsNewRoute
   '/tickets/': typeof TicketsIndexRoute
+  '/tickets/$ticketId/edit': typeof TicketsTicketIdEditRoute
+  '/tickets/$ticketId/': typeof TicketsTicketIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/tickets/'
+  fullPaths:
+    | '/'
+    | '/tickets/new'
+    | '/tickets/'
+    | '/tickets/$ticketId/edit'
+    | '/tickets/$ticketId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/tickets'
-  id: '__root__' | '/' | '/tickets/'
+  to:
+    | '/'
+    | '/tickets/new'
+    | '/tickets'
+    | '/tickets/$ticketId/edit'
+    | '/tickets/$ticketId'
+  id:
+    | '__root__'
+    | '/'
+    | '/tickets/new'
+    | '/tickets/'
+    | '/tickets/$ticketId/edit'
+    | '/tickets/$ticketId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  TicketsNewRoute: typeof TicketsNewRoute
   TicketsIndexRoute: typeof TicketsIndexRoute
+  TicketsTicketIdEditRoute: typeof TicketsTicketIdEditRoute
+  TicketsTicketIdIndexRoute: typeof TicketsTicketIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +111,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TicketsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tickets/new': {
+      id: '/tickets/new'
+      path: '/tickets/new'
+      fullPath: '/tickets/new'
+      preLoaderRoute: typeof TicketsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tickets/$ticketId/': {
+      id: '/tickets/$ticketId/'
+      path: '/tickets/$ticketId'
+      fullPath: '/tickets/$ticketId/'
+      preLoaderRoute: typeof TicketsTicketIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tickets/$ticketId/edit': {
+      id: '/tickets/$ticketId/edit'
+      path: '/tickets/$ticketId/edit'
+      fullPath: '/tickets/$ticketId/edit'
+      preLoaderRoute: typeof TicketsTicketIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  TicketsNewRoute: TicketsNewRoute,
   TicketsIndexRoute: TicketsIndexRoute,
+  TicketsTicketIdEditRoute: TicketsTicketIdEditRoute,
+  TicketsTicketIdIndexRoute: TicketsTicketIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
