@@ -186,6 +186,20 @@ describe('ticket CRUD routes', () => {
     });
   });
 
+  it('keeps unsaved search input when opening the delete modal', async () => {
+    renderRoute('/tickets?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10');
+
+    await screen.findByText('Login bug');
+    fireEvent.change(screen.getByLabelText('タイトル'), {
+      target: { value: 'draft filter' },
+    });
+
+    fireEvent.click(screen.getAllByRole('button', { name: '削除' })[0]);
+
+    await screen.findByText('この操作は取り消せません。削除対象を確認してください。');
+    expect((screen.getByLabelText('タイトル') as HTMLInputElement).value).toBe('draft filter');
+  });
+
   it('deletes a ticket from the list, shows a toast, and keeps the current search params', async () => {
     const { router } = renderRoute(
       '/tickets?q=Login&status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10',
