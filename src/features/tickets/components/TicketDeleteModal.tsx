@@ -18,6 +18,8 @@ export function TicketDeleteModal({
   onClose,
   onConfirm,
 }: TicketDeleteModalProps) {
+  const isConfirmDisabled = ticket === null || isDeleting;
+
   return (
     <Modal centered onClose={onClose} opened={opened} title="チケットを削除">
       <Stack gap="lg">
@@ -33,7 +35,18 @@ export function TicketDeleteModal({
           <Button onClick={onClose} variant="default">
             キャンセル
           </Button>
-          <Button color="red" loading={isDeleting} onClick={onConfirm}>
+          <Button
+            color="red"
+            disabled={isConfirmDisabled}
+            loading={isDeleting}
+            onClick={() => {
+              if (!ticket) {
+                return;
+              }
+
+              onConfirm();
+            }}
+          >
             削除する
           </Button>
         </Group>

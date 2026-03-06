@@ -1,4 +1,5 @@
-import { afterAll, afterEach, beforeAll } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest';
+import { resetTicketsStore } from './src/mocks/handlers';
 import { server } from './src/mocks/node';
 
 Object.defineProperty(window, 'matchMedia', {
@@ -33,6 +34,10 @@ Object.defineProperty(window, 'ResizeObserver', {
 
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'bypass' });
+});
+
+beforeEach(() => {
+  resetTicketsStore();
 });
 
 afterEach(() => {

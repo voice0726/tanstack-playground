@@ -61,9 +61,15 @@ const GENERATED_TICKETS: Ticket[] = Array.from({ length: 37 }, (_, index) => {
   };
 });
 
-const createTicketStore = () => [...BASE_TICKETS, ...GENERATED_TICKETS];
+const cloneTickets = (tickets: Ticket[]) => tickets.map((ticket) => structuredClone(ticket));
 
-const ticketsStore: Ticket[] = createTicketStore();
+const createTicketStore = () => [...cloneTickets(BASE_TICKETS), ...cloneTickets(GENERATED_TICKETS)];
+
+let ticketsStore: Ticket[] = createTicketStore();
+
+export const resetTicketsStore = () => {
+  ticketsStore = createTicketStore();
+};
 
 const sortFieldConfig: Record<TicketsSearch['sortBy'], 'id' | 'createdAt' | 'updatedAt'> = {
   id: 'id',
@@ -162,7 +168,7 @@ const parseTicketId = (value: string | readonly string[] | undefined) => {
 
   const id = Number(value);
 
-  return Number.isInteger(id) ? id : null;
+  return Number.isInteger(id) && id > 0 ? id : null;
 };
 
 export const handlers = [

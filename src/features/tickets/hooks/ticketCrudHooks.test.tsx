@@ -277,6 +277,7 @@ describe('ticket CRUD hooks', () => {
 
     await waitFor(() => {
       expect(screen.queryByText('1:Login bug:open:aki')).toBeNull();
+      expect(screen.getAllByRole('listitem').length).toBeGreaterThanOrEqual(1);
     });
   });
 });

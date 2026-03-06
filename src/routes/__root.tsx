@@ -26,7 +26,7 @@ const appShellBackground =
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const shouldRenderDevtools = env.MODE !== 'test';
+  const shouldRenderDevtools = env.MODE === 'development';
 
   return (
     <QueryClientProvider client={queryClient}>
