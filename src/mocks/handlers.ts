@@ -4,7 +4,7 @@ import {
   type CreateTicketRequest as CreateTicketRequestType,
   UpdateTicketRequest,
   type UpdateTicketRequest as UpdateTicketRequestType,
-} from '#/features/tickets/schema/index.ts';
+} from '@/features/tickets/schema/index.ts';
 import { type TicketsSearch, ticketsSearchSchema } from '@/features/tickets/schema/search.ts';
 
 type Ticket = {
