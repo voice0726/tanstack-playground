@@ -12,7 +12,7 @@ import {
 } from '@mantine/core';
 import { IconEdit, IconEye, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { TicketDeleteModal } from '#/features/tickets/components/TicketDeleteModal.tsx';
 import { TicketStatusBadge } from '#/features/tickets/components/TicketStatusBadge.tsx';
@@ -47,16 +47,36 @@ export function IndexRoute() {
   const normalizedSearch = ticketsSearchSchema.parse(search);
   const updateSearch = (patch: Partial<TicketsSearch>) =>
     ticketsSearchSchema.parse({ ...normalizedSearch, ...patch });
+  const searchFormValues = useMemo(
+    () =>
+      ({
+        q: normalizedSearch.q ?? '',
+        status: normalizedSearch.status,
+        sortBy: normalizedSearch.sortBy,
+        sortOrder: normalizedSearch.sortOrder,
+      }) satisfies TicketsSearchFormInput,
+    [
+      normalizedSearch.q,
+      normalizedSearch.sortBy,
+      normalizedSearch.sortOrder,
+      normalizedSearch.status,
+    ],
+  );
 
   const {
     control,
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<TicketsSearchFormInput, unknown, TicketsSearchFormOutput>({
-    values: { ...normalizedSearch, q: normalizedSearch.q ?? '' },
+    defaultValues: searchFormValues,
     resolver: zodResolver(ticketsSearchFormValuesSchema),
   });
+
+  useEffect(() => {
+    reset(searchFormValues);
+  }, [reset, searchFormValues]);
 
   // TODO: keepPreviousData
   const { data, isLoading, isError } = useTickets({
