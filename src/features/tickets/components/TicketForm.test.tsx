@@ -86,4 +86,40 @@ describe('TicketForm', () => {
     expect((screen.getByLabelText('タイトル') as HTMLInputElement).value).toBe('Add pagination');
     expect((screen.getByLabelText('担当者') as HTMLInputElement).value).toBe('mika');
   });
+
+  it('resets the form when switching records with identical field values', () => {
+    const onSubmit = vi.fn();
+    const sharedValues = {
+      title: 'Same title',
+      status: 'open' as const,
+      assignee: 'aki',
+    };
+    const { rerender } = renderTicketForm(
+      <TicketForm
+        initialValues={sharedValues}
+        isSubmitting={false}
+        resetKey={1}
+        submitLabel="更新する"
+        onSubmit={onSubmit}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText('タイトル'), {
+      target: { value: 'draft for ticket 1' },
+    });
+
+    rerender(
+      <MantineProvider>
+        <TicketForm
+          initialValues={sharedValues}
+          isSubmitting={false}
+          resetKey={2}
+          submitLabel="更新する"
+          onSubmit={onSubmit}
+        />
+      </MantineProvider>,
+    );
+
+    expect((screen.getByLabelText('タイトル') as HTMLInputElement).value).toBe('Same title');
+  });
 });

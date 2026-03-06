@@ -10,6 +10,7 @@ import {
 } from '#/features/tickets/schema/form.ts';
 
 type TicketFormProps = {
+  resetKey?: string | number;
   initialValues: TicketFormInput;
   submitLabel: string;
   isSubmitting: boolean;
@@ -24,6 +25,7 @@ const statusOptions = [
 ];
 
 export function TicketForm({
+  resetKey,
   initialValues,
   submitLabel,
   isSubmitting,
@@ -32,7 +34,13 @@ export function TicketForm({
   onSubmit,
 }: TicketFormProps) {
   const { assignee, status, title } = initialValues;
-  const formValues = useMemo(() => ({ assignee, status, title }), [assignee, status, title]);
+  const syncTarget = useMemo(
+    () => ({
+      formValues: { assignee, status, title },
+      resetKey,
+    }),
+    [assignee, resetKey, status, title],
+  );
   const {
     control,
     register,
@@ -40,13 +48,13 @@ export function TicketForm({
     reset,
     formState: { errors },
   } = useForm<TicketFormInput, unknown, TicketFormOutput>({
-    defaultValues: formValues,
+    defaultValues: syncTarget.formValues,
     resolver: zodResolver(ticketFormValuesSchema),
   });
 
   useEffect(() => {
-    reset(formValues);
-  }, [formValues, reset]);
+    reset(syncTarget.formValues);
+  }, [reset, syncTarget]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
