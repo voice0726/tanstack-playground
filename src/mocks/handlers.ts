@@ -78,8 +78,7 @@ export const listTickets = (tickets: Ticket[], search: TicketsSearch) => {
 
   const field = sortFieldConfig[search.sortBy];
   const sorted = [...filtered].sort((a, b) => {
-    const diff =
-      field === 'id' ? Number(a.id) - Number(b.id) : Date.parse(a[field]) - Date.parse(b[field]);
+    const diff = field === 'id' ? a.id - b.id : Date.parse(a[field]) - Date.parse(b[field]);
     return search.sortOrder === 'asc' ? diff : -diff;
   });
 
