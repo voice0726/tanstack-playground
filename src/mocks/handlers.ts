@@ -2,7 +2,7 @@ import { delay, HttpResponse, http } from 'msw';
 import { type TicketsSearch, ticketsSearchSchema } from '@/features/tickets/schema/search.ts';
 
 type Ticket = {
-  id: string;
+  id: number;
   title: string;
   status: 'open' | 'closed';
   assignee: string | null;
@@ -12,7 +12,7 @@ type Ticket = {
 
 const BASE_TICKETS: Ticket[] = [
   {
-    id: '1',
+    id: 1,
     title: 'Login bug',
     status: 'open',
     assignee: 'aki',
@@ -20,7 +20,7 @@ const BASE_TICKETS: Ticket[] = [
     updatedAt: '2026-03-03T15:00:00Z',
   },
   {
-    id: '2',
+    id: 2,
     title: 'Refactor filters',
     status: 'closed',
     assignee: null,
@@ -28,7 +28,7 @@ const BASE_TICKETS: Ticket[] = [
     updatedAt: '2026-03-01T09:45:00Z',
   },
   {
-    id: '3',
+    id: 3,
     title: 'Add pagination',
     status: 'open',
     assignee: 'mika',
@@ -46,7 +46,7 @@ const GENERATED_TICKETS: Ticket[] = Array.from({ length: 37 }, (_, index) => {
   const titlePrefix = ['Bugfix', 'Feature', 'Refactor', 'Ops'][index % 4];
 
   return {
-    id: String(ticketNumber),
+    id: ticketNumber,
     title: `${titlePrefix} task #${ticketNumber}`,
     status: index % 3 === 0 ? 'closed' : 'open',
     assignee: index % 5 === 0 ? null : ASSIGNEES[index % ASSIGNEES.length],
@@ -78,8 +78,7 @@ export const listTickets = (tickets: Ticket[], search: TicketsSearch) => {
 
   const field = sortFieldConfig[search.sortBy];
   const sorted = [...filtered].sort((a, b) => {
-    const diff =
-      field === 'id' ? Number(a.id) - Number(b.id) : Date.parse(a[field]) - Date.parse(b[field]);
+    const diff = field === 'id' ? a.id - b.id : Date.parse(a[field]) - Date.parse(b[field]);
     return search.sortOrder === 'asc' ? diff : -diff;
   });
 

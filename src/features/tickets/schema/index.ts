@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 export const ticketsSchema = z.object({
-  id: z.string(),
+  id: z.number(),
   title: z.string(),
   status: z.enum(['open', 'closed']),
   assignee: z.string().nullable().optional(),

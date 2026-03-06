@@ -3,7 +3,7 @@ import { type TicketsSearch, ticketsSearchSchema } from '#/features/tickets/sche
 import { listTickets } from './handlers';
 
 type MockTicket = {
-  id: string;
+  id: number;
   title: string;
   status: 'open' | 'closed';
   assignee: string | null;
@@ -13,7 +13,7 @@ type MockTicket = {
 
 const TICKETS: MockTicket[] = [
   {
-    id: '1',
+    id: 1,
     title: 'Login bug',
     status: 'open',
     assignee: 'aki',
@@ -21,7 +21,7 @@ const TICKETS: MockTicket[] = [
     updatedAt: '2026-03-03T15:00:00Z',
   },
   {
-    id: '2',
+    id: 2,
     title: 'Refactor filters',
     status: 'closed',
     assignee: null,
@@ -29,7 +29,7 @@ const TICKETS: MockTicket[] = [
     updatedAt: '2026-03-01T09:45:00Z',
   },
   {
-    id: '3',
+    id: 3,
     title: 'Add pagination',
     status: 'open',
     assignee: 'mika',
@@ -56,7 +56,7 @@ describe('listTickets', () => {
     );
 
     expect(result.total).toBe(1);
-    expect(result.items.map((ticket) => ticket.id)).toEqual(['2']);
+    expect(result.items.map((ticket) => ticket.id)).toEqual([2]);
   });
 
   it('sorts by updatedAt ascending', () => {
@@ -71,7 +71,7 @@ describe('listTickets', () => {
       }),
     );
 
-    expect(result.items.map((ticket) => ticket.id)).toEqual(['2', '1', '3']);
+    expect(result.items.map((ticket) => ticket.id)).toEqual([2, 1, 3]);
   });
 
   it('sorts by id descending', () => {
@@ -86,7 +86,7 @@ describe('listTickets', () => {
       }),
     );
 
-    expect(result.items.map((ticket) => ticket.id)).toEqual(['3', '2', '1']);
+    expect(result.items.map((ticket) => ticket.id)).toEqual([3, 2, 1]);
   });
 
   it('applies pagination after filtering and sorting', () => {
@@ -102,6 +102,6 @@ describe('listTickets', () => {
     );
 
     expect(result.total).toBe(3);
-    expect(result.items.map((ticket) => ticket.id)).toEqual(['1']);
+    expect(result.items.map((ticket) => ticket.id)).toEqual([1]);
   });
 });
