@@ -135,25 +135,31 @@ export function IndexRoute() {
 
       <Paper p="lg" shadow="sm">
         <Stack gap="md">
-          <Group justify="space-between" wrap="wrap">
+          <Group align="center" justify="space-between" wrap="wrap">
             <Text fw={600}>チケット一覧</Text>
-            <Group gap="sm">
-              <Button
-                leftSection={<IconPlus size={16} />}
-                onClick={() => {
-                  void navigate({ to: '/tickets/new', search: normalizedSearch });
-                }}
-                variant="light"
-              >
-                新規作成
-              </Button>
+            <Button
+              leftSection={<IconPlus size={16} />}
+              onClick={() => {
+                void navigate({ to: '/tickets/new', search: normalizedSearch });
+              }}
+              variant="light"
+            >
+              新規作成
+            </Button>
+          </Group>
+
+          <Group justify="flex-end" wrap="wrap">
+            <Group align="center" gap="sm" justify="flex-end">
               <Text c="dimmed" size="sm">
                 total: {total}
               </Text>
+              <Text c="dimmed" size="sm">
+                表示件数
+              </Text>
               <Select
                 allowDeselect={false}
+                aria-label="表示件数"
                 data={pageSizeOptions}
-                label="表示件数"
                 value={String(normalizedSearch.pageSize)}
                 w={100}
                 onChange={(value) => {
