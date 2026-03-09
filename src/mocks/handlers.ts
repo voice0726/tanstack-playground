@@ -1,4 +1,5 @@
 import { delay, HttpResponse, http } from 'msw';
+import { type AuthUser, authUserSchema } from '@/features/auth/schema.ts';
 import {
   CreateTicketRequest,
   type CreateTicketRequest as CreateTicketRequestType,
@@ -11,8 +12,22 @@ import {
 import { type TicketsSearch, ticketsSearchSchema } from '@/features/tickets/schema/search.ts';
 
 type MockTicket = TicketDetail;
+type MockCredentials = {
+  email: string;
+  password: string;
+};
 
 const createEmptyHistory = (): TicketHistory => ({ items: [] });
+const MOCK_DELAY_MS = 1500;
+const MOCK_USER: AuthUser = authUserSchema.parse({
+  id: 1,
+  email: 'admin@example.com',
+  displayName: 'Admin User',
+});
+const MOCK_CREDENTIALS: MockCredentials = {
+  email: 'admin@example.com',
+  password: 'secret-password',
+};
 
 const toTicketSummary = ({ history: _history, ...ticket }: MockTicket): Ticket => ticket;
 
@@ -70,9 +85,11 @@ const cloneTickets = (tickets: MockTicket[]) => tickets.map((ticket) => structur
 const createTicketStore = () => [...cloneTickets(BASE_TICKETS), ...cloneTickets(GENERATED_TICKETS)];
 
 let ticketsStore: MockTicket[] = createTicketStore();
+let isAuthenticated = false;
 
 export const resetTicketsStore = () => {
   ticketsStore = createTicketStore();
+  isAuthenticated = false;
 };
 
 const sortFieldConfig: Record<TicketsSearch['sortBy'], 'id' | 'createdAt' | 'updatedAt'> = {
@@ -182,7 +199,6 @@ export const deleteTicketItem = (tickets: MockTicket[], id: Ticket['id']) => {
   return removedTicket;
 };
 
-const MOCK_DELAY_MS = 1500;
 const parseTicketId = (value: string | readonly string[] | undefined) => {
   if (Array.isArray(value)) {
     return null;
@@ -193,9 +209,50 @@ const parseTicketId = (value: string | readonly string[] | undefined) => {
   return Number.isInteger(id) && id > 0 ? id : null;
 };
 
+const requireAuthentication = async () => {
+  await delay(MOCK_DELAY_MS);
+
+  if (!isAuthenticated) {
+    return HttpResponse.json({ message: 'authentication required' }, { status: 401 });
+  }
+
+  return null;
+};
+
 export const handlers = [
-  http.get('/api/tickets', async ({ request }) => {
+  http.get('/api/auth/me', async () => {
     await delay(MOCK_DELAY_MS);
+
+    if (!isAuthenticated) {
+      return HttpResponse.json({ message: 'authentication required' }, { status: 401 });
+    }
+
+    return HttpResponse.json({ user: MOCK_USER });
+  }),
+  http.post('/api/auth/login', async ({ request }) => {
+    await delay(MOCK_DELAY_MS);
+
+    const body = (await request.json()) as MockCredentials;
+
+    if (body.email !== MOCK_CREDENTIALS.email || body.password !== MOCK_CREDENTIALS.password) {
+      return HttpResponse.json({ message: 'invalid email or password' }, { status: 401 });
+    }
+
+    isAuthenticated = true;
+
+    return HttpResponse.json({ user: MOCK_USER });
+  }),
+  http.post('/api/auth/logout', async () => {
+    await delay(MOCK_DELAY_MS);
+    isAuthenticated = false;
+
+    return new HttpResponse(null, { status: 204 });
+  }),
+  http.get('/api/tickets', async ({ request }) => {
+    const unauthorizedResponse = await requireAuthentication();
+    if (unauthorizedResponse) {
+      return unauthorizedResponse;
+    }
 
     const url = new URL(request.url);
     const search = ticketsSearchSchema.parse(Object.fromEntries(url.searchParams.entries()));
@@ -204,7 +261,10 @@ export const handlers = [
     return HttpResponse.json(result);
   }),
   http.get('/api/tickets/:id', async ({ params }) => {
-    await delay(MOCK_DELAY_MS);
+    const unauthorizedResponse = await requireAuthentication();
+    if (unauthorizedResponse) {
+      return unauthorizedResponse;
+    }
 
     const id = parseTicketId(params.id);
 
@@ -221,7 +281,10 @@ export const handlers = [
     return HttpResponse.json(ticket);
   }),
   http.post('/api/tickets', async ({ request }) => {
-    await delay(MOCK_DELAY_MS);
+    const unauthorizedResponse = await requireAuthentication();
+    if (unauthorizedResponse) {
+      return unauthorizedResponse;
+    }
 
     const body = CreateTicketRequest.parse(await request.json());
     const now = new Date().toISOString();
@@ -230,7 +293,10 @@ export const handlers = [
     return HttpResponse.json(ticket, { status: 201 });
   }),
   http.put('/api/tickets/:id', async ({ params, request }) => {
-    await delay(MOCK_DELAY_MS);
+    const unauthorizedResponse = await requireAuthentication();
+    if (unauthorizedResponse) {
+      return unauthorizedResponse;
+    }
 
     const id = parseTicketId(params.id);
 
@@ -253,7 +319,10 @@ export const handlers = [
     return HttpResponse.json(ticket);
   }),
   http.delete('/api/tickets/:id', async ({ params }) => {
-    await delay(MOCK_DELAY_MS);
+    const unauthorizedResponse = await requireAuthentication();
+    if (unauthorizedResponse) {
+      return unauthorizedResponse;
+    }
 
     const id = parseTicketId(params.id);
 

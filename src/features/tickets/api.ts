@@ -9,84 +9,72 @@ import {
   type UpdateTicketRequest as UpdateTicketRequestType,
 } from '#/features/tickets/schema/index.ts';
 import type { TicketsSearch } from '#/features/tickets/schema/search.ts';
-import { env } from '#/shared/config/env.ts';
+import { createApiUrl, ensureSuccess, JSON_HEADERS } from '#/shared/api/http.ts';
 import { withQuery } from '#/shared/utils/url.ts';
-
-const API_BASE_URL = env.VITE_API_BASE_URL;
-const DEFAULT_HEADERS = {
-  Accept: 'application/json',
-  'Content-Type': 'application/json',
-} as const;
 
 const deleteTicketResponseSchema = ticketsSchema.pick({ id: true });
 
-const createApiUrl = (path: string, search?: TicketsSearch) =>
-  `${API_BASE_URL}${withQuery(path, search)}`;
-
-const ensureSuccess = (response: Response, message: string) => {
-  if (!response.ok) {
-    throw new Error(`${message}: ${response.status}`);
-  }
-};
+const createTicketsApiUrl = (path: string, search?: TicketsSearch) =>
+  createApiUrl(withQuery(path, search));
 
 export const fetchTickets = async (filters: TicketsSearch) => {
-  const response = await fetch(createApiUrl('/api/tickets', filters), {
+  const response = await fetch(createTicketsApiUrl('/api/tickets', filters), {
     credentials: 'include',
-    headers: DEFAULT_HEADERS,
+    headers: JSON_HEADERS,
   });
 
-  ensureSuccess(response, 'Failed to fetch tickets');
+  await ensureSuccess(response, 'チケット一覧の取得に失敗しました。');
 
   return ticketsResponseSchema.parse(await response.json());
 };
 
 export const fetchTicket = async (id: Ticket['id']) => {
-  const response = await fetch(createApiUrl(`/api/tickets/${id}`), {
+  const response = await fetch(createTicketsApiUrl(`/api/tickets/${id}`), {
     credentials: 'include',
-    headers: DEFAULT_HEADERS,
+    headers: JSON_HEADERS,
   });
 
-  ensureSuccess(response, 'Failed to fetch ticket');
+  await ensureSuccess(response, 'チケット情報の取得に失敗しました。');
 
   return ticketDetailSchema.parse(await response.json());
 };
 
 export const createTicket = async (body: CreateTicketRequestType) => {
   const payload = CreateTicketRequest.parse(body);
-  const response = await fetch(createApiUrl('/api/tickets'), {
+  const response = await fetch(createTicketsApiUrl('/api/tickets'), {
     method: 'POST',
     credentials: 'include',
-    headers: DEFAULT_HEADERS,
+    headers: JSON_HEADERS,
     body: JSON.stringify(payload),
   });
 
-  ensureSuccess(response, 'Failed to create ticket');
+  await ensureSuccess(response, 'チケットの作成に失敗しました。');
 
   return ticketDetailSchema.parse(await response.json());
 };
 
 export const updateTicket = async (body: UpdateTicketRequestType) => {
   const payload = UpdateTicketRequest.parse(body);
-  const response = await fetch(createApiUrl(`/api/tickets/${payload.id}`), {
+  const response = await fetch(createTicketsApiUrl(`/api/tickets/${payload.id}`), {
     method: 'PUT',
     credentials: 'include',
-    headers: DEFAULT_HEADERS,
+    headers: JSON_HEADERS,
     body: JSON.stringify(payload),
   });
 
-  ensureSuccess(response, 'Failed to update ticket');
+  await ensureSuccess(response, 'チケットの更新に失敗しました。');
 
   return ticketDetailSchema.parse(await response.json());
 };
 
 export const deleteTicket = async (id: Ticket['id']) => {
-  const response = await fetch(createApiUrl(`/api/tickets/${id}`), {
+  const response = await fetch(createTicketsApiUrl(`/api/tickets/${id}`), {
     method: 'DELETE',
     credentials: 'include',
-    headers: DEFAULT_HEADERS,
+    headers: JSON_HEADERS,
   });
 
-  ensureSuccess(response, 'Failed to delete ticket');
+  await ensureSuccess(response, 'チケットの削除に失敗しました。');
 
   return deleteTicketResponseSchema.parse({ id });
 };

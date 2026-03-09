@@ -34,6 +34,7 @@ tanstack routerとqueryを主にした簡易業務アプリ作成プロジェク
 ### 環境変数
 
 - `VITE_API_BASE_URL`: フロントエンドが参照する Backend API のベース URL
-  - 開発時は `.env.development` の `http://localhost:3000`
+  - 開発時は `.env.development` の `http://localhost:7080`
   - 本番時は `.env.production` の Cloud Run URL
 - `MODE` / `DEV` / `PROD` は `.env` に定義する値ではなく、Vite が実行時に自動で populate する built-in 値
+- ログインに使う初期ユーザーは、バックエンド側の `AUTH_BOOTSTRAP_EMAIL` / `AUTH_BOOTSTRAP_DISPLAY_NAME` / `AUTH_BOOTSTRAP_PASSWORD_BCRYPT` で指定する

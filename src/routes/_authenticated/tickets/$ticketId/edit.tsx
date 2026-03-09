@@ -8,7 +8,7 @@ import {
 } from '#/features/tickets/routes/helpers.tsx';
 import { TICKETS_SEARCH_DEFAULT, ticketsSearchSchema } from '#/features/tickets/schema/search.ts';
 
-export const Route = createFileRoute('/tickets/$ticketId/edit')({
+export const Route = createFileRoute('/_authenticated/tickets/$ticketId/edit')({
   component: RouteComponent,
   validateSearch: ticketsSearchSchema.parse,
   search: {

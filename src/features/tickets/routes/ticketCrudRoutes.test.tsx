@@ -1,8 +1,9 @@
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryHistory, RouterProvider } from '@tanstack/react-router';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { HttpResponse, http } from 'msw';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type { AuthUser } from '#/features/auth/schema.ts';
 import type {
   CreateTicketRequest,
   TicketHistory,
@@ -22,6 +23,11 @@ import { env } from '#/shared/config/env.ts';
 
 const API_BASE_URL = env.VITE_API_BASE_URL;
 type MockTicket = Parameters<typeof listTickets>[0][number];
+const AUTH_USER: AuthUser = {
+  id: 1,
+  email: 'admin@example.com',
+  displayName: 'Admin User',
+};
 
 const createEmptyHistory = (): TicketHistory => ({ items: [] });
 
@@ -69,48 +75,95 @@ const buildSeedTickets = (): MockTicket[] => [
   },
 ];
 
-const createUiHandlers = (tickets: MockTicket[]) => [
-  http.get(`${API_BASE_URL}/api/tickets`, ({ request }) => {
-    const url = new URL(request.url);
-    const search = ticketsSearchSchema.parse(Object.fromEntries(url.searchParams.entries()));
+const createUiHandlers = (tickets: MockTicket[], initialUser: AuthUser | null = AUTH_USER) => {
+  let currentUser = initialUser;
 
-    return HttpResponse.json(listTickets(tickets, search));
-  }),
-  http.get(`${API_BASE_URL}/api/tickets/:id`, ({ params }) => {
-    const ticket = getTicketById(tickets, Number(params.id));
+  return [
+    http.get(`${API_BASE_URL}/api/auth/me`, () => {
+      if (!currentUser) {
+        return HttpResponse.json({ message: 'authentication required' }, { status: 401 });
+      }
 
-    if (!ticket) {
-      return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
-    }
+      return HttpResponse.json({ user: currentUser });
+    }),
+    http.post(`${API_BASE_URL}/api/auth/login`, async ({ request }) => {
+      const body = (await request.json()) as { email: string; password: string };
 
-    return HttpResponse.json(ticket);
-  }),
-  http.post(`${API_BASE_URL}/api/tickets`, async ({ request }) => {
-    const body = (await request.json()) as CreateTicketRequest;
-    const ticket = createTicketItem(tickets, body, '2026-03-06T10:00:00Z');
+      if (body.email !== AUTH_USER.email || body.password !== 'secret-password') {
+        return HttpResponse.json({ message: 'invalid email or password' }, { status: 401 });
+      }
 
-    return HttpResponse.json(ticket, { status: 201 });
-  }),
-  http.put(`${API_BASE_URL}/api/tickets/:id`, async ({ params, request }) => {
-    const body = (await request.json()) as UpdateTicketRequest;
-    const ticket = updateTicketItem(tickets, body, '2026-03-06T11:00:00Z');
+      currentUser = AUTH_USER;
 
-    if (!ticket || ticket.id !== Number(params.id)) {
-      return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
-    }
+      return HttpResponse.json({ user: AUTH_USER });
+    }),
+    http.post(`${API_BASE_URL}/api/auth/logout`, () => {
+      currentUser = null;
 
-    return HttpResponse.json(ticket);
-  }),
-  http.delete(`${API_BASE_URL}/api/tickets/:id`, ({ params }) => {
-    const ticket = deleteTicketItem(tickets, Number(params.id));
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.get(`${API_BASE_URL}/api/tickets`, ({ request }) => {
+      if (!currentUser) {
+        return HttpResponse.json({ message: 'authentication required' }, { status: 401 });
+      }
 
-    if (!ticket) {
-      return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
-    }
+      const url = new URL(request.url);
+      const search = ticketsSearchSchema.parse(Object.fromEntries(url.searchParams.entries()));
 
-    return new HttpResponse(null, { status: 204 });
-  }),
-];
+      return HttpResponse.json(listTickets(tickets, search));
+    }),
+    http.get(`${API_BASE_URL}/api/tickets/:id`, ({ params }) => {
+      if (!currentUser) {
+        return HttpResponse.json({ message: 'authentication required' }, { status: 401 });
+      }
+
+      const ticket = getTicketById(tickets, Number(params.id));
+
+      if (!ticket) {
+        return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+      }
+
+      return HttpResponse.json(ticket);
+    }),
+    http.post(`${API_BASE_URL}/api/tickets`, async ({ request }) => {
+      if (!currentUser) {
+        return HttpResponse.json({ message: 'authentication required' }, { status: 401 });
+      }
+
+      const body = (await request.json()) as CreateTicketRequest;
+      const ticket = createTicketItem(tickets, body, '2026-03-06T10:00:00Z');
+
+      return HttpResponse.json(ticket, { status: 201 });
+    }),
+    http.put(`${API_BASE_URL}/api/tickets/:id`, async ({ params, request }) => {
+      if (!currentUser) {
+        return HttpResponse.json({ message: 'authentication required' }, { status: 401 });
+      }
+
+      const body = (await request.json()) as UpdateTicketRequest;
+      const ticket = updateTicketItem(tickets, body, '2026-03-06T11:00:00Z');
+
+      if (!ticket || ticket.id !== Number(params.id)) {
+        return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+      }
+
+      return HttpResponse.json(ticket);
+    }),
+    http.delete(`${API_BASE_URL}/api/tickets/:id`, ({ params }) => {
+      if (!currentUser) {
+        return HttpResponse.json({ message: 'authentication required' }, { status: 401 });
+      }
+
+      const ticket = deleteTicketItem(tickets, Number(params.id));
+
+      if (!ticket) {
+        return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+      }
+
+      return new HttpResponse(null, { status: 204 });
+    }),
+  ];
+};
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -131,7 +184,11 @@ const renderRoute = (initialEntry: string) => {
   });
   const router = createRouter(queryClient, history);
 
-  render(<RouterProvider router={router} />);
+  render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  );
 
   return { router };
 };
@@ -143,6 +200,39 @@ describe('ticket CRUD routes', () => {
 
   afterEach(() => {
     cleanup();
+  });
+
+  it('redirects unauthenticated users from protected routes to home', async () => {
+    server.use(...createUiHandlers(buildSeedTickets(), null));
+
+    const { router } = renderRoute(
+      '/tickets?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10',
+    );
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/');
+    });
+    await screen.findByRole('button', { name: 'ログイン' });
+  });
+
+  it('logs in from home and reaches protected routes', async () => {
+    server.use(...createUiHandlers(buildSeedTickets(), null));
+
+    renderRoute('/');
+
+    await screen.findByLabelText('メールアドレス');
+    fireEvent.change(screen.getByLabelText('メールアドレス'), {
+      target: { value: 'admin@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText('パスワード'), {
+      target: { value: 'secret-password' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ログイン' }));
+
+    await screen.findByText('ログイン済みです');
+    fireEvent.click(screen.getByRole('button', { name: 'チケット画面へ進む' }));
+
+    await screen.findByText('チケット一覧');
   });
 
   it('keeps search params when moving between list and detail pages', async () => {
