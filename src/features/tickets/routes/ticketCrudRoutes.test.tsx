@@ -3,7 +3,11 @@ import { createMemoryHistory, RouterProvider } from '@tanstack/react-router';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { HttpResponse, http } from 'msw';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { CreateTicketRequest, UpdateTicketRequest } from '#/features/tickets/schema/index.ts';
+import type {
+  CreateTicketRequest,
+  TicketHistory,
+  UpdateTicketRequest,
+} from '#/features/tickets/schema/index.ts';
 import { ticketsSearchSchema } from '#/features/tickets/schema/search.ts';
 import {
   createTicketItem,
@@ -19,6 +23,8 @@ import { env } from '#/shared/config/env.ts';
 const API_BASE_URL = env.VITE_API_BASE_URL;
 type MockTicket = Parameters<typeof listTickets>[0][number];
 
+const createEmptyHistory = (): TicketHistory => ({ items: [] });
+
 const buildSeedTickets = (): MockTicket[] => [
   {
     id: 1,
@@ -27,6 +33,7 @@ const buildSeedTickets = (): MockTicket[] => [
     assignee: 'aki',
     createdAt: '2026-03-01T10:00:00Z',
     updatedAt: '2026-03-03T15:00:00Z',
+    history: createEmptyHistory(),
   },
   {
     id: 2,
@@ -35,6 +42,7 @@ const buildSeedTickets = (): MockTicket[] => [
     assignee: null,
     createdAt: '2026-02-27T12:00:00Z',
     updatedAt: '2026-03-01T09:45:00Z',
+    history: createEmptyHistory(),
   },
   {
     id: 3,
@@ -43,6 +51,7 @@ const buildSeedTickets = (): MockTicket[] => [
     assignee: 'mika',
     createdAt: '2026-03-02T09:30:00Z',
     updatedAt: '2026-03-04T08:20:00Z',
+    history: createEmptyHistory(),
   },
 ];
 
@@ -85,7 +94,7 @@ const createUiHandlers = (tickets: MockTicket[]) => [
       return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
     }
 
-    return HttpResponse.json({ id: ticket.id });
+    return new HttpResponse(null, { status: 204 });
   }),
 ];
 

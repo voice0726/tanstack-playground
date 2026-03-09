@@ -11,6 +11,34 @@ export const ticketsSchema = z.object({
 
 export type Ticket = z.infer<typeof ticketsSchema>;
 
+export const ticketHistoryChangeSchema = z.object({
+  field: z.string(),
+  before: z.string().nullable(),
+  after: z.string().nullable(),
+});
+
+export type TicketHistoryChange = z.infer<typeof ticketHistoryChangeSchema>;
+
+export const ticketHistoryItemSchema = z.object({
+  operationId: z.string(),
+  changedAt: z.iso.datetime(),
+  changes: z.array(ticketHistoryChangeSchema),
+});
+
+export type TicketHistoryItem = z.infer<typeof ticketHistoryItemSchema>;
+
+export const ticketHistorySchema = z.object({
+  items: z.array(ticketHistoryItemSchema),
+});
+
+export type TicketHistory = z.infer<typeof ticketHistorySchema>;
+
+export const ticketDetailSchema = ticketsSchema.extend({
+  history: ticketHistorySchema,
+});
+
+export type TicketDetail = z.infer<typeof ticketDetailSchema>;
+
 export const ticketsResponseSchema = z.object({
   items: z.array(ticketsSchema),
   total: z.number().int().nonnegative(),

@@ -2,6 +2,7 @@ import {
   CreateTicketRequest,
   type CreateTicketRequest as CreateTicketRequestType,
   type Ticket,
+  ticketDetailSchema,
   ticketsResponseSchema,
   ticketsSchema,
   UpdateTicketRequest,
@@ -22,12 +23,10 @@ const deleteTicketResponseSchema = ticketsSchema.pick({ id: true });
 const createApiUrl = (path: string, search?: TicketsSearch) =>
   `${API_BASE_URL}${withQuery(path, search)}`;
 
-const ensureSuccess = async (response: Response, message: string) => {
+const ensureSuccess = (response: Response, message: string) => {
   if (!response.ok) {
     throw new Error(`${message}: ${response.status}`);
   }
-
-  return response.json();
 };
 
 export const fetchTickets = async (filters: TicketsSearch) => {
@@ -36,7 +35,9 @@ export const fetchTickets = async (filters: TicketsSearch) => {
     headers: DEFAULT_HEADERS,
   });
 
-  return ticketsResponseSchema.parse(await ensureSuccess(response, 'Failed to fetch tickets'));
+  ensureSuccess(response, 'Failed to fetch tickets');
+
+  return ticketsResponseSchema.parse(await response.json());
 };
 
 export const fetchTicket = async (id: Ticket['id']) => {
@@ -45,7 +46,9 @@ export const fetchTicket = async (id: Ticket['id']) => {
     headers: DEFAULT_HEADERS,
   });
 
-  return ticketsSchema.parse(await ensureSuccess(response, 'Failed to fetch ticket'));
+  ensureSuccess(response, 'Failed to fetch ticket');
+
+  return ticketDetailSchema.parse(await response.json());
 };
 
 export const createTicket = async (body: CreateTicketRequestType) => {
@@ -57,7 +60,9 @@ export const createTicket = async (body: CreateTicketRequestType) => {
     body: JSON.stringify(payload),
   });
 
-  return ticketsSchema.parse(await ensureSuccess(response, 'Failed to create ticket'));
+  ensureSuccess(response, 'Failed to create ticket');
+
+  return ticketDetailSchema.parse(await response.json());
 };
 
 export const updateTicket = async (body: UpdateTicketRequestType) => {
@@ -69,7 +74,9 @@ export const updateTicket = async (body: UpdateTicketRequestType) => {
     body: JSON.stringify(payload),
   });
 
-  return ticketsSchema.parse(await ensureSuccess(response, 'Failed to update ticket'));
+  ensureSuccess(response, 'Failed to update ticket');
+
+  return ticketDetailSchema.parse(await response.json());
 };
 
 export const deleteTicket = async (id: Ticket['id']) => {
@@ -79,5 +86,7 @@ export const deleteTicket = async (id: Ticket['id']) => {
     headers: DEFAULT_HEADERS,
   });
 
-  return deleteTicketResponseSchema.parse(await ensureSuccess(response, 'Failed to delete ticket'));
+  ensureSuccess(response, 'Failed to delete ticket');
+
+  return deleteTicketResponseSchema.parse({ id });
 };

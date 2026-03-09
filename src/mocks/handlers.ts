@@ -2,21 +2,21 @@ import { delay, HttpResponse, http } from 'msw';
 import {
   CreateTicketRequest,
   type CreateTicketRequest as CreateTicketRequestType,
+  type Ticket,
+  type TicketDetail,
+  type TicketHistory,
   UpdateTicketRequest,
   type UpdateTicketRequest as UpdateTicketRequestType,
 } from '@/features/tickets/schema/index.ts';
 import { type TicketsSearch, ticketsSearchSchema } from '@/features/tickets/schema/search.ts';
 
-type Ticket = {
-  id: number;
-  title: string;
-  status: 'open' | 'closed';
-  assignee: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
+type MockTicket = TicketDetail;
 
-const BASE_TICKETS: Ticket[] = [
+const createEmptyHistory = (): TicketHistory => ({ items: [] });
+
+const toTicketSummary = ({ history: _history, ...ticket }: MockTicket): Ticket => ticket;
+
+const BASE_TICKETS: MockTicket[] = [
   {
     id: 1,
     title: 'Login bug',
@@ -24,6 +24,7 @@ const BASE_TICKETS: Ticket[] = [
     assignee: 'aki',
     createdAt: '2026-03-01T10:00:00Z',
     updatedAt: '2026-03-03T15:00:00Z',
+    history: createEmptyHistory(),
   },
   {
     id: 2,
@@ -32,6 +33,7 @@ const BASE_TICKETS: Ticket[] = [
     assignee: null,
     createdAt: '2026-02-27T12:00:00Z',
     updatedAt: '2026-03-01T09:45:00Z',
+    history: createEmptyHistory(),
   },
   {
     id: 3,
@@ -40,12 +42,13 @@ const BASE_TICKETS: Ticket[] = [
     assignee: 'mika',
     createdAt: '2026-03-02T09:30:00Z',
     updatedAt: '2026-03-04T08:20:00Z',
+    history: createEmptyHistory(),
   },
 ];
 
 const ASSIGNEES = ['aki', 'mika', 'sora', 'nao'] as const;
 
-const GENERATED_TICKETS: Ticket[] = Array.from({ length: 37 }, (_, index) => {
+const GENERATED_TICKETS: MockTicket[] = Array.from({ length: 37 }, (_, index) => {
   const ticketNumber = index + 4;
   const createdAt = new Date(Date.UTC(2026, 0, 1, 0, 0, 0) + index * 8 * 60 * 60 * 1000);
   const updatedAt = new Date(createdAt.getTime() + ((index % 6) + 1) * 3 * 60 * 60 * 1000);
@@ -58,14 +61,15 @@ const GENERATED_TICKETS: Ticket[] = Array.from({ length: 37 }, (_, index) => {
     assignee: index % 5 === 0 ? null : ASSIGNEES[index % ASSIGNEES.length],
     createdAt: createdAt.toISOString(),
     updatedAt: updatedAt.toISOString(),
+    history: createEmptyHistory(),
   };
 });
 
-const cloneTickets = (tickets: Ticket[]) => tickets.map((ticket) => structuredClone(ticket));
+const cloneTickets = (tickets: MockTicket[]) => tickets.map((ticket) => structuredClone(ticket));
 
 const createTicketStore = () => [...cloneTickets(BASE_TICKETS), ...cloneTickets(GENERATED_TICKETS)];
 
-let ticketsStore: Ticket[] = createTicketStore();
+let ticketsStore: MockTicket[] = createTicketStore();
 
 export const resetTicketsStore = () => {
   ticketsStore = createTicketStore();
@@ -77,7 +81,7 @@ const sortFieldConfig: Record<TicketsSearch['sortBy'], 'id' | 'createdAt' | 'upd
   updated_at: 'updatedAt',
 };
 
-export const listTickets = (tickets: Ticket[], search: TicketsSearch) => {
+export const listTickets = (tickets: MockTicket[], search: TicketsSearch) => {
   const filtered = tickets.filter((ticket) => {
     if (search.status !== 'all' && ticket.status !== search.status) {
       return false;
@@ -101,27 +105,28 @@ export const listTickets = (tickets: Ticket[], search: TicketsSearch) => {
   const end = start + search.pageSize;
 
   return {
-    items: sorted.slice(start, end),
+    items: sorted.slice(start, end).map(toTicketSummary),
     total,
   };
 };
 
-export const getTicketById = (tickets: Ticket[], id: Ticket['id']) =>
+export const getTicketById = (tickets: MockTicket[], id: Ticket['id']) =>
   tickets.find((ticket) => ticket.id === id);
 
 export const createTicketItem = (
-  tickets: Ticket[],
+  tickets: MockTicket[],
   input: CreateTicketRequestType,
   now: string,
-): Ticket => {
+): MockTicket => {
   const nextId = tickets.reduce((maxId, ticket) => Math.max(maxId, ticket.id), 0) + 1;
-  const ticket: Ticket = {
+  const ticket: MockTicket = {
     id: nextId,
     title: input.title,
     status: input.status,
     assignee: input.assignee ?? null,
     createdAt: now,
     updatedAt: now,
+    history: createEmptyHistory(),
   };
 
   tickets.unshift(ticket);
@@ -130,25 +135,44 @@ export const createTicketItem = (
 };
 
 export const updateTicketItem = (
-  tickets: Ticket[],
+  tickets: MockTicket[],
   input: UpdateTicketRequestType,
   now: string,
-): Ticket | null => {
+): MockTicket | null => {
   const ticket = tickets.find((item) => item.id === input.id);
 
   if (!ticket) {
     return null;
   }
 
+  const previousStatus = ticket.status;
   ticket.title = input.title;
   ticket.status = input.status;
   ticket.assignee = input.assignee ?? null;
   ticket.updatedAt = now;
+  ticket.history =
+    previousStatus === input.status
+      ? createEmptyHistory()
+      : {
+          items: [
+            {
+              operationId: `mock-op-${ticket.id}-${Date.parse(now)}`,
+              changedAt: now,
+              changes: [
+                {
+                  field: 'status',
+                  before: previousStatus,
+                  after: input.status,
+                },
+              ],
+            },
+          ],
+        };
 
   return ticket;
 };
 
-export const deleteTicketItem = (tickets: Ticket[], id: Ticket['id']) => {
+export const deleteTicketItem = (tickets: MockTicket[], id: Ticket['id']) => {
   const index = tickets.findIndex((ticket) => ticket.id === id);
 
   if (index < 0) {
@@ -245,6 +269,6 @@ export const handlers = [
       return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
     }
 
-    return HttpResponse.json({ id: removedTicket.id });
+    return new HttpResponse(null, { status: 204 });
   }),
 ];

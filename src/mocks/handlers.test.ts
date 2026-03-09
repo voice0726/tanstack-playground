@@ -2,14 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { type TicketsSearch, ticketsSearchSchema } from '#/features/tickets/schema/search.ts';
 import { createTicketItem, deleteTicketItem, listTickets, updateTicketItem } from './handlers';
 
-type MockTicket = {
-  id: number;
-  title: string;
-  status: 'open' | 'closed';
-  assignee: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
+type MockTicket = Parameters<typeof listTickets>[0][number];
+
+const createEmptyHistory = () => ({ items: [] });
 
 const TICKETS: MockTicket[] = [
   {
@@ -19,6 +14,7 @@ const TICKETS: MockTicket[] = [
     assignee: 'aki',
     createdAt: '2026-03-01T10:00:00Z',
     updatedAt: '2026-03-03T15:00:00Z',
+    history: createEmptyHistory(),
   },
   {
     id: 2,
@@ -27,6 +23,7 @@ const TICKETS: MockTicket[] = [
     assignee: null,
     createdAt: '2026-02-27T12:00:00Z',
     updatedAt: '2026-03-01T09:45:00Z',
+    history: createEmptyHistory(),
   },
   {
     id: 3,
@@ -35,6 +32,7 @@ const TICKETS: MockTicket[] = [
     assignee: 'mika',
     createdAt: '2026-03-02T09:30:00Z',
     updatedAt: '2026-03-04T08:20:00Z',
+    history: createEmptyHistory(),
   },
 ];
 
@@ -124,6 +122,7 @@ describe('listTickets', () => {
       assignee: 'sora',
       createdAt: '2026-03-06T10:00:00Z',
       updatedAt: '2026-03-06T10:00:00Z',
+      history: createEmptyHistory(),
     });
     expect(tickets[0]?.id).toBe(4);
   });
@@ -148,6 +147,7 @@ describe('listTickets', () => {
       assignee: 'nao',
       updatedAt: '2026-03-06T11:00:00Z',
     });
+    expect(result?.history.items).toHaveLength(1);
   });
 
   it('deletes an existing ticket by id', () => {
