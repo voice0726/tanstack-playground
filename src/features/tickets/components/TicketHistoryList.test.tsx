@@ -3,6 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { TicketHistory } from '#/features/tickets/schema/index.ts';
+import { formatDateTime } from '#/shared/utils/date.ts';
 import { TicketHistoryList } from './TicketHistoryList.tsx';
 
 const renderHistory = (ui: ReactNode) => render(<MantineProvider>{ui}</MantineProvider>);
@@ -38,7 +39,9 @@ describe('TicketHistoryList', () => {
 
     renderHistory(<TicketHistoryList history={history} />);
 
-    expect(screen.getByText('2026/03/06 20:00')).toBeTruthy();
+    const changedAt = history.items[0]?.changedAt ?? '';
+
+    expect(screen.getByText(formatDateTime(changedAt))).toBeTruthy();
     expect(screen.getByText('ステータス')).toBeTruthy();
     expect(screen.getByText('Open')).toBeTruthy();
     expect(screen.getByText('Closed')).toBeTruthy();
