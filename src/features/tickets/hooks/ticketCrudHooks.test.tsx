@@ -7,6 +7,8 @@ import { useTickets } from '#/features/tickets/hooks/useTickets.ts';
 import type {
   CreateTicketRequest,
   Ticket,
+  TicketDetail,
+  TicketHistory,
   UpdateTicketRequest,
 } from '#/features/tickets/schema/index.ts';
 import { TICKETS_SEARCH_DEFAULT } from '#/features/tickets/schema/search.ts';
@@ -40,7 +42,11 @@ const renderWithQueryClient = (ui: ReactNode) => {
   return render(ui, { wrapper });
 };
 
-const buildSeedTickets = (): Ticket[] => [
+const createEmptyHistory = (): TicketHistory => ({ items: [] });
+
+const toTicketSummary = ({ history: _history, ...ticket }: TicketDetail): Ticket => ticket;
+
+const buildSeedTickets = (): TicketDetail[] => [
   {
     id: 1,
     title: 'Login bug',
@@ -48,6 +54,7 @@ const buildSeedTickets = (): Ticket[] => [
     assignee: 'aki',
     createdAt: '2026-03-01T10:00:00Z',
     updatedAt: '2026-03-03T15:00:00Z',
+    history: createEmptyHistory(),
   },
   {
     id: 2,
@@ -56,6 +63,7 @@ const buildSeedTickets = (): Ticket[] => [
     assignee: null,
     createdAt: '2026-02-27T12:00:00Z',
     updatedAt: '2026-03-01T09:45:00Z',
+    history: createEmptyHistory(),
   },
   {
     id: 3,
@@ -64,15 +72,16 @@ const buildSeedTickets = (): Ticket[] => [
     assignee: 'mika',
     createdAt: '2026-03-02T09:30:00Z',
     updatedAt: '2026-03-04T08:20:00Z',
+    history: createEmptyHistory(),
   },
 ];
 
-const createIntegrationHandlers = (tickets: Ticket[]) => [
+const createIntegrationHandlers = (tickets: TicketDetail[]) => [
   http.get(`${API_BASE_URL}/api/tickets`, () => {
     const items = [...tickets].sort((a, b) => a.id - b.id);
 
     return HttpResponse.json({
-      items,
+      items: items.map(toTicketSummary),
       total: items.length,
     });
   }),
@@ -88,13 +97,14 @@ const createIntegrationHandlers = (tickets: Ticket[]) => [
   }),
   http.post(`${API_BASE_URL}/api/tickets`, async ({ request }) => {
     const body = (await request.json()) as CreateTicketRequest;
-    const ticket: Ticket = {
+    const ticket: TicketDetail = {
       id: tickets.reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1,
       title: body.title,
       status: body.status,
       assignee: body.assignee ?? null,
       createdAt: '2026-03-06T10:00:00Z',
       updatedAt: '2026-03-06T10:00:00Z',
+      history: createEmptyHistory(),
     };
 
     tickets.push(ticket);
@@ -110,10 +120,26 @@ const createIntegrationHandlers = (tickets: Ticket[]) => [
       return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
     }
 
+    const previousStatus = ticket.status;
     ticket.title = body.title;
     ticket.status = body.status;
     ticket.assignee = body.assignee ?? null;
     ticket.updatedAt = '2026-03-06T11:00:00Z';
+    ticket.history = {
+      items: [
+        {
+          operationId: 'mock-op-1',
+          changedAt: '2026-03-06T11:00:00Z',
+          changes: [
+            {
+              field: 'status',
+              before: previousStatus,
+              after: body.status,
+            },
+          ],
+        },
+      ],
+    };
 
     return HttpResponse.json(ticket);
   }),
@@ -127,7 +153,7 @@ const createIntegrationHandlers = (tickets: Ticket[]) => [
 
     tickets.splice(index, 1);
 
-    return HttpResponse.json({ id });
+    return new HttpResponse(null, { status: 204 });
   }),
 ];
 
