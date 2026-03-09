@@ -120,6 +120,7 @@ const createIntegrationHandlers = (tickets: TicketDetail[]) => [
       return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
     }
 
+    const previousStatus = ticket.status;
     ticket.title = body.title;
     ticket.status = body.status;
     ticket.assignee = body.assignee ?? null;
@@ -132,7 +133,7 @@ const createIntegrationHandlers = (tickets: TicketDetail[]) => [
           changes: [
             {
               field: 'status',
-              before: 'open',
+              before: previousStatus,
               after: body.status,
             },
           ],
