@@ -150,24 +150,22 @@ export const updateTicketItem = (
   ticket.status = input.status;
   ticket.assignee = input.assignee ?? null;
   ticket.updatedAt = now;
-  ticket.history =
-    previousStatus === input.status
-      ? createEmptyHistory()
-      : {
-          items: [
-            {
-              operationId: `mock-op-${ticket.id}-${Date.parse(now)}`,
-              changedAt: now,
-              changes: [
-                {
-                  field: 'status',
-                  before: previousStatus,
-                  after: input.status,
-                },
-              ],
-            },
-          ],
-        };
+  const history = ticket.history ?? createEmptyHistory();
+  ticket.history = history;
+
+  if (previousStatus !== input.status) {
+    history.items.unshift({
+      operationId: `mock-op-${ticket.id}-${Date.parse(now)}`,
+      changedAt: now,
+      changes: [
+        {
+          field: 'status',
+          before: previousStatus,
+          after: input.status,
+        },
+      ],
+    });
+  }
 
   return ticket;
 };

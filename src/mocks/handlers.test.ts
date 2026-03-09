@@ -129,6 +129,17 @@ describe('listTickets', () => {
 
   it('updates an existing ticket and refreshes updatedAt', () => {
     const tickets = structuredClone(TICKETS);
+    tickets[1].history.items.push({
+      operationId: 'mock-op-existing',
+      changedAt: '2026-03-05T10:00:00Z',
+      changes: [
+        {
+          field: 'status',
+          before: 'open',
+          after: 'closed',
+        },
+      ],
+    });
     const result = updateTicketItem(
       tickets,
       {
@@ -147,7 +158,19 @@ describe('listTickets', () => {
       assignee: 'nao',
       updatedAt: '2026-03-06T11:00:00Z',
     });
-    expect(result?.history.items).toHaveLength(1);
+    expect(result?.history.items).toHaveLength(2);
+    expect(result?.history.items[0]).toMatchObject({
+      operationId: 'mock-op-2-1772794800000',
+      changedAt: '2026-03-06T11:00:00Z',
+      changes: [
+        {
+          field: 'status',
+          before: 'closed',
+          after: 'open',
+        },
+      ],
+    });
+    expect(result?.history.items[1]?.operationId).toBe('mock-op-existing');
   });
 
   it('deletes an existing ticket by id', () => {
