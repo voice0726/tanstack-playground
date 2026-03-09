@@ -33,7 +33,21 @@ const buildSeedTickets = (): MockTicket[] => [
     assignee: 'aki',
     createdAt: '2026-03-01T10:00:00Z',
     updatedAt: '2026-03-03T15:00:00Z',
-    history: createEmptyHistory(),
+    history: {
+      items: [
+        {
+          operationId: 'seed-op-1',
+          changedAt: '2026-03-03T15:00:00Z',
+          changes: [
+            {
+              field: 'status',
+              before: 'closed',
+              after: 'open',
+            },
+          ],
+        },
+      ],
+    },
   },
   {
     id: 2,
@@ -147,6 +161,15 @@ describe('ticket CRUD routes', () => {
       q: 'Login',
       status: 'open',
     });
+  });
+
+  it('shows operation history on the detail page', async () => {
+    renderRoute('/tickets/1?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10');
+
+    await screen.findByText('操作履歴');
+    expect(screen.getByText('ステータス')).toBeTruthy();
+    expect(screen.getAllByText('Open')).toHaveLength(2);
+    expect(screen.getByText('Closed')).toBeTruthy();
   });
 
   it('creates a ticket, shows a toast, and preserves list search params on return', async () => {

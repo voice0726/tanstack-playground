@@ -12,6 +12,7 @@ import { IconChevronLeft, IconEdit, IconTrash } from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { TicketDeleteModal } from '#/features/tickets/components/TicketDeleteModal.tsx';
+import { TicketHistoryList } from '#/features/tickets/components/TicketHistoryList.tsx';
 import { TicketRequestError } from '#/features/tickets/components/TicketRequestError.tsx';
 import { TicketStatusBadge } from '#/features/tickets/components/TicketStatusBadge.tsx';
 import { useDeleteTicket } from '#/features/tickets/hooks/useDeleteTicket.ts';
@@ -128,6 +129,10 @@ export function DetailRoute({ ticketId, search }: { ticketId: number; search: Ti
               <DetailItem label="作成日時" value={formatDateTime(ticketQuery.data.createdAt)} />
               <DetailItem label="更新日時" value={formatDateTime(ticketQuery.data.updatedAt)} />
             </SimpleGrid>
+
+            <Divider />
+
+            <TicketHistoryList history={ticketQuery.data.history} />
 
             <TicketDeleteModal
               isDeleting={deleteTicket.isPending}
