@@ -1,26 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { ticketActorSchema } from '#/features/tickets/schema/index.ts';
 import { type TicketsSearch, ticketsSearchSchema } from '#/features/tickets/schema/search.ts';
+import { TICKET_ADMIN, TICKET_CREATOR, TICKET_EDITOR } from '@/test/fixtures/ticketActors.ts';
 import { createTicketItem, deleteTicketItem, listTickets, updateTicketItem } from './handlers';
 
 type MockTicket = Parameters<typeof listTickets>[0][number];
 
 const createEmptyHistory = () => ({ items: [] });
-const TICKET_CREATOR = ticketActorSchema.parse({
-  id: 11,
-  email: 'creator@example.com',
-  displayName: 'Creator User',
-});
-const TICKET_EDITOR = ticketActorSchema.parse({
-  id: 12,
-  email: 'editor@example.com',
-  displayName: 'Editor User',
-});
-const TICKET_ADMIN = ticketActorSchema.parse({
-  id: 1,
-  email: 'admin@example.com',
-  displayName: 'Admin User',
-});
 
 const TICKETS: MockTicket[] = [
   {
