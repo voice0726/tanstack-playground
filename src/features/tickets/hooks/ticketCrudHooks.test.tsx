@@ -5,8 +5,10 @@ import type { PropsWithChildren, ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useTickets } from '#/features/tickets/hooks/useTickets.ts';
 import type {
+  CreateTicketCommentRequest,
   CreateTicketRequest,
   Ticket,
+  TicketComments,
   TicketDetail,
   TicketHistory,
   UpdateTicketRequest,
@@ -16,6 +18,7 @@ import { server } from '#/mocks/node.ts';
 import { env } from '#/shared/config/env.ts';
 import { TICKET_ADMIN, TICKET_CREATOR, TICKET_EDITOR } from '@/test/fixtures/ticketActors.ts';
 import { useCreateTicket } from './useCreateTicket';
+import { useCreateTicketComment } from './useCreateTicketComment';
 import { useDeleteTicket } from './useDeleteTicket';
 import { useTicket } from './useTicket';
 import { useUpdateTicket } from './useUpdateTicket';
@@ -44,8 +47,13 @@ const renderWithQueryClient = (ui: ReactNode) => {
 };
 
 const createEmptyHistory = (): TicketHistory => ({ items: [] });
+const createEmptyComments = (): TicketComments => ({ items: [] });
 
-const toTicketSummary = ({ history: _history, ...ticket }: TicketDetail): Ticket => ticket;
+const toTicketSummary = ({
+  comments: _comments,
+  history: _history,
+  ...ticket
+}: TicketDetail): Ticket => ticket;
 
 const buildSeedTickets = (): TicketDetail[] => [
   {
@@ -58,6 +66,16 @@ const buildSeedTickets = (): TicketDetail[] => [
     createdAt: '2026-03-01T10:00:00Z',
     updatedAt: '2026-03-03T15:00:00Z',
     history: createEmptyHistory(),
+    comments: {
+      items: [
+        {
+          id: 101,
+          body: 'Initial investigation started.',
+          createdBy: TICKET_EDITOR,
+          createdAt: '2026-03-03T15:00:00Z',
+        },
+      ],
+    },
   },
   {
     id: 2,
@@ -69,6 +87,7 @@ const buildSeedTickets = (): TicketDetail[] => [
     createdAt: '2026-02-27T12:00:00Z',
     updatedAt: '2026-03-01T09:45:00Z',
     history: createEmptyHistory(),
+    comments: createEmptyComments(),
   },
   {
     id: 3,
@@ -80,6 +99,7 @@ const buildSeedTickets = (): TicketDetail[] => [
     createdAt: '2026-03-02T09:30:00Z',
     updatedAt: '2026-03-04T08:20:00Z',
     history: createEmptyHistory(),
+    comments: createEmptyComments(),
   },
 ];
 
@@ -114,9 +134,35 @@ const createIntegrationHandlers = (tickets: TicketDetail[]) => [
       createdAt: '2026-03-06T10:00:00Z',
       updatedAt: '2026-03-06T10:00:00Z',
       history: createEmptyHistory(),
+      comments: createEmptyComments(),
     };
 
     tickets.push(ticket);
+
+    return HttpResponse.json(ticket, { status: 201 });
+  }),
+  http.post(`${API_BASE_URL}/api/tickets/:id/comments`, async ({ params, request }) => {
+    const id = Number(params.id);
+    const body = (await request.json()) as CreateTicketCommentRequest;
+    const ticket = tickets.find((item) => item.id === id);
+
+    if (!ticket) {
+      return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+    }
+
+    ticket.updatedBy = TICKET_ADMIN;
+    ticket.updatedAt = '2026-03-06T12:00:00Z';
+    ticket.comments = {
+      items: [
+        {
+          id: 102,
+          body: body.body,
+          createdBy: TICKET_ADMIN,
+          createdAt: '2026-03-06T12:00:00Z',
+        },
+        ...ticket.comments.items,
+      ],
+    };
 
     return HttpResponse.json(ticket, { status: 201 });
   }),
@@ -205,7 +251,7 @@ function TicketDetailProbe({ id }: { id: number }) {
 
   return (
     <p>
-      {`${data.id}:${data.title}:${data.status}:${data.assignee ?? '-'}:${data.createdBy?.displayName ?? '-'}:${data.updatedBy?.displayName ?? '-'}`}
+      {`${data.id}:${data.title}:${data.status}:${data.assignee ?? '-'}:${data.createdBy?.displayName ?? '-'}:${data.updatedBy?.displayName ?? '-'}:${data.comments.items[0]?.body ?? '-'}`}
     </p>
   );
 }
@@ -273,6 +319,27 @@ function DeleteTicketIntegrationProbe() {
   );
 }
 
+function CreateTicketCommentIntegrationProbe() {
+  const mutation = useCreateTicketComment();
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          mutation.mutate({
+            ticketId: 1,
+            body: 'We are investigating this now.',
+          });
+        }}
+      >
+        create-ticket-comment
+      </button>
+      <TicketDetailProbe id={1} />
+    </>
+  );
+}
+
 describe('ticket CRUD hooks', () => {
   beforeEach(() => {
     server.use(...createIntegrationHandlers(buildSeedTickets()));
@@ -285,7 +352,9 @@ describe('ticket CRUD hooks', () => {
   it('useTicket fetches detail through api.ts and MSW', async () => {
     renderWithQueryClient(<TicketDetailProbe id={1} />);
 
-    await screen.findByText('1:Login bug:open:aki:Creator User:Editor User');
+    await screen.findByText(
+      '1:Login bug:open:aki:Creator User:Editor User:Initial investigation started.',
+    );
   });
 
   it('useCreateTicket updates the rendered ticket list after the server accepts creation', async () => {
@@ -300,10 +369,27 @@ describe('ticket CRUD hooks', () => {
   it('useUpdateTicket keeps the rendered detail in sync after a successful update', async () => {
     renderWithQueryClient(<UpdateTicketIntegrationProbe />);
 
-    await screen.findByText('1:Login bug:open:aki:Creator User:Editor User');
+    await screen.findByText(
+      '1:Login bug:open:aki:Creator User:Editor User:Initial investigation started.',
+    );
     fireEvent.click(screen.getByRole('button', { name: 'update-ticket' }));
 
-    await screen.findByText('1:Login bug resolved:closed:nao:Creator User:Admin User');
+    await screen.findByText(
+      '1:Login bug resolved:closed:nao:Creator User:Admin User:Initial investigation started.',
+    );
+  });
+
+  it('useCreateTicketComment keeps the rendered detail in sync after a successful comment', async () => {
+    renderWithQueryClient(<CreateTicketCommentIntegrationProbe />);
+
+    await screen.findByText(
+      '1:Login bug:open:aki:Creator User:Editor User:Initial investigation started.',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'create-ticket-comment' }));
+
+    await screen.findByText(
+      '1:Login bug:open:aki:Creator User:Admin User:We are investigating this now.',
+    );
   });
 
   it('useDeleteTicket removes the deleted row from the rendered ticket list', async () => {

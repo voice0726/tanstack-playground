@@ -1,4 +1,5 @@
 import * as z from 'zod';
+import { CreateTicketCommentRequest } from './index.ts';
 
 export const TICKET_FORM_DEFAULT_VALUES = {
   title: '',
@@ -17,3 +18,14 @@ export const ticketFormValuesSchema = z.object({
 
 export type TicketFormInput = z.input<typeof ticketFormValuesSchema>;
 export type TicketFormOutput = z.output<typeof ticketFormValuesSchema>;
+
+export const TICKET_COMMENT_FORM_DEFAULT_VALUES = {
+  body: '',
+} as const;
+
+export const ticketCommentFormValuesSchema = CreateTicketCommentRequest.extend({
+  body: z.string().trim().min(1, 'コメントは必須です'),
+});
+
+export type TicketCommentFormInput = z.input<typeof ticketCommentFormValuesSchema>;
+export type TicketCommentFormOutput = z.output<typeof ticketCommentFormValuesSchema>;

@@ -5,12 +5,15 @@ import { HttpResponse, http } from 'msw';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { AuthUser } from '#/features/auth/schema.ts';
 import type {
+  CreateTicketCommentRequest,
   CreateTicketRequest,
+  TicketComments,
   TicketHistory,
   UpdateTicketRequest,
 } from '#/features/tickets/schema/index.ts';
 import { ticketsSearchSchema } from '#/features/tickets/schema/search.ts';
 import {
+  createTicketCommentItem,
   createTicketItem,
   deleteTicketItem,
   getTicketById,
@@ -31,6 +34,7 @@ const AUTH_USER: AuthUser = {
 };
 
 const createEmptyHistory = (): TicketHistory => ({ items: [] });
+const createEmptyComments = (): TicketComments => ({ items: [] });
 
 const buildSeedTickets = (): MockTicket[] => [
   {
@@ -58,6 +62,16 @@ const buildSeedTickets = (): MockTicket[] => [
         },
       ],
     },
+    comments: {
+      items: [
+        {
+          id: 101,
+          body: 'Initial investigation started.',
+          createdBy: TICKET_EDITOR,
+          createdAt: '2026-03-03T15:00:00Z',
+        },
+      ],
+    },
   },
   {
     id: 2,
@@ -69,6 +83,7 @@ const buildSeedTickets = (): MockTicket[] => [
     createdAt: '2026-02-27T12:00:00Z',
     updatedAt: '2026-03-01T09:45:00Z',
     history: createEmptyHistory(),
+    comments: createEmptyComments(),
   },
   {
     id: 3,
@@ -80,6 +95,7 @@ const buildSeedTickets = (): MockTicket[] => [
     createdAt: '2026-03-02T09:30:00Z',
     updatedAt: '2026-03-04T08:20:00Z',
     history: createEmptyHistory(),
+    comments: createEmptyComments(),
   },
 ];
 
@@ -140,6 +156,26 @@ const createUiHandlers = (tickets: MockTicket[], initialUser: AuthUser | null = 
 
       const body = (await request.json()) as CreateTicketRequest;
       const ticket = createTicketItem(tickets, body, '2026-03-06T10:00:00Z');
+
+      return HttpResponse.json(ticket, { status: 201 });
+    }),
+    http.post(`${API_BASE_URL}/api/tickets/:id/comments`, async ({ params, request }) => {
+      if (!currentUser) {
+        return HttpResponse.json({ message: 'authentication required' }, { status: 401 });
+      }
+
+      const body = (await request.json()) as CreateTicketCommentRequest;
+      const ticket = createTicketCommentItem(
+        tickets,
+        Number(params.id),
+        body,
+        '2026-03-06T12:00:00Z',
+        TICKET_ADMIN,
+      );
+
+      if (!ticket) {
+        return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+      }
 
       return HttpResponse.json(ticket, { status: 201 });
     }),
@@ -265,12 +301,34 @@ describe('ticket CRUD routes', () => {
     renderRoute('/tickets/1?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10');
 
     await screen.findByText('操作履歴');
+    expect(screen.getByText('コメント')).toBeTruthy();
+    expect(screen.getByText('Initial investigation started.')).toBeTruthy();
     expect(screen.getByText('Creator User')).toBeTruthy();
     expect(screen.getByText('creator@example.com')).toBeTruthy();
     expect(screen.getAllByText('Editor User').length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText('ステータス')).toBeTruthy();
     expect(screen.getAllByText('Open')).toHaveLength(2);
     expect(screen.getByText('Closed')).toBeTruthy();
+  });
+
+  it('creates a comment on the detail page and shows it first', async () => {
+    renderRoute('/tickets/1?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10');
+
+    await screen.findByText('Initial investigation started.');
+    fireEvent.change(screen.getByLabelText('コメントを追加'), {
+      target: { value: 'We are investigating this now.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '投稿する' }));
+
+    await screen.findByText('コメントを投稿しました');
+    await screen.findByText('We are investigating this now.');
+    const comments = screen.getAllByText(
+      /^(We are investigating this now\.|Initial investigation started\.)$/,
+    );
+    expect(comments.map((comment) => comment.textContent)).toEqual([
+      'We are investigating this now.',
+      'Initial investigation started.',
+    ]);
   });
 
   it('creates a ticket, shows a toast, and preserves list search params on return', async () => {

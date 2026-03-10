@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { type TicketsSearch, ticketsSearchSchema } from '#/features/tickets/schema/search.ts';
 import { TICKET_ADMIN, TICKET_CREATOR, TICKET_EDITOR } from '@/test/fixtures/ticketActors.ts';
-import { createTicketItem, deleteTicketItem, listTickets, updateTicketItem } from './handlers';
+import {
+  createTicketCommentItem,
+  createTicketItem,
+  deleteTicketItem,
+  listTickets,
+  updateTicketItem,
+} from './handlers';
 
 type MockTicket = Parameters<typeof listTickets>[0][number];
 
 const createEmptyHistory = () => ({ items: [] });
+const createEmptyComments = () => ({ items: [] });
 
 const TICKETS: MockTicket[] = [
   {
@@ -18,6 +25,7 @@ const TICKETS: MockTicket[] = [
     createdAt: '2026-03-01T10:00:00Z',
     updatedAt: '2026-03-03T15:00:00Z',
     history: createEmptyHistory(),
+    comments: createEmptyComments(),
   },
   {
     id: 2,
@@ -29,6 +37,7 @@ const TICKETS: MockTicket[] = [
     createdAt: '2026-02-27T12:00:00Z',
     updatedAt: '2026-03-01T09:45:00Z',
     history: createEmptyHistory(),
+    comments: createEmptyComments(),
   },
   {
     id: 3,
@@ -40,6 +49,7 @@ const TICKETS: MockTicket[] = [
     createdAt: '2026-03-02T09:30:00Z',
     updatedAt: '2026-03-04T08:20:00Z',
     history: createEmptyHistory(),
+    comments: createEmptyComments(),
   },
 ];
 
@@ -132,6 +142,7 @@ describe('listTickets', () => {
       createdAt: '2026-03-06T10:00:00Z',
       updatedAt: '2026-03-06T10:00:00Z',
       history: createEmptyHistory(),
+      comments: createEmptyComments(),
     });
     expect(tickets[0]?.id).toBe(4);
   });
@@ -183,6 +194,30 @@ describe('listTickets', () => {
       ],
     });
     expect(result?.history.items[1]?.operationId).toBe('mock-op-existing');
+  });
+
+  it('adds a comment to an existing ticket and updates updatedAt', () => {
+    const tickets = structuredClone(TICKETS);
+    const result = createTicketCommentItem(
+      tickets,
+      1,
+      {
+        body: 'We are investigating this now.',
+      },
+      '2026-03-06T12:00:00Z',
+    );
+
+    expect(result).toMatchObject({
+      id: 1,
+      updatedBy: TICKET_ADMIN,
+      updatedAt: '2026-03-06T12:00:00Z',
+    });
+    expect(result?.comments.items[0]).toMatchObject({
+      id: 1,
+      body: 'We are investigating this now.',
+      createdBy: TICKET_ADMIN,
+      createdAt: '2026-03-06T12:00:00Z',
+    });
   });
 
   it('deletes an existing ticket by id', () => {
