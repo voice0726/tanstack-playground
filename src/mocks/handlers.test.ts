@@ -198,6 +198,12 @@ describe('listTickets', () => {
 
   it('adds a comment to an existing ticket and updates updatedAt', () => {
     const tickets = structuredClone(TICKETS);
+    tickets[1].comments.items.push({
+      id: 101,
+      body: 'Existing follow-up comment.',
+      createdBy: TICKET_EDITOR,
+      createdAt: '2026-03-05T09:00:00Z',
+    });
     const maxExistingCommentId = tickets
       .flatMap((ticket) => ticket.comments.items)
       .reduce((maxId, comment) => Math.max(maxId, comment.id), 0);
