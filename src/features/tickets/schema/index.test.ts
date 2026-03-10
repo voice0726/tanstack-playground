@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ticketDetailSchema, ticketsResponseSchema } from './index.ts';
 
 describe('ticket actor schema compatibility', () => {
-  it('accepts null createdBy and updatedBy in ticket summaries', () => {
+  it('accepts null and omitted createdBy/updatedBy in ticket summaries', () => {
     expect(() =>
       ticketsResponseSchema.parse({
         items: [
@@ -16,13 +16,21 @@ describe('ticket actor schema compatibility', () => {
             createdAt: '2026-03-01T10:00:00Z',
             updatedAt: '2026-03-03T15:00:00Z',
           },
+          {
+            id: 2,
+            title: 'Refactor filters',
+            status: 'closed',
+            assignee: 'mika',
+            createdAt: '2026-03-02T10:00:00Z',
+            updatedAt: '2026-03-04T15:00:00Z',
+          },
         ],
-        total: 1,
+        total: 2,
       }),
     ).not.toThrow();
   });
 
-  it('accepts null actor in ticket history items', () => {
+  it('accepts null and omitted actor in ticket history items', () => {
     expect(() =>
       ticketDetailSchema.parse({
         id: 1,
@@ -44,6 +52,17 @@ describe('ticket actor schema compatibility', () => {
                   field: 'status',
                   before: 'closed',
                   after: 'open',
+                },
+              ],
+            },
+            {
+              operationId: 'op-2',
+              changedAt: '2026-03-04T15:00:00Z',
+              changes: [
+                {
+                  field: 'assignee',
+                  before: null,
+                  after: 'mika',
                 },
               ],
             },
