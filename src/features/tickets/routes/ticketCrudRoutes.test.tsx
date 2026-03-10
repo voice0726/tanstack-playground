@@ -4,12 +4,12 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { HttpResponse, http } from 'msw';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { AuthUser } from '#/features/auth/schema.ts';
-import type {
+import {
   CreateTicketCommentRequest,
-  CreateTicketRequest,
-  TicketComments,
-  TicketHistory,
-  UpdateTicketRequest,
+  type CreateTicketRequest,
+  type TicketComments,
+  type TicketHistory,
+  type UpdateTicketRequest,
 } from '#/features/tickets/schema/index.ts';
 import { ticketsSearchSchema } from '#/features/tickets/schema/search.ts';
 import {
@@ -35,6 +35,15 @@ const AUTH_USER: AuthUser = {
 
 const createEmptyHistory = (): TicketHistory => ({ items: [] });
 const createEmptyComments = (): TicketComments => ({ items: [] });
+const parseTicketId = (value: string | readonly string[] | undefined) => {
+  if (Array.isArray(value)) {
+    return null;
+  }
+
+  const id = Number(value);
+
+  return Number.isInteger(id) && id > 0 ? id : null;
+};
 
 const buildSeedTickets = (): MockTicket[] => [
   {
@@ -164,10 +173,23 @@ const createUiHandlers = (tickets: MockTicket[], initialUser: AuthUser | null = 
         return HttpResponse.json({ message: 'authentication required' }, { status: 401 });
       }
 
-      const body = (await request.json()) as CreateTicketCommentRequest;
+      const id = parseTicketId(params.id);
+
+      if (id === null) {
+        return HttpResponse.json({ message: 'Invalid ticket id' }, { status: 400 });
+      }
+
+      let body: CreateTicketCommentRequest;
+
+      try {
+        body = CreateTicketCommentRequest.parse(await request.json());
+      } catch {
+        return HttpResponse.json({ message: 'Invalid request body' }, { status: 400 });
+      }
+
       const ticket = createTicketCommentItem(
         tickets,
-        Number(params.id),
+        id,
         body,
         '2026-03-06T12:00:00Z',
         TICKET_ADMIN,

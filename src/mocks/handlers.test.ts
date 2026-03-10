@@ -198,6 +198,9 @@ describe('listTickets', () => {
 
   it('adds a comment to an existing ticket and updates updatedAt', () => {
     const tickets = structuredClone(TICKETS);
+    const maxExistingCommentId = tickets
+      .flatMap((ticket) => ticket.comments.items)
+      .reduce((maxId, comment) => Math.max(maxId, comment.id), 0);
     const result = createTicketCommentItem(
       tickets,
       1,
@@ -212,12 +215,15 @@ describe('listTickets', () => {
       updatedBy: TICKET_ADMIN,
       updatedAt: '2026-03-06T12:00:00Z',
     });
-    expect(result?.comments.items[0]).toMatchObject({
-      id: 1,
+    const newComment = result?.comments.items[0];
+
+    expect(newComment).toMatchObject({
       body: 'We are investigating this now.',
       createdBy: TICKET_ADMIN,
       createdAt: '2026-03-06T12:00:00Z',
     });
+    expect(newComment?.id).toEqual(expect.any(Number));
+    expect(newComment?.id).toBeGreaterThan(maxExistingCommentId);
   });
 
   it('deletes an existing ticket by id', () => {
