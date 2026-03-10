@@ -2,7 +2,7 @@ import { Stack, Text } from '@mantine/core';
 import type { TicketActor } from '#/features/tickets/schema/index.ts';
 
 type TicketActorValueProps = {
-  actor?: TicketActor;
+  actor?: TicketActor | null;
   fallback?: string;
 };
 

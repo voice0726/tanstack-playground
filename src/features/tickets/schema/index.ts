@@ -13,8 +13,8 @@ export const ticketsSchema = z.object({
   title: z.string(),
   status: z.enum(['open', 'closed']),
   assignee: z.string().nullable().optional(),
-  createdBy: ticketActorSchema.optional(),
-  updatedBy: ticketActorSchema.optional(),
+  createdBy: ticketActorSchema.nullish(),
+  updatedBy: ticketActorSchema.nullish(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });
@@ -31,7 +31,7 @@ export type TicketHistoryChange = z.infer<typeof ticketHistoryChangeSchema>;
 
 export const ticketHistoryItemSchema = z.object({
   operationId: z.string(),
-  actor: ticketActorSchema.optional(),
+  actor: ticketActorSchema.nullish(),
   changedAt: z.iso.datetime(),
   changes: z.array(ticketHistoryChangeSchema),
 });
