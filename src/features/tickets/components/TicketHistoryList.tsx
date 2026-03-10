@@ -1,11 +1,12 @@
 import { Group, Paper, Stack, Text, ThemeIcon } from '@mantine/core';
-import { IconArrowRight, IconClock, IconHistory } from '@tabler/icons-react';
+import { IconArrowRight, IconClock, IconHistory, IconUser } from '@tabler/icons-react';
 import type {
   Ticket,
   TicketHistory,
   TicketHistoryChange,
 } from '#/features/tickets/schema/index.ts';
 import { formatDateTime } from '#/shared/utils/date.ts';
+import { TicketActorValue } from './TicketActorValue.tsx';
 import { TicketStatusBadge } from './TicketStatusBadge.tsx';
 
 const FIELD_LABELS: Record<string, string> = {
@@ -51,13 +52,22 @@ export function TicketHistoryList({ history }: { history: TicketHistory }) {
           {history.items.map((item) => (
             <Paper key={item.operationId} p="md" radius="md" withBorder>
               <Stack gap="sm">
-                <Group gap="xs">
-                  <ThemeIcon color="gray" radius="xl" size="sm" variant="light">
-                    <IconClock size={14} />
-                  </ThemeIcon>
-                  <Text fw={600} size="sm">
-                    {formatDateTime(item.changedAt)}
-                  </Text>
+                <Group align="flex-start" justify="space-between" wrap="wrap">
+                  <Group gap="xs">
+                    <ThemeIcon color="gray" radius="xl" size="sm" variant="light">
+                      <IconClock size={14} />
+                    </ThemeIcon>
+                    <Text fw={600} size="sm">
+                      {formatDateTime(item.changedAt)}
+                    </Text>
+                  </Group>
+
+                  <Group align="flex-start" gap="xs" wrap="nowrap">
+                    <ThemeIcon color="gray" radius="xl" size="sm" variant="light">
+                      <IconUser size={14} />
+                    </ThemeIcon>
+                    <TicketActorValue actor={item.actor} fallback="不明なユーザー" />
+                  </Group>
                 </Group>
 
                 <Stack gap="xs">

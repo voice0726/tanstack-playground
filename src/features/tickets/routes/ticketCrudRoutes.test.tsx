@@ -20,6 +20,7 @@ import {
 import { server } from '#/mocks/node.ts';
 import { createRouter } from '#/router.tsx';
 import { env } from '#/shared/config/env.ts';
+import { TICKET_ADMIN, TICKET_CREATOR, TICKET_EDITOR } from '@/test/fixtures/ticketActors.ts';
 
 const API_BASE_URL = env.VITE_API_BASE_URL;
 type MockTicket = Parameters<typeof listTickets>[0][number];
@@ -37,12 +38,15 @@ const buildSeedTickets = (): MockTicket[] => [
     title: 'Login bug',
     status: 'open',
     assignee: 'aki',
+    createdBy: TICKET_CREATOR,
+    updatedBy: TICKET_EDITOR,
     createdAt: '2026-03-01T10:00:00Z',
     updatedAt: '2026-03-03T15:00:00Z',
     history: {
       items: [
         {
           operationId: 'seed-op-1',
+          actor: TICKET_EDITOR,
           changedAt: '2026-03-03T15:00:00Z',
           changes: [
             {
@@ -60,6 +64,8 @@ const buildSeedTickets = (): MockTicket[] => [
     title: 'Refactor filters',
     status: 'closed',
     assignee: null,
+    createdBy: TICKET_CREATOR,
+    updatedBy: TICKET_CREATOR,
     createdAt: '2026-02-27T12:00:00Z',
     updatedAt: '2026-03-01T09:45:00Z',
     history: createEmptyHistory(),
@@ -69,6 +75,8 @@ const buildSeedTickets = (): MockTicket[] => [
     title: 'Add pagination',
     status: 'open',
     assignee: 'mika',
+    createdBy: TICKET_EDITOR,
+    updatedBy: TICKET_ADMIN,
     createdAt: '2026-03-02T09:30:00Z',
     updatedAt: '2026-03-04T08:20:00Z',
     history: createEmptyHistory(),
@@ -257,6 +265,9 @@ describe('ticket CRUD routes', () => {
     renderRoute('/tickets/1?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10');
 
     await screen.findByText('操作履歴');
+    expect(screen.getByText('Creator User')).toBeTruthy();
+    expect(screen.getByText('creator@example.com')).toBeTruthy();
+    expect(screen.getAllByText('Editor User').length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText('ステータス')).toBeTruthy();
     expect(screen.getAllByText('Open')).toHaveLength(2);
     expect(screen.getByText('Closed')).toBeTruthy();

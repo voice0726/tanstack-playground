@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { type TicketsSearch, ticketsSearchSchema } from '#/features/tickets/schema/search.ts';
+import { TICKET_ADMIN, TICKET_CREATOR, TICKET_EDITOR } from '@/test/fixtures/ticketActors.ts';
 import { createTicketItem, deleteTicketItem, listTickets, updateTicketItem } from './handlers';
 
 type MockTicket = Parameters<typeof listTickets>[0][number];
@@ -12,6 +13,8 @@ const TICKETS: MockTicket[] = [
     title: 'Login bug',
     status: 'open',
     assignee: 'aki',
+    createdBy: TICKET_CREATOR,
+    updatedBy: TICKET_EDITOR,
     createdAt: '2026-03-01T10:00:00Z',
     updatedAt: '2026-03-03T15:00:00Z',
     history: createEmptyHistory(),
@@ -21,6 +24,8 @@ const TICKETS: MockTicket[] = [
     title: 'Refactor filters',
     status: 'closed',
     assignee: null,
+    createdBy: TICKET_CREATOR,
+    updatedBy: TICKET_CREATOR,
     createdAt: '2026-02-27T12:00:00Z',
     updatedAt: '2026-03-01T09:45:00Z',
     history: createEmptyHistory(),
@@ -30,6 +35,8 @@ const TICKETS: MockTicket[] = [
     title: 'Add pagination',
     status: 'open',
     assignee: 'mika',
+    createdBy: TICKET_EDITOR,
+    updatedBy: TICKET_ADMIN,
     createdAt: '2026-03-02T09:30:00Z',
     updatedAt: '2026-03-04T08:20:00Z',
     history: createEmptyHistory(),
@@ -120,6 +127,8 @@ describe('listTickets', () => {
       title: 'Write docs',
       status: 'open',
       assignee: 'sora',
+      createdBy: TICKET_ADMIN,
+      updatedBy: TICKET_ADMIN,
       createdAt: '2026-03-06T10:00:00Z',
       updatedAt: '2026-03-06T10:00:00Z',
       history: createEmptyHistory(),
@@ -131,6 +140,7 @@ describe('listTickets', () => {
     const tickets = structuredClone(TICKETS);
     tickets[1].history.items.push({
       operationId: 'mock-op-existing',
+      actor: TICKET_EDITOR,
       changedAt: '2026-03-05T10:00:00Z',
       changes: [
         {
@@ -156,11 +166,13 @@ describe('listTickets', () => {
       title: 'Refactor search filters',
       status: 'open',
       assignee: 'nao',
+      updatedBy: TICKET_ADMIN,
       updatedAt: '2026-03-06T11:00:00Z',
     });
     expect(result?.history.items).toHaveLength(2);
     expect(result?.history.items[0]).toMatchObject({
       operationId: 'mock-op-2-1772794800000',
+      actor: TICKET_ADMIN,
       changedAt: '2026-03-06T11:00:00Z',
       changes: [
         {

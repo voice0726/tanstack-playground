@@ -14,6 +14,7 @@ import type {
 import { TICKETS_SEARCH_DEFAULT } from '#/features/tickets/schema/search.ts';
 import { server } from '#/mocks/node.ts';
 import { env } from '#/shared/config/env.ts';
+import { TICKET_ADMIN, TICKET_CREATOR, TICKET_EDITOR } from '@/test/fixtures/ticketActors.ts';
 import { useCreateTicket } from './useCreateTicket';
 import { useDeleteTicket } from './useDeleteTicket';
 import { useTicket } from './useTicket';
@@ -52,6 +53,8 @@ const buildSeedTickets = (): TicketDetail[] => [
     title: 'Login bug',
     status: 'open',
     assignee: 'aki',
+    createdBy: TICKET_CREATOR,
+    updatedBy: TICKET_EDITOR,
     createdAt: '2026-03-01T10:00:00Z',
     updatedAt: '2026-03-03T15:00:00Z',
     history: createEmptyHistory(),
@@ -61,6 +64,8 @@ const buildSeedTickets = (): TicketDetail[] => [
     title: 'Refactor filters',
     status: 'closed',
     assignee: null,
+    createdBy: TICKET_CREATOR,
+    updatedBy: TICKET_CREATOR,
     createdAt: '2026-02-27T12:00:00Z',
     updatedAt: '2026-03-01T09:45:00Z',
     history: createEmptyHistory(),
@@ -70,6 +75,8 @@ const buildSeedTickets = (): TicketDetail[] => [
     title: 'Add pagination',
     status: 'open',
     assignee: 'mika',
+    createdBy: TICKET_EDITOR,
+    updatedBy: TICKET_ADMIN,
     createdAt: '2026-03-02T09:30:00Z',
     updatedAt: '2026-03-04T08:20:00Z',
     history: createEmptyHistory(),
@@ -102,6 +109,8 @@ const createIntegrationHandlers = (tickets: TicketDetail[]) => [
       title: body.title,
       status: body.status,
       assignee: body.assignee ?? null,
+      createdBy: TICKET_ADMIN,
+      updatedBy: TICKET_ADMIN,
       createdAt: '2026-03-06T10:00:00Z',
       updatedAt: '2026-03-06T10:00:00Z',
       history: createEmptyHistory(),
@@ -124,11 +133,13 @@ const createIntegrationHandlers = (tickets: TicketDetail[]) => [
     ticket.title = body.title;
     ticket.status = body.status;
     ticket.assignee = body.assignee ?? null;
+    ticket.updatedBy = TICKET_ADMIN;
     ticket.updatedAt = '2026-03-06T11:00:00Z';
     ticket.history = {
       items: [
         {
           operationId: 'mock-op-1',
+          actor: TICKET_ADMIN,
           changedAt: '2026-03-06T11:00:00Z',
           changes: [
             {
@@ -174,7 +185,7 @@ function TicketListProbe() {
     <ul aria-label="ticket-list">
       {data.items.map((ticket) => (
         <li key={ticket.id}>
-          {ticket.id}:{ticket.title}:{ticket.status}:{ticket.assignee ?? '-'}
+          {`${ticket.id}:${ticket.title}:${ticket.status}:${ticket.assignee ?? '-'}:${ticket.createdBy?.displayName ?? '-'}:${ticket.updatedBy?.displayName ?? '-'}`}
         </li>
       ))}
     </ul>
@@ -194,7 +205,7 @@ function TicketDetailProbe({ id }: { id: number }) {
 
   return (
     <p>
-      {data.id}:{data.title}:{data.status}:{data.assignee ?? '-'}
+      {`${data.id}:${data.title}:${data.status}:${data.assignee ?? '-'}:${data.createdBy?.displayName ?? '-'}:${data.updatedBy?.displayName ?? '-'}`}
     </p>
   );
 }
@@ -274,35 +285,35 @@ describe('ticket CRUD hooks', () => {
   it('useTicket fetches detail through api.ts and MSW', async () => {
     renderWithQueryClient(<TicketDetailProbe id={1} />);
 
-    await screen.findByText('1:Login bug:open:aki');
+    await screen.findByText('1:Login bug:open:aki:Creator User:Editor User');
   });
 
   it('useCreateTicket updates the rendered ticket list after the server accepts creation', async () => {
     renderWithQueryClient(<CreateTicketIntegrationProbe />);
 
-    await screen.findByText('1:Login bug:open:aki');
+    await screen.findByText('1:Login bug:open:aki:Creator User:Editor User');
     fireEvent.click(screen.getByRole('button', { name: 'create-ticket' }));
 
-    await screen.findByText('4:Write docs:open:sora');
+    await screen.findByText('4:Write docs:open:sora:Admin User:Admin User');
   });
 
   it('useUpdateTicket keeps the rendered detail in sync after a successful update', async () => {
     renderWithQueryClient(<UpdateTicketIntegrationProbe />);
 
-    await screen.findByText('1:Login bug:open:aki');
+    await screen.findByText('1:Login bug:open:aki:Creator User:Editor User');
     fireEvent.click(screen.getByRole('button', { name: 'update-ticket' }));
 
-    await screen.findByText('1:Login bug resolved:closed:nao');
+    await screen.findByText('1:Login bug resolved:closed:nao:Creator User:Admin User');
   });
 
   it('useDeleteTicket removes the deleted row from the rendered ticket list', async () => {
     renderWithQueryClient(<DeleteTicketIntegrationProbe />);
 
-    await screen.findByText('1:Login bug:open:aki');
+    await screen.findByText('1:Login bug:open:aki:Creator User:Editor User');
     fireEvent.click(screen.getByRole('button', { name: 'delete-ticket' }));
 
     await waitFor(() => {
-      expect(screen.queryByText('1:Login bug:open:aki')).toBeNull();
+      expect(screen.queryByText('1:Login bug:open:aki:Creator User:Editor User')).toBeNull();
       expect(screen.getAllByRole('listitem').length).toBeGreaterThanOrEqual(1);
     });
   });
