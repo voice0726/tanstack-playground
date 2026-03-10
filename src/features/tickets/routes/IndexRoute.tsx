@@ -38,7 +38,7 @@ const pageSizeOptions = [
 
 // TODO: split form and table
 export function IndexRoute() {
-  const search = useSearch({ from: '/tickets/' });
+  const search = useSearch({ from: '/_authenticated/tickets/' });
   const navigate = useNavigate();
   const { showToast } = useToast();
   const deleteTicket = useDeleteTicket();
