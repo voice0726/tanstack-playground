@@ -4,8 +4,10 @@ import {
   CreateTicketRequest,
   type CreateTicketRequest as CreateTicketRequestType,
   type Ticket,
+  type TicketActor,
   type TicketDetail,
   type TicketHistory,
+  ticketActorSchema,
   UpdateTicketRequest,
   type UpdateTicketRequest as UpdateTicketRequestType,
 } from '@/features/tickets/schema/index.ts';
@@ -24,10 +26,21 @@ const MOCK_USER: AuthUser = authUserSchema.parse({
   email: 'admin@example.com',
   displayName: 'Admin User',
 });
+const TICKET_CREATOR: TicketActor = ticketActorSchema.parse({
+  id: 11,
+  email: 'creator@example.com',
+  displayName: 'Creator User',
+});
+const TICKET_EDITOR: TicketActor = ticketActorSchema.parse({
+  id: 12,
+  email: 'editor@example.com',
+  displayName: 'Editor User',
+});
 const MOCK_CREDENTIALS: MockCredentials = {
   email: 'admin@example.com',
   password: 'secret-password',
 };
+const TICKET_ACTORS = [TICKET_CREATOR, TICKET_EDITOR, MOCK_USER];
 
 const toTicketSummary = ({ history: _history, ...ticket }: MockTicket): Ticket => ticket;
 
@@ -37,6 +50,8 @@ const BASE_TICKETS: MockTicket[] = [
     title: 'Login bug',
     status: 'open',
     assignee: 'aki',
+    createdBy: TICKET_CREATOR,
+    updatedBy: TICKET_EDITOR,
     createdAt: '2026-03-01T10:00:00Z',
     updatedAt: '2026-03-03T15:00:00Z',
     history: createEmptyHistory(),
@@ -46,6 +61,8 @@ const BASE_TICKETS: MockTicket[] = [
     title: 'Refactor filters',
     status: 'closed',
     assignee: null,
+    createdBy: TICKET_CREATOR,
+    updatedBy: TICKET_CREATOR,
     createdAt: '2026-02-27T12:00:00Z',
     updatedAt: '2026-03-01T09:45:00Z',
     history: createEmptyHistory(),
@@ -55,6 +72,8 @@ const BASE_TICKETS: MockTicket[] = [
     title: 'Add pagination',
     status: 'open',
     assignee: 'mika',
+    createdBy: TICKET_EDITOR,
+    updatedBy: MOCK_USER,
     createdAt: '2026-03-02T09:30:00Z',
     updatedAt: '2026-03-04T08:20:00Z',
     history: createEmptyHistory(),
@@ -74,6 +93,8 @@ const GENERATED_TICKETS: MockTicket[] = Array.from({ length: 37 }, (_, index) =>
     title: `${titlePrefix} task #${ticketNumber}`,
     status: index % 3 === 0 ? 'closed' : 'open',
     assignee: index % 5 === 0 ? null : ASSIGNEES[index % ASSIGNEES.length],
+    createdBy: TICKET_ACTORS[index % TICKET_ACTORS.length],
+    updatedBy: TICKET_ACTORS[(index + 1) % TICKET_ACTORS.length],
     createdAt: createdAt.toISOString(),
     updatedAt: updatedAt.toISOString(),
     history: createEmptyHistory(),
@@ -134,6 +155,7 @@ export const createTicketItem = (
   tickets: MockTicket[],
   input: CreateTicketRequestType,
   now: string,
+  actor: TicketActor = MOCK_USER,
 ): MockTicket => {
   const nextId = tickets.reduce((maxId, ticket) => Math.max(maxId, ticket.id), 0) + 1;
   const ticket: MockTicket = {
@@ -141,6 +163,8 @@ export const createTicketItem = (
     title: input.title,
     status: input.status,
     assignee: input.assignee ?? null,
+    createdBy: actor,
+    updatedBy: actor,
     createdAt: now,
     updatedAt: now,
     history: createEmptyHistory(),
@@ -155,6 +179,7 @@ export const updateTicketItem = (
   tickets: MockTicket[],
   input: UpdateTicketRequestType,
   now: string,
+  actor: TicketActor = MOCK_USER,
 ): MockTicket | null => {
   const ticket = tickets.find((item) => item.id === input.id);
 
@@ -166,6 +191,7 @@ export const updateTicketItem = (
   ticket.title = input.title;
   ticket.status = input.status;
   ticket.assignee = input.assignee ?? null;
+  ticket.updatedBy = actor;
   ticket.updatedAt = now;
   const history = ticket.history ?? createEmptyHistory();
   ticket.history = history;
@@ -173,6 +199,7 @@ export const updateTicketItem = (
   if (previousStatus !== input.status) {
     history.items.unshift({
       operationId: `mock-op-${ticket.id}-${Date.parse(now)}`,
+      actor,
       changedAt: now,
       changes: [
         {

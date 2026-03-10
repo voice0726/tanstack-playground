@@ -10,7 +10,8 @@ import {
 } from '@mantine/core';
 import { IconChevronLeft, IconEdit, IconTrash } from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
+import { TicketActorValue } from '#/features/tickets/components/TicketActorValue.tsx';
 import { TicketDeleteModal } from '#/features/tickets/components/TicketDeleteModal.tsx';
 import { TicketHistoryList } from '#/features/tickets/components/TicketHistoryList.tsx';
 import { TicketRequestError } from '#/features/tickets/components/TicketRequestError.tsx';
@@ -22,13 +23,13 @@ import { useToast } from '#/shared/ui/toast.tsx';
 import { formatDateTime } from '#/shared/utils/date.ts';
 import { getErrorMessage, TicketPageLayout, TicketsBackButton } from './helpers.tsx';
 
-function DetailItem({ label, value }: { label: string; value: string }) {
+function DetailItem({ label, value }: { label: string; value: ReactNode }) {
   return (
     <Stack gap={4}>
       <Text c="dimmed" fw={600} size="sm">
         {label}
       </Text>
-      <Text>{value}</Text>
+      {typeof value === 'string' ? <Text>{value}</Text> : value}
     </Stack>
   );
 }
@@ -126,6 +127,18 @@ export function DetailRoute({ ticketId, search }: { ticketId: number; search: Ti
             <Divider />
 
             <SimpleGrid cols={{ base: 1, sm: 2 }}>
+              <DetailItem
+                label="作成者"
+                value={
+                  <TicketActorValue actor={ticketQuery.data.createdBy} fallback="不明なユーザー" />
+                }
+              />
+              <DetailItem
+                label="更新者"
+                value={
+                  <TicketActorValue actor={ticketQuery.data.updatedBy} fallback="不明なユーザー" />
+                }
+              />
               <DetailItem label="作成日時" value={formatDateTime(ticketQuery.data.createdAt)} />
               <DetailItem label="更新日時" value={formatDateTime(ticketQuery.data.updatedAt)} />
             </SimpleGrid>

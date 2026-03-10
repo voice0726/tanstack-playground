@@ -1,10 +1,20 @@
 import * as z from 'zod';
 
+export const ticketActorSchema = z.object({
+  id: z.number().int().positive(),
+  email: z.string().email(),
+  displayName: z.string().min(1),
+});
+
+export type TicketActor = z.infer<typeof ticketActorSchema>;
+
 export const ticketsSchema = z.object({
   id: z.number(),
   title: z.string(),
   status: z.enum(['open', 'closed']),
   assignee: z.string().nullable().optional(),
+  createdBy: ticketActorSchema.optional(),
+  updatedBy: ticketActorSchema.optional(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });
@@ -21,6 +31,7 @@ export type TicketHistoryChange = z.infer<typeof ticketHistoryChangeSchema>;
 
 export const ticketHistoryItemSchema = z.object({
   operationId: z.string(),
+  actor: ticketActorSchema.optional(),
   changedAt: z.iso.datetime(),
   changes: z.array(ticketHistoryChangeSchema),
 });

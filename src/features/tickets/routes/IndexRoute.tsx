@@ -14,6 +14,7 @@ import { IconEdit, IconEye, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { TicketActorValue } from '#/features/tickets/components/TicketActorValue.tsx';
 import { TicketDeleteModal } from '#/features/tickets/components/TicketDeleteModal.tsx';
 import { TicketStatusBadge } from '#/features/tickets/components/TicketStatusBadge.tsx';
 import { useDeleteTicket } from '#/features/tickets/hooks/useDeleteTicket.ts';
@@ -196,7 +197,7 @@ export function IndexRoute() {
             </Group>
           </Group>
 
-          <Table.ScrollContainer minWidth={720} type="native">
+          <Table.ScrollContainer minWidth={960} type="native">
             <Table highlightOnHover striped withColumnBorders withTableBorder>
               <Table.Thead>
                 <Table.Tr>
@@ -204,6 +205,8 @@ export function IndexRoute() {
                   <Table.Th>タイトル</Table.Th>
                   <Table.Th>ステータス</Table.Th>
                   <Table.Th>担当者</Table.Th>
+                  <Table.Th>作成者</Table.Th>
+                  <Table.Th>更新者</Table.Th>
                   <Table.Th>作成日</Table.Th>
                   <Table.Th>更新日</Table.Th>
                   <Table.Th>操作</Table.Th>
@@ -212,7 +215,7 @@ export function IndexRoute() {
               <Table.Tbody>
                 {isTableLoading ? (
                   <Table.Tr>
-                    <Table.Td colSpan={7}>
+                    <Table.Td colSpan={9}>
                       <Text c="dimmed" ta="center">
                         Loading...
                       </Text>
@@ -220,7 +223,7 @@ export function IndexRoute() {
                   </Table.Tr>
                 ) : hasTableError ? (
                   <Table.Tr>
-                    <Table.Td colSpan={7}>
+                    <Table.Td colSpan={9}>
                       <Text c="red" ta="center">
                         チケット一覧の取得に失敗しました
                       </Text>
@@ -235,6 +238,12 @@ export function IndexRoute() {
                         <TicketStatusBadge status={ticket.status} />
                       </Table.Td>
                       <Table.Td>{ticket.assignee ?? '-'}</Table.Td>
+                      <Table.Td>
+                        <TicketActorValue actor={ticket.createdBy} fallback="-" />
+                      </Table.Td>
+                      <Table.Td>
+                        <TicketActorValue actor={ticket.updatedBy} fallback="-" />
+                      </Table.Td>
                       <Table.Td>{formatDateTime(ticket.createdAt)}</Table.Td>
                       <Table.Td>{formatDateTime(ticket.updatedAt)}</Table.Td>
                       <Table.Td>
@@ -287,7 +296,7 @@ export function IndexRoute() {
                   ))
                 ) : (
                   <Table.Tr>
-                    <Table.Td colSpan={7}>
+                    <Table.Td colSpan={9}>
                       <Text c="dimmed" ta="center">
                         表示できるチケットがありません
                       </Text>

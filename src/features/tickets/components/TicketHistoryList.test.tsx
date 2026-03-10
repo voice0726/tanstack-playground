@@ -2,7 +2,7 @@ import { MantineProvider } from '@mantine/core';
 import { cleanup, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { TicketHistory } from '#/features/tickets/schema/index.ts';
+import { type TicketHistory, ticketActorSchema } from '#/features/tickets/schema/index.ts';
 import { formatDateTime } from '#/shared/utils/date.ts';
 import { TicketHistoryList } from './TicketHistoryList.tsx';
 
@@ -10,6 +10,12 @@ const renderHistory = (ui: ReactNode) => render(<MantineProvider>{ui}</MantinePr
 
 afterEach(() => {
   cleanup();
+});
+
+const TICKET_ACTOR = ticketActorSchema.parse({
+  id: 12,
+  email: 'editor@example.com',
+  displayName: 'Editor User',
 });
 
 describe('TicketHistoryList', () => {
@@ -25,6 +31,7 @@ describe('TicketHistoryList', () => {
       items: [
         {
           operationId: 'mock-op-1',
+          actor: TICKET_ACTOR,
           changedAt: '2026-03-06T11:00:00Z',
           changes: [
             {
@@ -45,5 +52,7 @@ describe('TicketHistoryList', () => {
     expect(screen.getByText('ステータス')).toBeTruthy();
     expect(screen.getByText('Open')).toBeTruthy();
     expect(screen.getByText('Closed')).toBeTruthy();
+    expect(screen.getByText('Editor User')).toBeTruthy();
+    expect(screen.getByText('editor@example.com')).toBeTruthy();
   });
 });
