@@ -68,6 +68,9 @@ describe('ticket actor schema compatibility', () => {
             },
           ],
         },
+        comments: {
+          items: [],
+        },
       }),
     ).not.toThrow();
   });

@@ -1,10 +1,14 @@
 import { delay, HttpResponse, http } from 'msw';
 import { type AuthUser, authUserSchema } from '@/features/auth/schema.ts';
 import {
+  CreateTicketCommentRequest,
+  type CreateTicketCommentRequest as CreateTicketCommentRequestType,
   CreateTicketRequest,
   type CreateTicketRequest as CreateTicketRequestType,
   type Ticket,
   type TicketActor,
+  type TicketComment,
+  type TicketComments,
   type TicketDetail,
   type TicketHistory,
   ticketActorSchema,
@@ -20,6 +24,7 @@ type MockCredentials = {
 };
 
 const createEmptyHistory = (): TicketHistory => ({ items: [] });
+const createEmptyComments = (): TicketComments => ({ items: [] });
 const MOCK_DELAY_MS = 1500;
 const MOCK_USER: AuthUser = authUserSchema.parse({
   id: 1,
@@ -42,7 +47,11 @@ const MOCK_CREDENTIALS: MockCredentials = {
 };
 const TICKET_ACTORS = [TICKET_CREATOR, TICKET_EDITOR, MOCK_USER];
 
-const toTicketSummary = ({ history: _history, ...ticket }: MockTicket): Ticket => ticket;
+const toTicketSummary = ({
+  comments: _comments,
+  history: _history,
+  ...ticket
+}: MockTicket): Ticket => ticket;
 
 const BASE_TICKETS: MockTicket[] = [
   {
@@ -55,6 +64,16 @@ const BASE_TICKETS: MockTicket[] = [
     createdAt: '2026-03-01T10:00:00Z',
     updatedAt: '2026-03-03T15:00:00Z',
     history: createEmptyHistory(),
+    comments: {
+      items: [
+        {
+          id: 101,
+          body: 'Initial investigation started.',
+          createdBy: TICKET_EDITOR,
+          createdAt: '2026-03-03T15:00:00Z',
+        },
+      ],
+    },
   },
   {
     id: 2,
@@ -66,6 +85,7 @@ const BASE_TICKETS: MockTicket[] = [
     createdAt: '2026-02-27T12:00:00Z',
     updatedAt: '2026-03-01T09:45:00Z',
     history: createEmptyHistory(),
+    comments: createEmptyComments(),
   },
   {
     id: 3,
@@ -77,6 +97,7 @@ const BASE_TICKETS: MockTicket[] = [
     createdAt: '2026-03-02T09:30:00Z',
     updatedAt: '2026-03-04T08:20:00Z',
     history: createEmptyHistory(),
+    comments: createEmptyComments(),
   },
 ];
 
@@ -100,6 +121,7 @@ const GENERATED_TICKETS: MockTicket[] = Array.from({ length: 37 }, (_, index) =>
     createdAt: createdAt.toISOString(),
     updatedAt: updatedAt.toISOString(),
     history: createEmptyHistory(),
+    comments: createEmptyComments(),
   };
 });
 
@@ -170,6 +192,7 @@ export const createTicketItem = (
     createdAt: now,
     updatedAt: now,
     history: createEmptyHistory(),
+    comments: createEmptyComments(),
   };
 
   tickets.unshift(ticket);
@@ -226,6 +249,37 @@ export const deleteTicketItem = (tickets: MockTicket[], id: Ticket['id']) => {
   const [removedTicket] = tickets.splice(index, 1);
 
   return removedTicket;
+};
+
+export const createTicketCommentItem = (
+  tickets: MockTicket[],
+  ticketId: Ticket['id'],
+  input: CreateTicketCommentRequestType,
+  now: string,
+  actor: TicketActor = MOCK_USER,
+): MockTicket | null => {
+  const ticket = tickets.find((item) => item.id === ticketId);
+
+  if (!ticket) {
+    return null;
+  }
+
+  const nextCommentId =
+    tickets
+      .flatMap((item) => item.comments.items)
+      .reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1;
+  const comment: TicketComment = {
+    id: nextCommentId,
+    body: input.body,
+    createdBy: actor,
+    createdAt: now,
+  };
+
+  ticket.comments.items.unshift(comment);
+  ticket.updatedBy = actor;
+  ticket.updatedAt = now;
+
+  return ticket;
 };
 
 const parseTicketId = (value: string | readonly string[] | undefined) => {
@@ -321,6 +375,28 @@ export const handlers = [
     const now = new Date().toISOString();
     const actor = ticketActorSchema.parse(authentication.user);
     const ticket = createTicketItem(ticketsStore, body, now, actor);
+
+    return HttpResponse.json(ticket, { status: 201 });
+  }),
+  http.post('/api/tickets/:id/comments', async ({ params, request }) => {
+    const authentication = await requireAuthentication();
+    if ('response' in authentication) {
+      return authentication.response;
+    }
+
+    const id = parseTicketId(params.id);
+
+    if (id === null) {
+      return HttpResponse.json({ message: 'Invalid ticket id' }, { status: 400 });
+    }
+
+    const body = CreateTicketCommentRequest.parse(await request.json());
+    const actor = ticketActorSchema.parse(authentication.user);
+    const ticket = createTicketCommentItem(ticketsStore, id, body, new Date().toISOString(), actor);
+
+    if (!ticket) {
+      return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+    }
 
     return HttpResponse.json(ticket, { status: 201 });
   }),

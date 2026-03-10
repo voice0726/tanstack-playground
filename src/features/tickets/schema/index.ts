@@ -44,8 +44,24 @@ export const ticketHistorySchema = z.object({
 
 export type TicketHistory = z.infer<typeof ticketHistorySchema>;
 
+export const ticketCommentSchema = z.object({
+  id: z.number().int().positive(),
+  body: z.string(),
+  createdBy: ticketActorSchema.nullish(),
+  createdAt: z.iso.datetime(),
+});
+
+export type TicketComment = z.infer<typeof ticketCommentSchema>;
+
+export const ticketCommentsSchema = z.object({
+  items: z.array(ticketCommentSchema),
+});
+
+export type TicketComments = z.infer<typeof ticketCommentsSchema>;
+
 export const ticketDetailSchema = ticketsSchema.extend({
   history: ticketHistorySchema,
+  comments: ticketCommentsSchema,
 });
 
 export type TicketDetail = z.infer<typeof ticketDetailSchema>;
@@ -71,3 +87,9 @@ export const UpdateTicketRequest = ticketsSchema.pick({
   assignee: true,
 });
 export type UpdateTicketRequest = z.infer<typeof UpdateTicketRequest>;
+
+export const CreateTicketCommentRequest = z.object({
+  body: z.string().trim().min(1),
+});
+
+export type CreateTicketCommentRequest = z.infer<typeof CreateTicketCommentRequest>;

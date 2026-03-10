@@ -1,4 +1,6 @@
 import {
+  CreateTicketCommentRequest,
+  type CreateTicketCommentRequest as CreateTicketCommentRequestType,
   CreateTicketRequest,
   type CreateTicketRequest as CreateTicketRequestType,
   type Ticket,
@@ -77,4 +79,24 @@ export const deleteTicket = async (id: Ticket['id']) => {
   await ensureSuccess(response, 'チケットの削除に失敗しました。');
 
   return deleteTicketResponseSchema.parse({ id });
+};
+
+export const createTicketComment = async ({
+  ticketId,
+  body,
+}: {
+  ticketId: Ticket['id'];
+  body: CreateTicketCommentRequestType['body'];
+}) => {
+  const payload = CreateTicketCommentRequest.parse({ body });
+  const response = await fetch(createTicketsApiUrl(`/api/tickets/${ticketId}/comments`), {
+    method: 'POST',
+    credentials: 'include',
+    headers: JSON_HEADERS,
+    body: JSON.stringify(payload),
+  });
+
+  await ensureSuccess(response, 'コメントの投稿に失敗しました。');
+
+  return ticketDetailSchema.parse(await response.json());
 };
