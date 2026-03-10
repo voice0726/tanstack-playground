@@ -7,36 +7,20 @@ import { useTickets } from '#/features/tickets/hooks/useTickets.ts';
 import type {
   CreateTicketRequest,
   Ticket,
-  TicketActor,
   TicketDetail,
   TicketHistory,
   UpdateTicketRequest,
 } from '#/features/tickets/schema/index.ts';
-import { ticketActorSchema } from '#/features/tickets/schema/index.ts';
 import { TICKETS_SEARCH_DEFAULT } from '#/features/tickets/schema/search.ts';
 import { server } from '#/mocks/node.ts';
 import { env } from '#/shared/config/env.ts';
+import { TICKET_ADMIN, TICKET_CREATOR, TICKET_EDITOR } from '@/test/fixtures/ticketActors.ts';
 import { useCreateTicket } from './useCreateTicket';
 import { useDeleteTicket } from './useDeleteTicket';
 import { useTicket } from './useTicket';
 import { useUpdateTicket } from './useUpdateTicket';
 
 const API_BASE_URL = env.VITE_API_BASE_URL;
-const TICKET_CREATOR: TicketActor = ticketActorSchema.parse({
-  id: 11,
-  email: 'creator@example.com',
-  displayName: 'Creator User',
-});
-const TICKET_EDITOR: TicketActor = ticketActorSchema.parse({
-  id: 12,
-  email: 'editor@example.com',
-  displayName: 'Editor User',
-});
-const TICKET_ADMIN: TicketActor = ticketActorSchema.parse({
-  id: 1,
-  email: 'admin@example.com',
-  displayName: 'Admin User',
-});
 
 const createTestQueryClient = () =>
   new QueryClient({

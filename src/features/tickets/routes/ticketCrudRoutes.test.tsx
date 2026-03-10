@@ -6,11 +6,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { AuthUser } from '#/features/auth/schema.ts';
 import type {
   CreateTicketRequest,
-  TicketActor,
   TicketHistory,
   UpdateTicketRequest,
 } from '#/features/tickets/schema/index.ts';
-import { ticketActorSchema } from '#/features/tickets/schema/index.ts';
 import { ticketsSearchSchema } from '#/features/tickets/schema/search.ts';
 import {
   createTicketItem,
@@ -22,6 +20,7 @@ import {
 import { server } from '#/mocks/node.ts';
 import { createRouter } from '#/router.tsx';
 import { env } from '#/shared/config/env.ts';
+import { TICKET_ADMIN, TICKET_CREATOR, TICKET_EDITOR } from '@/test/fixtures/ticketActors.ts';
 
 const API_BASE_URL = env.VITE_API_BASE_URL;
 type MockTicket = Parameters<typeof listTickets>[0][number];
@@ -30,17 +29,6 @@ const AUTH_USER: AuthUser = {
   email: 'admin@example.com',
   displayName: 'Admin User',
 };
-const TICKET_CREATOR: TicketActor = ticketActorSchema.parse({
-  id: 11,
-  email: 'creator@example.com',
-  displayName: 'Creator User',
-});
-const TICKET_EDITOR: TicketActor = ticketActorSchema.parse({
-  id: 12,
-  email: 'editor@example.com',
-  displayName: 'Editor User',
-});
-const TICKET_ADMIN: TicketActor = ticketActorSchema.parse(AUTH_USER);
 
 const createEmptyHistory = (): TicketHistory => ({ items: [] });
 
