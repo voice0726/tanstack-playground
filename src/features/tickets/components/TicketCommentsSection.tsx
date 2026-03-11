@@ -45,9 +45,7 @@ export function TicketCommentsSection({
   const { showToast } = useToast();
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [commentToDelete, setCommentToDelete] = useState<TicketComment | null>(null);
-  const createTicketComment = useCreateTicketComment();
-  const updateTicketComment = useUpdateTicketComment();
-  const deleteTicketComment = useDeleteTicketComment();
+
   // Form state for creating a new comment from the section header form.
   const {
     register,
@@ -68,17 +66,33 @@ export function TicketCommentsSection({
     defaultValues: TICKET_COMMENT_FORM_DEFAULT_VALUES,
     resolver: zodResolver(ticketCommentFormValuesSchema),
   });
-  const deletingCommentId = deleteTicketComment.isPending
+
+  const createTicketComment = useCreateTicketComment();
+  const updateTicketComment = useUpdateTicketComment();
+  const deleteTicketComment = useDeleteTicketComment();
+
+  const isDeleteModalBusy = commentToDelete !== null && deleteTicketComment.isPending;
+  const isEditingComment = (commentId: number) => editingCommentId === commentId;
+
+  const submittingDeleteCommentId = deleteTicketComment.isPending
     ? deleteTicketComment.variables?.commentId
     : undefined;
-  const updatingCommentId = updateTicketComment.isPending
+  const submittingUpdateCommentId = updateTicketComment.isPending
     ? updateTicketComment.variables?.commentId
     : undefined;
-  const isDeleteModalBusy = commentToDelete !== null && deletingCommentId === commentToDelete.id;
+
+  const isSubmittingDelete = (commentId: number) => submittingDeleteCommentId === commentId;
+  const isSubmittingUpdate = (commentId: number) => submittingUpdateCommentId === commentId;
+
   const isCommentOwner = (comment: TicketComment) =>
     currentUserId != null &&
     comment.createdBy?.id != null &&
     comment.createdBy.id === currentUserId;
+
+  const canEditComment = (comment: TicketComment) =>
+    isCommentOwner(comment) && !isSubmittingDelete(comment.id) && !isEditingComment(comment.id);
+  const canDeleteComment = (comment: TicketComment) =>
+    isCommentOwner(comment) && !isSubmittingUpdate(comment.id);
 
   const submitComment = handleSubmit(async (values) => {
     createTicketComment.mutate(
@@ -225,14 +239,12 @@ export function TicketCommentsSection({
                       <Button
                         aria-label={`コメント ${comment.id} を編集`}
                         color="gray"
-                        disabled={
-                          deletingCommentId === comment.id || editingCommentId === comment.id
-                        }
+                        disabled={!canEditComment(comment)}
                         leftSection={<IconPencil size={14} />}
                         size="xs"
                         variant="subtle"
                         onClick={() => {
-                          if (editingCommentId === comment.id) {
+                          if (!canEditComment(comment)) {
                             return;
                           }
 
@@ -245,9 +257,9 @@ export function TicketCommentsSection({
                       <Button
                         aria-label={`コメント ${comment.id} を削除`}
                         color="red"
-                        disabled={updatingCommentId === comment.id}
+                        disabled={!canDeleteComment(comment)}
                         leftSection={<IconTrash size={14} />}
-                        loading={deletingCommentId === comment.id}
+                        loading={isSubmittingDelete(comment.id)}
                         size="xs"
                         variant="subtle"
                         onClick={() => {
@@ -259,7 +271,7 @@ export function TicketCommentsSection({
                     </Group>
                   ) : null}
                 </Group>
-                {editingCommentId === comment.id ? (
+                {isEditingComment(comment.id) ? (
                   <TicketCommentForm
                     bodyError={editErrors.body?.message}
                     bodyField={registerEditComment('body')}
@@ -277,7 +289,7 @@ export function TicketCommentsSection({
                         キャンセル
                       </Button>
                     }
-                    isSubmitting={updatingCommentId === comment.id}
+                    isSubmitting={isSubmittingUpdate(comment.id)}
                     label="コメントを編集"
                     submitIcon={<IconCheck size={16} />}
                     submitLabel="更新する"
