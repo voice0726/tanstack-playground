@@ -480,6 +480,84 @@ describe('ticket CRUD routes', () => {
     expect(screen.getByText('Initial investigation started.')).toBeTruthy();
   });
 
+  it('allows retrying a failed comment deletion for the same comment', async () => {
+    const tickets = buildSeedTickets();
+    let deleteAttempts = 0;
+
+    server.use(...createUiHandlers(tickets));
+    server.use(
+      http.delete(`${API_BASE_URL}/api/tickets/:id/comments/:commentId`, ({ params }) => {
+        const ticketId = parseTicketId(params.id);
+        const commentId = parseCommentId(params.commentId);
+
+        if (ticketId === null || commentId === null) {
+          return HttpResponse.json({ message: 'Invalid comment id' }, { status: 400 });
+        }
+
+        const ticket = getTicketById(tickets, ticketId);
+
+        if (!ticket) {
+          return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+        }
+
+        const comment = ticket.comments.items.find((item) => item.id === commentId);
+
+        if (!comment) {
+          return HttpResponse.json({ message: 'comment not found' }, { status: 404 });
+        }
+
+        if (comment.createdBy?.id !== AUTH_USER.id) {
+          return HttpResponse.json(
+            { message: 'comment can only be modified by its author' },
+            { status: 403 },
+          );
+        }
+
+        deleteAttempts += 1;
+
+        if (deleteAttempts === 1) {
+          return HttpResponse.json({ message: 'temporary delete failure' }, { status: 500 });
+        }
+
+        return HttpResponse.json(
+          deleteTicketCommentItem(tickets, ticketId, commentId, '2026-03-06T13:00:00Z'),
+        );
+      }),
+    );
+
+    renderRoute('/tickets/1?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10');
+
+    await screen.findByText('Initial investigation started.');
+    fireEvent.change(screen.getByLabelText('コメントを追加'), {
+      target: { value: 'We are investigating this now.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '投稿する' }));
+
+    await screen.findByText('We are investigating this now.');
+    fireEvent.click(screen.getByRole('button', { name: 'コメント 102 を削除' }));
+    const firstDialog = await screen.findByRole('dialog', { name: 'コメントを削除' });
+    fireEvent.click(within(firstDialog).getByRole('button', { name: '削除する' }));
+
+    await screen.findByText('コメントの削除に失敗しました');
+    fireEvent.click(within(firstDialog).getByRole('button', { name: 'キャンセル' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'コメントを削除' })).toBeNull();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'コメント 102 を削除' }));
+    const secondDialog = await screen.findByRole('dialog', { name: 'コメントを削除' });
+    const confirmButton = within(secondDialog).getByRole('button', { name: '削除する' });
+
+    expect((confirmButton as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(confirmButton);
+
+    await screen.findByText('コメントを削除しました');
+    await waitFor(() => {
+      expect(screen.queryByText('We are investigating this now.')).toBeNull();
+    });
+  });
+
   it('creates a ticket, shows a toast, and preserves list search params on return', async () => {
     const { router } = renderRoute(
       '/tickets/new?q=Login&status=open&sortBy=id&sortOrder=asc&page=2&pageSize=20',

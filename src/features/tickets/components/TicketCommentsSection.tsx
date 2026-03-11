@@ -68,6 +68,17 @@ export function TicketCommentsSection({
     defaultValues: TICKET_COMMENT_FORM_DEFAULT_VALUES,
     resolver: zodResolver(ticketCommentFormValuesSchema),
   });
+  const deletingCommentId = deleteTicketComment.isPending
+    ? deleteTicketComment.variables?.commentId
+    : undefined;
+  const updatingCommentId = updateTicketComment.isPending
+    ? updateTicketComment.variables?.commentId
+    : undefined;
+  const isDeleteModalBusy = commentToDelete !== null && deletingCommentId === commentToDelete.id;
+  const isCommentOwner = (comment: TicketComment) =>
+    currentUserId != null &&
+    comment.createdBy?.id != null &&
+    comment.createdBy.id === currentUserId;
 
   const submitComment = handleSubmit(async (values) => {
     createTicketComment.mutate(
@@ -122,17 +133,10 @@ export function TicketCommentsSection({
     <Stack gap="md">
       <TicketCommentDeleteModal
         comment={commentToDelete ? { id: commentToDelete.id, body: commentToDelete.body } : null}
-        isDeleting={
-          commentToDelete !== null &&
-          deleteTicketComment.variables?.commentId === commentToDelete.id
-        }
+        isDeleting={isDeleteModalBusy}
         opened={commentToDelete !== null}
         onClose={() => {
-          if (
-            commentToDelete !== null &&
-            deleteTicketComment.variables?.commentId === commentToDelete.id &&
-            deleteTicketComment.isPending
-          ) {
+          if (isDeleteModalBusy) {
             return;
           }
 
@@ -216,15 +220,12 @@ export function TicketCommentsSection({
                       {formatDateTime(comment.createdAt)}
                     </Text>
                   </Group>
-                  {comment.createdBy?.id === currentUserId ? (
+                  {isCommentOwner(comment) ? (
                     <Group gap="xs">
                       <Button
                         aria-label={`コメント ${comment.id} を編集`}
                         color="gray"
-                        disabled={
-                          deleteTicketComment.isPending &&
-                          deleteTicketComment.variables?.commentId === comment.id
-                        }
+                        disabled={deletingCommentId === comment.id}
                         leftSection={<IconPencil size={14} />}
                         size="xs"
                         variant="subtle"
@@ -238,15 +239,9 @@ export function TicketCommentsSection({
                       <Button
                         aria-label={`コメント ${comment.id} を削除`}
                         color="red"
-                        disabled={
-                          updateTicketComment.isPending &&
-                          updateTicketComment.variables?.commentId === comment.id
-                        }
+                        disabled={updatingCommentId === comment.id}
                         leftSection={<IconTrash size={14} />}
-                        loading={
-                          deleteTicketComment.isPending &&
-                          deleteTicketComment.variables?.commentId === comment.id
-                        }
+                        loading={deletingCommentId === comment.id}
                         size="xs"
                         variant="subtle"
                         onClick={() => {
@@ -276,10 +271,7 @@ export function TicketCommentsSection({
                         キャンセル
                       </Button>
                     }
-                    isSubmitting={
-                      updateTicketComment.isPending &&
-                      updateTicketComment.variables?.commentId === comment.id
-                    }
+                    isSubmitting={updatingCommentId === comment.id}
                     label="コメントを編集"
                     submitIcon={<IconCheck size={16} />}
                     submitLabel="更新する"
