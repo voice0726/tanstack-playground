@@ -438,6 +438,9 @@ describe('ticket CRUD routes', () => {
     renderRoute('/tickets/1?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10');
 
     await screen.findByText('Initial investigation started.');
+    expect(screen.queryByRole('button', { name: 'コメント 101 を編集' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'コメント 101 を削除' })).toBeNull();
+
     fireEvent.change(screen.getByLabelText('コメントを追加'), {
       target: { value: 'We are investigating this now.' },
     });
@@ -445,6 +448,15 @@ describe('ticket CRUD routes', () => {
 
     await screen.findByText('We are investigating this now.');
     fireEvent.click(screen.getByRole('button', { name: 'コメント 102 を編集' }));
+    const editButton = screen.getByRole('button', { name: 'コメント 102 を編集' });
+    expect((editButton as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.change(screen.getByLabelText('コメントを編集'), {
+      target: { value: 'Draft update that should be preserved.' },
+    });
+    fireEvent.click(editButton);
+    expect((screen.getByLabelText('コメントを編集') as HTMLInputElement).value).toBe(
+      'Draft update that should be preserved.',
+    );
     fireEvent.change(screen.getByLabelText('コメントを編集'), {
       target: { value: 'Investigation has been completed.' },
     });

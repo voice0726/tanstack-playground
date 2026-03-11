@@ -225,11 +225,17 @@ export function TicketCommentsSection({
                       <Button
                         aria-label={`コメント ${comment.id} を編集`}
                         color="gray"
-                        disabled={deletingCommentId === comment.id}
+                        disabled={
+                          deletingCommentId === comment.id || editingCommentId === comment.id
+                        }
                         leftSection={<IconPencil size={14} />}
                         size="xs"
                         variant="subtle"
                         onClick={() => {
+                          if (editingCommentId === comment.id) {
+                            return;
+                          }
+
                           setEditingCommentId(comment.id);
                           resetEditComment({ body: comment.body });
                         }}
