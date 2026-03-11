@@ -94,7 +94,7 @@ export function TicketCommentsSection({
   const canDeleteComment = (comment: TicketComment) =>
     isCommentOwner(comment) && !isSubmittingUpdate(comment.id);
 
-  const submitComment = handleSubmit(async (values) => {
+  const submitComment = handleSubmit((values) => {
     createTicketComment.mutate(
       {
         ticketId,
@@ -112,7 +112,7 @@ export function TicketCommentsSection({
     );
   });
 
-  const submitUpdatedComment = handleEditCommentSubmit(async (values) => {
+  const submitUpdatedComment = handleEditCommentSubmit((values) => {
     if (editingCommentId === null) {
       return;
     }
@@ -228,7 +228,7 @@ export function TicketCommentsSection({
             <Paper key={comment.id} p="md" radius="md" withBorder>
               <Stack gap="sm">
                 <Group align="flex-start" justify="space-between" wrap="wrap">
-                  <Group align="flex-start" justify="space-between" style={{ flex: 1 }}>
+                  <Group align="flex-start" flex="1" justify="space-between">
                     <TicketActorValue actor={comment.createdBy} fallback="不明なユーザー" />
                     <Text c="dimmed" size="sm">
                       {formatDateTime(comment.createdAt)}
