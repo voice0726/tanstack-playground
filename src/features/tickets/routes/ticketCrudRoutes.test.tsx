@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryHistory, RouterProvider } from '@tanstack/react-router';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { HttpResponse, http } from 'msw';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { AuthUser } from '#/features/auth/schema.ts';
@@ -15,9 +15,11 @@ import { ticketsSearchSchema } from '#/features/tickets/schema/search.ts';
 import {
   createTicketCommentItem,
   createTicketItem,
+  deleteTicketCommentItem,
   deleteTicketItem,
   getTicketById,
   listTickets,
+  updateTicketCommentItem,
   updateTicketItem,
 } from '#/mocks/handlers.ts';
 import { server } from '#/mocks/node.ts';
@@ -44,6 +46,7 @@ const parseTicketId = (value: string | readonly string[] | undefined) => {
 
   return Number.isInteger(id) && id > 0 ? id : null;
 };
+const parseCommentId = parseTicketId;
 
 const buildSeedTickets = (): MockTicket[] => [
   {
@@ -201,6 +204,84 @@ const createUiHandlers = (tickets: MockTicket[], initialUser: AuthUser | null = 
 
       return HttpResponse.json(ticket, { status: 201 });
     }),
+    http.put(`${API_BASE_URL}/api/tickets/:id/comments/:commentId`, async ({ params, request }) => {
+      if (!currentUser) {
+        return HttpResponse.json({ message: 'authentication required' }, { status: 401 });
+      }
+
+      const ticketId = parseTicketId(params.id);
+      const commentId = parseCommentId(params.commentId);
+
+      if (ticketId === null || commentId === null) {
+        return HttpResponse.json({ message: 'Invalid comment id' }, { status: 400 });
+      }
+
+      let body: CreateTicketCommentRequest;
+
+      try {
+        body = CreateTicketCommentRequest.parse(await request.json());
+      } catch {
+        return HttpResponse.json({ message: 'Invalid request body' }, { status: 400 });
+      }
+
+      const ticket = getTicketById(tickets, ticketId);
+
+      if (!ticket) {
+        return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+      }
+
+      const comment = ticket.comments.items.find((item) => item.id === commentId);
+
+      if (!comment) {
+        return HttpResponse.json({ message: 'comment not found' }, { status: 404 });
+      }
+
+      if (comment.createdBy?.id !== currentUser.id) {
+        return HttpResponse.json(
+          { message: 'comment can only be modified by its author' },
+          { status: 403 },
+        );
+      }
+
+      return HttpResponse.json(
+        updateTicketCommentItem(tickets, ticketId, commentId, body, '2026-03-06T12:30:00Z'),
+      );
+    }),
+    http.delete(`${API_BASE_URL}/api/tickets/:id/comments/:commentId`, ({ params }) => {
+      if (!currentUser) {
+        return HttpResponse.json({ message: 'authentication required' }, { status: 401 });
+      }
+
+      const ticketId = parseTicketId(params.id);
+      const commentId = parseCommentId(params.commentId);
+
+      if (ticketId === null || commentId === null) {
+        return HttpResponse.json({ message: 'Invalid comment id' }, { status: 400 });
+      }
+
+      const ticket = getTicketById(tickets, ticketId);
+
+      if (!ticket) {
+        return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+      }
+
+      const comment = ticket.comments.items.find((item) => item.id === commentId);
+
+      if (!comment) {
+        return HttpResponse.json({ message: 'comment not found' }, { status: 404 });
+      }
+
+      if (comment.createdBy?.id !== currentUser.id) {
+        return HttpResponse.json(
+          { message: 'comment can only be modified by its author' },
+          { status: 403 },
+        );
+      }
+
+      return HttpResponse.json(
+        deleteTicketCommentItem(tickets, ticketId, commentId, '2026-03-06T13:00:00Z'),
+      );
+    }),
     http.put(`${API_BASE_URL}/api/tickets/:id`, async ({ params, request }) => {
       if (!currentUser) {
         return HttpResponse.json({ message: 'authentication required' }, { status: 401 });
@@ -351,6 +432,173 @@ describe('ticket CRUD routes', () => {
       'We are investigating this now.',
       'Initial investigation started.',
     ]);
+  });
+
+  it('edits an authored comment on the detail page', async () => {
+    renderRoute('/tickets/1?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10');
+
+    await screen.findByText('Initial investigation started.');
+    expect(screen.queryByRole('button', { name: 'コメント 101 を編集' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'コメント 101 を削除' })).toBeNull();
+
+    fireEvent.change(screen.getByLabelText('コメントを追加'), {
+      target: { value: 'We are investigating this now.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '投稿する' }));
+
+    await screen.findByText('We are investigating this now.');
+    fireEvent.click(screen.getByRole('button', { name: 'コメント 102 を編集' }));
+    const editButton = screen.getByRole('button', { name: 'コメント 102 を編集' });
+    expect((editButton as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.change(screen.getByLabelText('コメントを編集'), {
+      target: { value: 'Draft update that should be preserved.' },
+    });
+    fireEvent.click(editButton);
+    expect((screen.getByLabelText('コメントを編集') as HTMLInputElement).value).toBe(
+      'Draft update that should be preserved.',
+    );
+    fireEvent.change(screen.getByLabelText('コメントを編集'), {
+      target: { value: 'Investigation has been completed.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '更新する' }));
+
+    await screen.findByText('コメントを更新しました');
+    await screen.findByText('Investigation has been completed.');
+    expect(screen.queryByText('We are investigating this now.')).toBeNull();
+  });
+
+  it('does not allow switching to another comment edit while a draft is open', async () => {
+    renderRoute('/tickets/1?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10');
+
+    await screen.findByText('Initial investigation started.');
+    fireEvent.change(screen.getByLabelText('コメントを追加'), {
+      target: { value: 'First authored comment.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '投稿する' }));
+
+    await screen.findByText('First authored comment.');
+    fireEvent.change(screen.getByLabelText('コメントを追加'), {
+      target: { value: 'Second authored comment.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '投稿する' }));
+
+    await screen.findByText('Second authored comment.');
+    fireEvent.click(screen.getByRole('button', { name: 'コメント 103 を編集' }));
+    fireEvent.change(screen.getByLabelText('コメントを編集'), {
+      target: { value: 'Draft for first authored comment.' },
+    });
+
+    const secondEditButton = screen.getByRole('button', { name: 'コメント 102 を編集' });
+    expect((secondEditButton as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(secondEditButton);
+
+    expect((screen.getByLabelText('コメントを編集') as HTMLInputElement).value).toBe(
+      'Draft for first authored comment.',
+    );
+    expect(screen.queryByDisplayValue('First authored comment.')).toBeNull();
+  });
+
+  it('deletes an authored comment on the detail page', async () => {
+    renderRoute('/tickets/1?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10');
+
+    await screen.findByText('Initial investigation started.');
+    fireEvent.change(screen.getByLabelText('コメントを追加'), {
+      target: { value: 'We are investigating this now.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '投稿する' }));
+
+    await screen.findByText('We are investigating this now.');
+    fireEvent.click(screen.getByRole('button', { name: 'コメント 102 を削除' }));
+    const dialog = await screen.findByRole('dialog', { name: 'コメントを削除' });
+    expect(
+      within(dialog).getByText('この操作は取り消せません。削除対象を確認してください。'),
+    ).toBeTruthy();
+    expect(within(dialog).getByText('We are investigating this now.')).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole('button', { name: '削除する' }));
+
+    await screen.findByText('コメントを削除しました');
+    await waitFor(() => {
+      expect(screen.queryByText('We are investigating this now.')).toBeNull();
+    });
+    expect(screen.getByText('Initial investigation started.')).toBeTruthy();
+  });
+
+  it('allows retrying a failed comment deletion for the same comment', async () => {
+    const tickets = buildSeedTickets();
+    let deleteAttempts = 0;
+
+    server.use(...createUiHandlers(tickets));
+    server.use(
+      http.delete(`${API_BASE_URL}/api/tickets/:id/comments/:commentId`, ({ params }) => {
+        const ticketId = parseTicketId(params.id);
+        const commentId = parseCommentId(params.commentId);
+
+        if (ticketId === null || commentId === null) {
+          return HttpResponse.json({ message: 'Invalid comment id' }, { status: 400 });
+        }
+
+        const ticket = getTicketById(tickets, ticketId);
+
+        if (!ticket) {
+          return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+        }
+
+        const comment = ticket.comments.items.find((item) => item.id === commentId);
+
+        if (!comment) {
+          return HttpResponse.json({ message: 'comment not found' }, { status: 404 });
+        }
+
+        if (comment.createdBy?.id !== AUTH_USER.id) {
+          return HttpResponse.json(
+            { message: 'comment can only be modified by its author' },
+            { status: 403 },
+          );
+        }
+
+        deleteAttempts += 1;
+
+        if (deleteAttempts === 1) {
+          return HttpResponse.json({ message: 'temporary delete failure' }, { status: 500 });
+        }
+
+        return HttpResponse.json(
+          deleteTicketCommentItem(tickets, ticketId, commentId, '2026-03-06T13:00:00Z'),
+        );
+      }),
+    );
+
+    renderRoute('/tickets/1?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10');
+
+    await screen.findByText('Initial investigation started.');
+    fireEvent.change(screen.getByLabelText('コメントを追加'), {
+      target: { value: 'We are investigating this now.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '投稿する' }));
+
+    await screen.findByText('We are investigating this now.');
+    fireEvent.click(screen.getByRole('button', { name: 'コメント 102 を削除' }));
+    const firstDialog = await screen.findByRole('dialog', { name: 'コメントを削除' });
+    fireEvent.click(within(firstDialog).getByRole('button', { name: '削除する' }));
+
+    await screen.findByText('コメントの削除に失敗しました');
+    fireEvent.click(within(firstDialog).getByRole('button', { name: 'キャンセル' }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog', { name: 'コメントを削除' })).toBeNull();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'コメント 102 を削除' }));
+    const secondDialog = await screen.findByRole('dialog', { name: 'コメントを削除' });
+    const confirmButton = within(secondDialog).getByRole('button', { name: '削除する' });
+
+    expect((confirmButton as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(confirmButton);
+
+    await screen.findByText('コメントを削除しました');
+    await waitFor(() => {
+      expect(screen.queryByText('We are investigating this now.')).toBeNull();
+    });
   });
 
   it('creates a ticket, shows a toast, and preserves list search params on return', async () => {

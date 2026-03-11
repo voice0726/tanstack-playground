@@ -4,8 +4,10 @@ import { TICKET_ADMIN, TICKET_CREATOR, TICKET_EDITOR } from '@/test/fixtures/tic
 import {
   createTicketCommentItem,
   createTicketItem,
+  deleteTicketCommentItem,
   deleteTicketItem,
   listTickets,
+  updateTicketCommentItem,
   updateTicketItem,
 } from './handlers';
 
@@ -230,6 +232,52 @@ describe('listTickets', () => {
     });
     expect(newComment?.id).toEqual(expect.any(Number));
     expect(newComment?.id).toBeGreaterThan(maxExistingCommentId);
+  });
+
+  it('updates an existing comment and refreshes updatedAt', () => {
+    const tickets = structuredClone(TICKETS);
+    tickets[0].comments.items.push({
+      id: 101,
+      body: 'Existing follow-up comment.',
+      createdBy: TICKET_ADMIN,
+      createdAt: '2026-03-05T09:00:00Z',
+    });
+    const result = updateTicketCommentItem(
+      tickets,
+      1,
+      101,
+      {
+        body: 'Updated follow-up comment.',
+      },
+      '2026-03-06T12:30:00Z',
+    );
+
+    expect(result).toMatchObject({
+      id: 1,
+      updatedBy: TICKET_ADMIN,
+      updatedAt: '2026-03-06T12:30:00Z',
+    });
+    expect(result?.comments.items.find((comment) => comment.id === 101)?.body).toBe(
+      'Updated follow-up comment.',
+    );
+  });
+
+  it('deletes an existing comment and refreshes updatedAt', () => {
+    const tickets = structuredClone(TICKETS);
+    tickets[0].comments.items.push({
+      id: 101,
+      body: 'Existing follow-up comment.',
+      createdBy: TICKET_ADMIN,
+      createdAt: '2026-03-05T09:00:00Z',
+    });
+    const result = deleteTicketCommentItem(tickets, 1, 101, '2026-03-06T13:00:00Z');
+
+    expect(result).toMatchObject({
+      id: 1,
+      updatedBy: TICKET_ADMIN,
+      updatedAt: '2026-03-06T13:00:00Z',
+    });
+    expect(result?.comments.items).toEqual([]);
   });
 
   it('deletes an existing ticket by id', () => {

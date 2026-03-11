@@ -282,6 +282,59 @@ export const createTicketCommentItem = (
   return ticket;
 };
 
+export const updateTicketCommentItem = (
+  tickets: MockTicket[],
+  ticketId: Ticket['id'],
+  commentId: number,
+  input: CreateTicketCommentRequestType,
+  now: string,
+  actor: TicketActor = MOCK_USER,
+): MockTicket | null => {
+  const ticket = tickets.find((item) => item.id === ticketId);
+
+  if (!ticket) {
+    return null;
+  }
+
+  const comment = ticket.comments.items.find((item) => item.id === commentId);
+
+  if (!comment) {
+    return null;
+  }
+
+  comment.body = input.body;
+  ticket.updatedBy = actor;
+  ticket.updatedAt = now;
+
+  return ticket;
+};
+
+export const deleteTicketCommentItem = (
+  tickets: MockTicket[],
+  ticketId: Ticket['id'],
+  commentId: number,
+  now: string,
+  actor: TicketActor = MOCK_USER,
+): MockTicket | null => {
+  const ticket = tickets.find((item) => item.id === ticketId);
+
+  if (!ticket) {
+    return null;
+  }
+
+  const nextItems = ticket.comments.items.filter((item) => item.id !== commentId);
+
+  if (nextItems.length === ticket.comments.items.length) {
+    return null;
+  }
+
+  ticket.comments.items = nextItems;
+  ticket.updatedBy = actor;
+  ticket.updatedAt = now;
+
+  return ticket;
+};
+
 const parseTicketId = (value: string | readonly string[] | undefined) => {
   if (Array.isArray(value)) {
     return null;
@@ -399,6 +452,94 @@ export const handlers = [
     }
 
     return HttpResponse.json(ticket, { status: 201 });
+  }),
+  http.put('/api/tickets/:id/comments/:commentId', async ({ params, request }) => {
+    const authentication = await requireAuthentication();
+    if ('response' in authentication) {
+      return authentication.response;
+    }
+
+    const ticketId = parseTicketId(params.id);
+    const commentId = parseTicketId(params.commentId);
+
+    if (ticketId === null || commentId === null) {
+      return HttpResponse.json({ message: 'Invalid comment id' }, { status: 400 });
+    }
+
+    const body = CreateTicketCommentRequest.parse(await request.json());
+    const actor = ticketActorSchema.parse(authentication.user);
+    const ticket = getTicketById(ticketsStore, ticketId);
+
+    if (!ticket) {
+      return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+    }
+
+    const comment = ticket.comments.items.find((item) => item.id === commentId);
+
+    if (!comment) {
+      return HttpResponse.json({ message: 'comment not found' }, { status: 404 });
+    }
+
+    if (comment.createdBy?.id !== actor.id) {
+      return HttpResponse.json(
+        { message: 'comment can only be modified by its author' },
+        { status: 403 },
+      );
+    }
+
+    const updated = updateTicketCommentItem(
+      ticketsStore,
+      ticketId,
+      commentId,
+      body,
+      new Date().toISOString(),
+      actor,
+    );
+
+    return HttpResponse.json(updated);
+  }),
+  http.delete('/api/tickets/:id/comments/:commentId', async ({ params }) => {
+    const authentication = await requireAuthentication();
+    if ('response' in authentication) {
+      return authentication.response;
+    }
+
+    const ticketId = parseTicketId(params.id);
+    const commentId = parseTicketId(params.commentId);
+
+    if (ticketId === null || commentId === null) {
+      return HttpResponse.json({ message: 'Invalid comment id' }, { status: 400 });
+    }
+
+    const actor = ticketActorSchema.parse(authentication.user);
+    const ticket = getTicketById(ticketsStore, ticketId);
+
+    if (!ticket) {
+      return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+    }
+
+    const comment = ticket.comments.items.find((item) => item.id === commentId);
+
+    if (!comment) {
+      return HttpResponse.json({ message: 'comment not found' }, { status: 404 });
+    }
+
+    if (comment.createdBy?.id !== actor.id) {
+      return HttpResponse.json(
+        { message: 'comment can only be modified by its author' },
+        { status: 403 },
+      );
+    }
+
+    const updated = deleteTicketCommentItem(
+      ticketsStore,
+      ticketId,
+      commentId,
+      new Date().toISOString(),
+      actor,
+    );
+
+    return HttpResponse.json(updated);
   }),
   http.put('/api/tickets/:id', async ({ params, request }) => {
     const authentication = await requireAuthentication();

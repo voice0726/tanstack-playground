@@ -11,13 +11,13 @@ import {
 import { IconChevronLeft, IconEdit, IconTrash } from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
 import { type ReactNode, useState } from 'react';
+import { useAuthSession } from '#/features/auth/hooks/useAuthSession.ts';
 import { TicketActorValue } from '#/features/tickets/components/TicketActorValue.tsx';
 import { TicketCommentsSection } from '#/features/tickets/components/TicketCommentsSection.tsx';
 import { TicketDeleteModal } from '#/features/tickets/components/TicketDeleteModal.tsx';
 import { TicketHistoryList } from '#/features/tickets/components/TicketHistoryList.tsx';
 import { TicketRequestError } from '#/features/tickets/components/TicketRequestError.tsx';
 import { TicketStatusBadge } from '#/features/tickets/components/TicketStatusBadge.tsx';
-import { useCreateTicketComment } from '#/features/tickets/hooks/useCreateTicketComment.ts';
 import { useDeleteTicket } from '#/features/tickets/hooks/useDeleteTicket.ts';
 import { useTicket } from '#/features/tickets/hooks/useTicket.ts';
 import type { TicketsSearch } from '#/features/tickets/schema/search.ts';
@@ -40,8 +40,8 @@ export function DetailRoute({ ticketId, search }: { ticketId: number; search: Ti
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [deleteOpened, setDeleteOpened] = useState(false);
+  const authSession = useAuthSession();
   const ticketQuery = useTicket({ id: ticketId });
-  const createTicketComment = useCreateTicketComment();
   const deleteTicket = useDeleteTicket();
 
   const actions =
@@ -154,22 +154,9 @@ export function DetailRoute({ ticketId, search }: { ticketId: number; search: Ti
 
             <TicketCommentsSection
               comments={ticketQuery.data.comments}
-              errorMessage={
-                createTicketComment.isError
-                  ? getErrorMessage(createTicketComment.error, '再試行してください')
-                  : undefined
-              }
-              isSubmitting={createTicketComment.isPending}
-              onSubmit={async (values) => {
-                await createTicketComment.mutateAsync({
-                  ticketId: ticketQuery.data.id,
-                  body: values.body,
-                });
-                showToast({
-                  title: 'コメントを投稿しました',
-                  message: `#${ticketQuery.data.id} ${ticketQuery.data.title}`,
-                });
-              }}
+              currentUserId={authSession.data?.id}
+              ticketId={ticketQuery.data.id}
+              ticketTitle={ticketQuery.data.title}
             />
 
             <TicketDeleteModal

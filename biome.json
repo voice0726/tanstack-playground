@@ -7,7 +7,13 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["src/**/*.ts", "src/**/*.tsx", "vite.config.ts", "!src/routeTree.gen.ts"]
+    "includes": [
+      "src/**/*.ts",
+      "src/**/*.tsx",
+      "vite.config.ts",
+      "!src/routeTree.gen.ts",
+      "!!.worktrees"
+    ]
   },
   "formatter": {
     "enabled": true,
