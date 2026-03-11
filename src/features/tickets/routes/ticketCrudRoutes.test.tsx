@@ -467,6 +467,37 @@ describe('ticket CRUD routes', () => {
     expect(screen.queryByText('We are investigating this now.')).toBeNull();
   });
 
+  it('does not allow switching to another comment edit while a draft is open', async () => {
+    renderRoute('/tickets/1?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10');
+
+    await screen.findByText('Initial investigation started.');
+    fireEvent.change(screen.getByLabelText('コメントを追加'), {
+      target: { value: 'First authored comment.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '投稿する' }));
+
+    await screen.findByText('First authored comment.');
+    fireEvent.change(screen.getByLabelText('コメントを追加'), {
+      target: { value: 'Second authored comment.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '投稿する' }));
+
+    await screen.findByText('Second authored comment.');
+    fireEvent.click(screen.getByRole('button', { name: 'コメント 103 を編集' }));
+    fireEvent.change(screen.getByLabelText('コメントを編集'), {
+      target: { value: 'Draft for first authored comment.' },
+    });
+
+    const secondEditButton = screen.getByRole('button', { name: 'コメント 102 を編集' });
+    expect((secondEditButton as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(secondEditButton);
+
+    expect((screen.getByLabelText('コメントを編集') as HTMLInputElement).value).toBe(
+      'Draft for first authored comment.',
+    );
+    expect(screen.queryByDisplayValue('First authored comment.')).toBeNull();
+  });
+
   it('deletes an authored comment on the detail page', async () => {
     renderRoute('/tickets/1?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10');
 

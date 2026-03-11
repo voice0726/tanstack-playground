@@ -89,8 +89,13 @@ export function TicketCommentsSection({
     comment.createdBy?.id != null &&
     comment.createdBy.id === currentUserId;
 
+  const canStartEditingComment = (comment: TicketComment) =>
+    isCommentOwner(comment) &&
+    !isSubmittingDelete(comment.id) &&
+    !updateTicketComment.isPending &&
+    (editingCommentId === null || editingCommentId === comment.id);
   const canEditComment = (comment: TicketComment) =>
-    isCommentOwner(comment) && !isSubmittingDelete(comment.id) && !isEditingComment(comment.id);
+    canStartEditingComment(comment) && !isEditingComment(comment.id);
   const canDeleteComment = (comment: TicketComment) =>
     isCommentOwner(comment) && !isSubmittingUpdate(comment.id);
 
@@ -244,7 +249,7 @@ export function TicketCommentsSection({
                         size="xs"
                         variant="subtle"
                         onClick={() => {
-                          if (!canEditComment(comment)) {
+                          if (!canStartEditingComment(comment)) {
                             return;
                           }
 
