@@ -100,3 +100,49 @@ export const createTicketComment = async ({
 
   return ticketDetailSchema.parse(await response.json());
 };
+
+export const updateTicketComment = async ({
+  ticketId,
+  commentId,
+  body,
+}: {
+  ticketId: Ticket['id'];
+  commentId: number;
+  body: CreateTicketCommentRequestType['body'];
+}) => {
+  const payload = CreateTicketCommentRequest.parse({ body });
+  const response = await fetch(
+    createTicketsApiUrl(`/api/tickets/${ticketId}/comments/${commentId}`),
+    {
+      method: 'PUT',
+      credentials: 'include',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(payload),
+    },
+  );
+
+  await ensureSuccess(response, 'コメントの更新に失敗しました。');
+
+  return ticketDetailSchema.parse(await response.json());
+};
+
+export const deleteTicketComment = async ({
+  ticketId,
+  commentId,
+}: {
+  ticketId: Ticket['id'];
+  commentId: number;
+}) => {
+  const response = await fetch(
+    createTicketsApiUrl(`/api/tickets/${ticketId}/comments/${commentId}`),
+    {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: JSON_HEADERS,
+    },
+  );
+
+  await ensureSuccess(response, 'コメントの削除に失敗しました。');
+
+  return ticketDetailSchema.parse(await response.json());
+};

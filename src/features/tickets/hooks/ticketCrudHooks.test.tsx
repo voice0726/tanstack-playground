@@ -20,8 +20,10 @@ import { TICKET_ADMIN, TICKET_CREATOR, TICKET_EDITOR } from '@/test/fixtures/tic
 import { useCreateTicket } from './useCreateTicket';
 import { useCreateTicketComment } from './useCreateTicketComment';
 import { useDeleteTicket } from './useDeleteTicket';
+import { useDeleteTicketComment } from './useDeleteTicketComment';
 import { useTicket } from './useTicket';
 import { useUpdateTicket } from './useUpdateTicket';
+import { useUpdateTicketComment } from './useUpdateTicketComment';
 
 const API_BASE_URL = env.VITE_API_BASE_URL;
 
@@ -165,6 +167,45 @@ const createIntegrationHandlers = (tickets: TicketDetail[]) => [
     };
 
     return HttpResponse.json(ticket, { status: 201 });
+  }),
+  http.put(`${API_BASE_URL}/api/tickets/:id/comments/:commentId`, async ({ params, request }) => {
+    const id = Number(params.id);
+    const commentId = Number(params.commentId);
+    const body = (await request.json()) as CreateTicketCommentRequest;
+    const ticket = tickets.find((item) => item.id === id);
+
+    if (!ticket) {
+      return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+    }
+
+    const comment = ticket.comments.items.find((item) => item.id === commentId);
+
+    if (!comment) {
+      return HttpResponse.json({ message: 'comment not found' }, { status: 404 });
+    }
+
+    comment.body = body.body;
+    ticket.updatedBy = TICKET_ADMIN;
+    ticket.updatedAt = '2026-03-06T12:30:00Z';
+
+    return HttpResponse.json(ticket);
+  }),
+  http.delete(`${API_BASE_URL}/api/tickets/:id/comments/:commentId`, ({ params }) => {
+    const id = Number(params.id);
+    const commentId = Number(params.commentId);
+    const ticket = tickets.find((item) => item.id === id);
+
+    if (!ticket) {
+      return HttpResponse.json({ message: 'Ticket not found' }, { status: 404 });
+    }
+
+    ticket.comments = {
+      items: ticket.comments.items.filter((item) => item.id !== commentId),
+    };
+    ticket.updatedBy = TICKET_ADMIN;
+    ticket.updatedAt = '2026-03-06T13:00:00Z';
+
+    return HttpResponse.json(ticket);
   }),
   http.put(`${API_BASE_URL}/api/tickets/:id`, async ({ params, request }) => {
     const id = Number(params.id);
@@ -340,6 +381,49 @@ function CreateTicketCommentIntegrationProbe() {
   );
 }
 
+function UpdateTicketCommentIntegrationProbe() {
+  const mutation = useUpdateTicketComment();
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          mutation.mutate({
+            ticketId: 1,
+            commentId: 101,
+            body: 'Edited investigation update.',
+          });
+        }}
+      >
+        update-ticket-comment
+      </button>
+      <TicketDetailProbe id={1} />
+    </>
+  );
+}
+
+function DeleteTicketCommentIntegrationProbe() {
+  const mutation = useDeleteTicketComment();
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => {
+          mutation.mutate({
+            ticketId: 1,
+            commentId: 101,
+          });
+        }}
+      >
+        delete-ticket-comment
+      </button>
+      <TicketDetailProbe id={1} />
+    </>
+  );
+}
+
 describe('ticket CRUD hooks', () => {
   beforeEach(() => {
     server.use(...createIntegrationHandlers(buildSeedTickets()));
@@ -390,6 +474,30 @@ describe('ticket CRUD hooks', () => {
     await screen.findByText(
       '1:Login bug:open:aki:Creator User:Admin User:We are investigating this now.',
     );
+  });
+
+  it('useUpdateTicketComment keeps the rendered detail in sync after a successful edit', async () => {
+    renderWithQueryClient(<UpdateTicketCommentIntegrationProbe />);
+
+    await screen.findByText(
+      '1:Login bug:open:aki:Creator User:Editor User:Initial investigation started.',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'update-ticket-comment' }));
+
+    await screen.findByText(
+      '1:Login bug:open:aki:Creator User:Admin User:Edited investigation update.',
+    );
+  });
+
+  it('useDeleteTicketComment keeps the rendered detail in sync after a successful delete', async () => {
+    renderWithQueryClient(<DeleteTicketCommentIntegrationProbe />);
+
+    await screen.findByText(
+      '1:Login bug:open:aki:Creator User:Editor User:Initial investigation started.',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'delete-ticket-comment' }));
+
+    await screen.findByText('1:Login bug:open:aki:Creator User:Admin User:-');
   });
 
   it('useDeleteTicket removes the deleted row from the rendered ticket list', async () => {
