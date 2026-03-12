@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryHistory, RouterProvider } from '@tanstack/react-router';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { HttpResponse, http } from 'msw';
+import { delay, HttpResponse, http } from 'msw';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { AuthUser } from '#/features/auth/schema.ts';
 import {
@@ -398,6 +398,90 @@ describe('ticket CRUD routes', () => {
       q: 'Login',
       status: 'open',
     });
+  });
+
+  it('keeps the previous page rows visible while the next page is fetching', async () => {
+    const tickets = buildSeedTickets();
+
+    server.use(
+      http.get(`${API_BASE_URL}/api/tickets`, async ({ request }) => {
+        const url = new URL(request.url);
+        const search = ticketsSearchSchema.parse(Object.fromEntries(url.searchParams.entries()));
+
+        if (search.page === 2) {
+          await delay(200);
+        }
+
+        return HttpResponse.json(listTickets(tickets, search));
+      }),
+    );
+
+    renderRoute('/tickets?status=all&sortBy=id&sortOrder=asc&page=1&pageSize=1');
+
+    await screen.findByText('Login bug');
+    fireEvent.click(screen.getByRole('button', { name: '2' }));
+
+    await screen.findByRole('status', { name: '更新中' });
+    expect(screen.getByText('Login bug')).toBeTruthy();
+
+    await screen.findByText('Refactor filters');
+    await waitFor(() => {
+      expect(screen.queryByText('Login bug')).toBeNull();
+    });
+  });
+
+  it('does not show the empty state while the initial page load is still pending', async () => {
+    const tickets = buildSeedTickets();
+
+    server.use(
+      http.get(`${API_BASE_URL}/api/tickets`, async ({ request }) => {
+        const url = new URL(request.url);
+        const search = ticketsSearchSchema.parse(Object.fromEntries(url.searchParams.entries()));
+
+        if (search.page === 2) {
+          await delay(200);
+        }
+
+        return HttpResponse.json(listTickets(tickets, search));
+      }),
+    );
+
+    renderRoute('/tickets?status=all&sortBy=id&sortOrder=asc&page=2&pageSize=1');
+
+    await screen.findByRole('status', { name: '読み込み中' });
+    expect(screen.queryByText('表示できるチケットがありません')).toBeNull();
+
+    await screen.findByText('Refactor filters');
+  });
+
+  it('shows the table error state when the next page fetch fails', async () => {
+    const tickets = buildSeedTickets();
+
+    server.use(
+      http.get(`${API_BASE_URL}/api/tickets`, async ({ request }) => {
+        const url = new URL(request.url);
+        const search = ticketsSearchSchema.parse(Object.fromEntries(url.searchParams.entries()));
+
+        if (search.page === 2) {
+          await delay(200);
+          return HttpResponse.json({ message: 'fetch failed' }, { status: 500 });
+        }
+
+        return HttpResponse.json(listTickets(tickets, search));
+      }),
+    );
+
+    renderRoute('/tickets?status=all&sortBy=id&sortOrder=asc&page=1&pageSize=1');
+
+    await screen.findByText('Login bug');
+    fireEvent.click(screen.getByRole('button', { name: '2' }));
+
+    await screen.findByRole('status', { name: '更新中' });
+    await within(screen.getByRole('table')).findByText('チケット一覧の取得に失敗しました');
+    expect(screen.queryByText('Login bug')).toBeNull();
+    expect(screen.getByText('total: 3')).toBeTruthy();
+    expect(screen.getByText('- / 3')).toBeTruthy();
+    expect(screen.getByRole('button', { name: '3' })).toBeTruthy();
   });
 
   it('shows operation history on the detail page', async () => {

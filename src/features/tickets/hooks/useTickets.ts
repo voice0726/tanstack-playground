@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { fetchTickets } from '#/features/tickets/api.ts';
 import { ticketsQueryKey } from '#/features/tickets/queryKeys.ts';
 import type { TicketsResponse } from '#/features/tickets/schema/index.ts';
@@ -17,6 +17,7 @@ export const useTickets = (opts: UseTicketsOptions) => {
   return useQuery<TicketsResponse>({
     queryKey: ticketsQueryKey.list(filters),
     queryFn: () => fetchTickets(filters),
+    placeholderData: keepPreviousData,
     staleTime: TICKETS_STALE_TIME,
     gcTime: TICKETS_GC_TIME,
   });
