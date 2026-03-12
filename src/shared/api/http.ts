@@ -1,4 +1,4 @@
-import { env } from '#/shared/config/env.ts';
+import { env } from '@/shared/config/env.ts';
 
 export class HttpError extends Error {
   status: number;

@@ -3,14 +3,14 @@ import { Button, Group, Paper, Stack, Text } from '@mantine/core';
 import { IconCheck, IconPencil, IconTrash, IconX } from '@tabler/icons-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { TicketActorInfo } from '#/features/tickets/components/detail/TicketActorInfo.tsx';
+import { TicketActorInfo } from '@/features/tickets/components/detail/TicketActorInfo.tsx';
 import {
   TICKET_COMMENT_FORM_DEFAULT_VALUES,
   type TicketCommentFormOutput,
   ticketCommentFormValuesSchema,
-} from '#/features/tickets/schema/form.ts';
-import type { TicketComment } from '#/features/tickets/schema/index.ts';
-import { formatDateTime } from '#/shared/utils/date.ts';
+} from '@/features/tickets/schema/form.ts';
+import type { TicketComment } from '@/features/tickets/schema/index.ts';
+import { formatDateTime } from '@/shared/utils/date.ts';
 import { TicketCommentForm } from './TicketCommentForm.tsx';
 
 type TicketCommentItemProps = {

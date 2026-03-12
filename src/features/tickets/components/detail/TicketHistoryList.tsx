@@ -4,8 +4,8 @@ import type {
   Ticket,
   TicketHistory,
   TicketHistoryChange,
-} from '#/features/tickets/schema/index.ts';
-import { formatDateTime } from '#/shared/utils/date.ts';
+} from '@/features/tickets/schema/index.ts';
+import { formatDateTime } from '@/shared/utils/date.ts';
 import { TicketActorInfo } from './TicketActorInfo.tsx';
 import { TicketStatusBadge } from './TicketStatusBadge.tsx';
 

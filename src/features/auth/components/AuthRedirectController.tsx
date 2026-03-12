@@ -1,9 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { useEffect, useEffectEvent, useRef } from 'react';
-import { authSessionQueryOptions } from '#/features/auth/hooks/useAuthSession.ts';
-import { ticketsQueryKey } from '#/features/tickets/queryKeys.ts';
-import { UnauthorizedError } from '#/shared/api/http.ts';
+import { authSessionQueryOptions } from '@/features/auth/hooks/useAuthSession.ts';
+import { ticketsQueryKey } from '@/features/tickets/queryKeys.ts';
+import { UnauthorizedError } from '@/shared/api/http.ts';
 
 export function AuthRedirectController() {
   const queryClient = useQueryClient();

@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { HttpResponse, http } from 'msw';
 import type { PropsWithChildren, ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { useTickets } from '#/features/tickets/hooks/useTickets.ts';
+import { useTickets } from '@/features/tickets/hooks/useTickets.ts';
 import type {
   CreateTicketCommentRequest,
   CreateTicketRequest,
@@ -12,10 +12,10 @@ import type {
   TicketDetail,
   TicketHistory,
   UpdateTicketRequest,
-} from '#/features/tickets/schema/index.ts';
-import { TICKETS_SEARCH_DEFAULT } from '#/features/tickets/schema/search.ts';
-import { server } from '#/mocks/node.ts';
-import { env } from '#/shared/config/env.ts';
+} from '@/features/tickets/schema/index.ts';
+import { TICKETS_SEARCH_DEFAULT } from '@/features/tickets/schema/search.ts';
+import { server } from '@/mocks/node.ts';
+import { env } from '@/shared/config/env.ts';
 import { TICKET_ADMIN, TICKET_CREATOR, TICKET_EDITOR } from '@/test/fixtures/ticketActors.ts';
 import { useCreateTicket } from './useCreateTicket';
 import { useCreateTicketComment } from './useCreateTicketComment';

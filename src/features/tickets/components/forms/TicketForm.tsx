@@ -6,7 +6,7 @@ import {
   type TicketFormInput,
   type TicketFormOutput,
   ticketFormValuesSchema,
-} from '#/features/tickets/schema/form.ts';
+} from '@/features/tickets/schema/form.ts';
 
 type TicketFormProps = {
   // This form reads initial values on mount. Callers should remount it when switching records.

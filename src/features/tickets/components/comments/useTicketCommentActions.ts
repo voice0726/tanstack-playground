@@ -1,13 +1,13 @@
 import type { UseFormReset } from 'react-hook-form';
-import { useCreateTicketComment } from '#/features/tickets/hooks/useCreateTicketComment.ts';
-import { useDeleteTicketComment } from '#/features/tickets/hooks/useDeleteTicketComment.ts';
-import { useUpdateTicketComment } from '#/features/tickets/hooks/useUpdateTicketComment.ts';
+import { useCreateTicketComment } from '@/features/tickets/hooks/useCreateTicketComment.ts';
+import { useDeleteTicketComment } from '@/features/tickets/hooks/useDeleteTicketComment.ts';
+import { useUpdateTicketComment } from '@/features/tickets/hooks/useUpdateTicketComment.ts';
 import {
   TICKET_COMMENT_FORM_DEFAULT_VALUES,
   type TicketCommentFormOutput,
-} from '#/features/tickets/schema/form.ts';
-import type { TicketComment } from '#/features/tickets/schema/index.ts';
-import { useToast } from '#/shared/ui/toast.tsx';
+} from '@/features/tickets/schema/form.ts';
+import type { TicketComment } from '@/features/tickets/schema/index.ts';
+import { useToast } from '@/shared/ui/toast.tsx';
 
 type UseTicketCommentActionsOptions = {
   ticketId: number;

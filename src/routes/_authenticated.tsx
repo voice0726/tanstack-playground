@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { authSessionQueryOptions } from '#/features/auth/hooks/useAuthSession.ts';
+import { authSessionQueryOptions } from '@/features/auth/hooks/useAuthSession.ts';
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: async ({ context }) => {

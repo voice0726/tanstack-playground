@@ -1,6 +1,6 @@
 import { Button } from '@mantine/core';
 import { useNavigate } from '@tanstack/react-router';
-import type { TicketsSearch } from '#/features/tickets/schema/search.ts';
+import type { TicketsSearch } from '@/features/tickets/schema/search.ts';
 
 export function TicketsBackButton({ search }: { search: TicketsSearch }) {
   const navigate = useNavigate();
