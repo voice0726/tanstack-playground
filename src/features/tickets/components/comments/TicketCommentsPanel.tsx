@@ -10,9 +10,7 @@ import {
 } from '@tabler/icons-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { TicketActorValue } from '#/features/tickets/components/TicketActorValue.tsx';
-import { TicketCommentDeleteModal } from '#/features/tickets/components/TicketCommentDeleteModal.tsx';
-import { TicketCommentForm } from '#/features/tickets/components/TicketCommentForm.tsx';
+import { TicketActorInfo } from '#/features/tickets/components/detail/TicketActorInfo.tsx';
 import { useCreateTicketComment } from '#/features/tickets/hooks/useCreateTicketComment.ts';
 import { useDeleteTicketComment } from '#/features/tickets/hooks/useDeleteTicketComment.ts';
 import { useUpdateTicketComment } from '#/features/tickets/hooks/useUpdateTicketComment.ts';
@@ -25,8 +23,10 @@ import {
 import type { TicketComment, TicketComments } from '#/features/tickets/schema/index.ts';
 import { useToast } from '#/shared/ui/toast.tsx';
 import { formatDateTime } from '#/shared/utils/date.ts';
+import { TicketCommentDeleteModal } from './TicketCommentDeleteModal.tsx';
+import { TicketCommentForm } from './TicketCommentForm.tsx';
 
-type TicketCommentsSectionProps = {
+type TicketCommentsPanelProps = {
   ticketId: number;
   ticketTitle: string;
   comments: TicketComments;
@@ -36,12 +36,12 @@ type TicketCommentsSectionProps = {
 const getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error ? error.message : fallback;
 
-export function TicketCommentsSection({
+export function TicketCommentsPanel({
   ticketId,
   ticketTitle,
   comments,
   currentUserId,
-}: TicketCommentsSectionProps) {
+}: TicketCommentsPanelProps) {
   const { showToast } = useToast();
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [commentToDelete, setCommentToDelete] = useState<TicketComment | null>(null);
@@ -234,7 +234,7 @@ export function TicketCommentsSection({
               <Stack gap="sm">
                 <Group align="flex-start" justify="space-between" wrap="wrap">
                   <Group align="flex-start" flex="1" justify="space-between">
-                    <TicketActorValue actor={comment.createdBy} fallback="不明なユーザー" />
+                    <TicketActorInfo actor={comment.createdBy} fallback="不明なユーザー" />
                     <Text c="dimmed" size="sm">
                       {formatDateTime(comment.createdAt)}
                     </Text>

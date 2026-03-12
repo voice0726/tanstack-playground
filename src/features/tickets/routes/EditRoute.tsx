@@ -1,13 +1,15 @@
 import { Button, Group, Stack, Text } from '@mantine/core';
 import { useNavigate } from '@tanstack/react-router';
-import { TicketForm } from '#/features/tickets/components/TicketForm.tsx';
-import { TicketRequestError } from '#/features/tickets/components/TicketRequestError.tsx';
+import { TicketRequestError } from '#/features/tickets/components/feedback/TicketRequestError.tsx';
+import { TicketForm } from '#/features/tickets/components/forms/TicketForm.tsx';
+import { TicketPageLayout } from '#/features/tickets/components/layout/TicketPageLayout.tsx';
+import { TicketsBackButton } from '#/features/tickets/components/layout/TicketsBackButton.tsx';
 import { useTicket } from '#/features/tickets/hooks/useTicket.ts';
 import { useUpdateTicket } from '#/features/tickets/hooks/useUpdateTicket.ts';
 import type { TicketFormInput } from '#/features/tickets/schema/form.ts';
 import type { TicketsSearch } from '#/features/tickets/schema/search.ts';
 import { useToast } from '#/shared/ui/toast.tsx';
-import { getErrorMessage, TicketPageLayout, TicketsBackButton } from './helpers.tsx';
+import { getErrorMessage } from './helpers.tsx';
 
 const toFormValues = (ticket: {
   title: string;

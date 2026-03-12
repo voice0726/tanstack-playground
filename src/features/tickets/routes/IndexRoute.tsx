@@ -14,9 +14,9 @@ import { IconEdit, IconEye, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { TicketActorValue } from '#/features/tickets/components/TicketActorValue.tsx';
-import { TicketDeleteModal } from '#/features/tickets/components/TicketDeleteModal.tsx';
-import { TicketStatusBadge } from '#/features/tickets/components/TicketStatusBadge.tsx';
+import { TicketActorInfo } from '#/features/tickets/components/detail/TicketActorInfo.tsx';
+import { TicketStatusBadge } from '#/features/tickets/components/detail/TicketStatusBadge.tsx';
+import { TicketDeleteModal } from '#/features/tickets/components/dialogs/TicketDeleteModal.tsx';
 import { useDeleteTicket } from '#/features/tickets/hooks/useDeleteTicket.ts';
 import { useTickets } from '#/features/tickets/hooks/useTickets.ts';
 import type { Ticket } from '#/features/tickets/schema/index.ts';
@@ -239,10 +239,10 @@ export function IndexRoute() {
                       </Table.Td>
                       <Table.Td>{ticket.assignee ?? '-'}</Table.Td>
                       <Table.Td>
-                        <TicketActorValue actor={ticket.createdBy} fallback="-" />
+                        <TicketActorInfo actor={ticket.createdBy} fallback="-" />
                       </Table.Td>
                       <Table.Td>
-                        <TicketActorValue actor={ticket.updatedBy} fallback="-" />
+                        <TicketActorInfo actor={ticket.updatedBy} fallback="-" />
                       </Table.Td>
                       <Table.Td>{formatDateTime(ticket.createdAt)}</Table.Td>
                       <Table.Td>{formatDateTime(ticket.updatedAt)}</Table.Td>

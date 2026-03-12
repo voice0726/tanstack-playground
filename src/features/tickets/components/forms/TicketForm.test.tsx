@@ -2,7 +2,7 @@ import { MantineProvider } from '@mantine/core';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { TicketForm } from './TicketForm';
+import { TicketForm } from './TicketForm.tsx';
 
 const renderTicketForm = (ui: ReactNode) => render(<MantineProvider>{ui}</MantineProvider>);
 

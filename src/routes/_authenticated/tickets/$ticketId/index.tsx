@@ -1,11 +1,9 @@
 import { createFileRoute, stripSearchParams } from '@tanstack/react-router';
-import { TicketRequestError } from '#/features/tickets/components/TicketRequestError.tsx';
+import { TicketRequestError } from '#/features/tickets/components/feedback/TicketRequestError.tsx';
+import { TicketPageLayout } from '#/features/tickets/components/layout/TicketPageLayout.tsx';
+import { TicketsBackButton } from '#/features/tickets/components/layout/TicketsBackButton.tsx';
 import { DetailRoute } from '#/features/tickets/routes/DetailRoute.tsx';
-import {
-  parseTicketId,
-  TicketPageLayout,
-  TicketsBackButton,
-} from '#/features/tickets/routes/helpers.tsx';
+import { parseTicketId } from '#/features/tickets/routes/helpers.tsx';
 import { TICKETS_SEARCH_DEFAULT, ticketsSearchSchema } from '#/features/tickets/schema/search.ts';
 
 export const Route = createFileRoute('/_authenticated/tickets/$ticketId/')({
