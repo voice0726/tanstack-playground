@@ -9,6 +9,7 @@ import {
 } from '#/features/tickets/schema/form.ts';
 
 type TicketFormProps = {
+  // This form reads initial values on mount. Callers should remount it when switching records.
   initialValues: TicketFormInput;
   submitLabel: string;
   isSubmitting: boolean;
