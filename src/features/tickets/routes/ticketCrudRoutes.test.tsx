@@ -677,6 +677,32 @@ describe('ticket CRUD routes', () => {
     });
   });
 
+  it('remounts the detail page when ticketId changes so comment draft state is reset', async () => {
+    const { router } = renderRoute(
+      '/tickets/1?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=20',
+    );
+
+    await screen.findByText('Initial investigation started.');
+    fireEvent.change(screen.getByLabelText('コメントを追加'), {
+      target: { value: 'draft comment for ticket 1' },
+    });
+
+    await router.navigate({
+      to: '/tickets/$ticketId',
+      params: { ticketId: '2' },
+      search: {
+        status: 'open',
+        sortBy: 'id',
+        sortOrder: 'asc',
+        page: 1,
+        pageSize: 20,
+      },
+    });
+
+    await screen.findByText('Refactor filters');
+    expect((screen.getByLabelText('コメントを追加') as HTMLTextAreaElement).value).toBe('');
+  });
+
   it('keeps unsaved search input when opening the delete modal', async () => {
     renderRoute('/tickets?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10');
 
