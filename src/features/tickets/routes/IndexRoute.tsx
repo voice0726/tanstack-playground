@@ -50,12 +50,12 @@ export function IndexRoute() {
     ],
   );
 
-  // TODO: keepPreviousData
-  const { data, isLoading, isError } = useTickets({
+  const { data, isError, isFetching, isPending } = useTickets({
     filters: normalizedSearch,
   });
-  const isTableLoading = isLoading;
-  const hasTableError = isError || (!isLoading && !data);
+  const isTableLoading = isPending;
+  const isTableFetching = isFetching && !isPending;
+  const hasTableError = isError && !data;
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
 
@@ -148,6 +148,7 @@ export function IndexRoute() {
       <TicketsListPanel
         from={from}
         hasError={hasTableError}
+        isFetching={isTableFetching}
         isLoading={isTableLoading}
         items={items}
         pageSizeOptions={pageSizeOptions}

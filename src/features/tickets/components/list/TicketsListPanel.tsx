@@ -13,6 +13,7 @@ type TicketsListPanelProps = {
   to: number;
   totalPages: number;
   search: TicketsSearch;
+  isFetching: boolean;
   isLoading: boolean;
   hasError: boolean;
   pageSizeOptions: { label: string; value: string }[];
@@ -31,6 +32,7 @@ export function TicketsListPanel({
   to,
   totalPages,
   search,
+  isFetching,
   isLoading,
   hasError,
   pageSizeOptions,
@@ -45,7 +47,14 @@ export function TicketsListPanel({
     <Paper p="lg" shadow="sm">
       <Stack gap="md">
         <Group align="center" justify="space-between" wrap="wrap">
-          <Text fw={600}>チケット一覧</Text>
+          <Group align="center" gap="xs">
+            <Text fw={600}>チケット一覧</Text>
+            {isFetching ? (
+              <Text aria-live="polite" c="dimmed" size="sm">
+                更新中...
+              </Text>
+            ) : null}
+          </Group>
           <Button leftSection={<IconPlus size={16} />} onClick={onCreate} variant="light">
             新規作成
           </Button>

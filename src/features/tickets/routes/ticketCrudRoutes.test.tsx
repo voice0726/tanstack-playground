@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryHistory, RouterProvider } from '@tanstack/react-router';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { HttpResponse, http } from 'msw';
+import { delay, HttpResponse, http } from 'msw';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { AuthUser } from '#/features/auth/schema.ts';
 import {
@@ -397,6 +397,36 @@ describe('ticket CRUD routes', () => {
     expect(router.state.location.search).toMatchObject({
       q: 'Login',
       status: 'open',
+    });
+  });
+
+  it('keeps the previous page rows visible while the next page is fetching', async () => {
+    const tickets = buildSeedTickets();
+
+    server.use(
+      http.get(`${API_BASE_URL}/api/tickets`, async ({ request }) => {
+        const url = new URL(request.url);
+        const search = ticketsSearchSchema.parse(Object.fromEntries(url.searchParams.entries()));
+
+        if (search.page === 2) {
+          await delay(200);
+        }
+
+        return HttpResponse.json(listTickets(tickets, search));
+      }),
+    );
+
+    renderRoute('/tickets?status=all&sortBy=id&sortOrder=asc&page=1&pageSize=1');
+
+    await screen.findByText('Login bug');
+    fireEvent.click(screen.getByRole('button', { name: '2' }));
+
+    await screen.findByText('更新中...');
+    expect(screen.getByText('Login bug')).toBeTruthy();
+
+    await screen.findByText('Refactor filters');
+    await waitFor(() => {
+      expect(screen.queryByText('Login bug')).toBeNull();
     });
   });
 
