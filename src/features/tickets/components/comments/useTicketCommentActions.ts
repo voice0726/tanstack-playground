@@ -4,7 +4,6 @@ import { useDeleteTicketComment } from '#/features/tickets/hooks/useDeleteTicket
 import { useUpdateTicketComment } from '#/features/tickets/hooks/useUpdateTicketComment.ts';
 import {
   TICKET_COMMENT_FORM_DEFAULT_VALUES,
-  type TicketCommentFormInput,
   type TicketCommentFormOutput,
 } from '#/features/tickets/schema/form.ts';
 import type { TicketComment } from '#/features/tickets/schema/index.ts';
@@ -14,8 +13,7 @@ type UseTicketCommentActionsOptions = {
   ticketId: number;
   ticketTitle: string;
   editingCommentId: number | null;
-  resetCreateForm: UseFormReset<TicketCommentFormInput>;
-  resetEditForm: UseFormReset<TicketCommentFormInput>;
+  resetCreateForm: UseFormReset<TicketCommentFormOutput>;
   clearEditingComment: () => void;
   clearDeleteTarget: () => void;
 };
@@ -28,7 +26,6 @@ export function useTicketCommentActions({
   ticketTitle,
   editingCommentId,
   resetCreateForm,
-  resetEditForm,
   clearEditingComment,
   clearDeleteTarget,
 }: UseTicketCommentActionsOptions) {
@@ -66,15 +63,11 @@ export function useTicketCommentActions({
     ? getErrorMessage(createTicketComment.error, '再試行してください')
     : undefined;
 
-  const submitUpdatedComment = (values: TicketCommentFormOutput) => {
-    if (editingCommentId === null) {
-      return;
-    }
-
+  const submitUpdatedComment = (commentId: number, values: TicketCommentFormOutput) => {
     updateTicketComment.mutate(
       {
         ticketId,
-        commentId: editingCommentId,
+        commentId,
         body: values.body,
       },
       {
@@ -86,8 +79,9 @@ export function useTicketCommentActions({
           });
         },
         onSuccess: () => {
-          clearEditingComment();
-          resetEditForm(TICKET_COMMENT_FORM_DEFAULT_VALUES);
+          if (editingCommentId === commentId) {
+            clearEditingComment();
+          }
           showToast({
             title: 'コメントを更新しました',
             message: `#${ticketId} ${ticketTitle}`,
@@ -122,7 +116,6 @@ export function useTicketCommentActions({
           });
           if (editingCommentId === commentToDelete.id) {
             clearEditingComment();
-            resetEditForm(TICKET_COMMENT_FORM_DEFAULT_VALUES);
           }
           clearDeleteTarget();
         },

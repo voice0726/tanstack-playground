@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   TICKET_COMMENT_FORM_DEFAULT_VALUES,
-  type TicketCommentFormInput,
   type TicketCommentFormOutput,
   ticketCommentFormValuesSchema,
 } from '#/features/tickets/schema/form.ts';
@@ -31,23 +30,12 @@ export function TicketCommentsPanel({
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [commentToDelete, setCommentToDelete] = useState<TicketComment | null>(null);
 
-  // Form state for creating a new comment from the section header form.
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<TicketCommentFormInput, unknown, TicketCommentFormOutput>({
-    defaultValues: TICKET_COMMENT_FORM_DEFAULT_VALUES,
-    resolver: zodResolver(ticketCommentFormValuesSchema),
-  });
-  // Separate form state for inline editing of an existing comment.
-  const {
-    register: registerEditComment,
-    handleSubmit: handleEditCommentSubmit,
-    reset: resetEditComment,
-    formState: { errors: editErrors },
-  } = useForm<TicketCommentFormInput, unknown, TicketCommentFormOutput>({
+  } = useForm<TicketCommentFormOutput, unknown, TicketCommentFormOutput>({
     defaultValues: TICKET_COMMENT_FORM_DEFAULT_VALUES,
     resolver: zodResolver(ticketCommentFormValuesSchema),
   });
@@ -69,7 +57,6 @@ export function TicketCommentsPanel({
     ticketTitle,
     editingCommentId,
     resetCreateForm: reset,
-    resetEditForm: resetEditComment,
     clearEditingComment: () => {
       setEditingCommentId(null);
     },
@@ -83,18 +70,15 @@ export function TicketCommentsPanel({
     comment.createdBy?.id != null &&
     comment.createdBy.id === currentUserId;
 
-  const canStartEditingComment = (comment: TicketComment) =>
+  const canEditComment = (comment: TicketComment) =>
     isCommentOwner(comment) &&
     !isSubmittingDelete(comment.id) &&
     !updateTicketComment.isPending &&
-    (editingCommentId === null || editingCommentId === comment.id);
-  const canEditComment = (comment: TicketComment) =>
-    canStartEditingComment(comment) && !isEditingComment(comment.id);
+    editingCommentId === null;
   const canDeleteComment = (comment: TicketComment) =>
     isCommentOwner(comment) && !isSubmittingUpdate(comment.id);
 
   const submitCommentForm = handleSubmit(submitComment);
-  const submitUpdatedCommentForm = handleEditCommentSubmit(submitUpdatedComment);
 
   return (
     <Stack gap="md">
@@ -149,26 +133,23 @@ export function TicketCommentsPanel({
               key={comment.id}
               canDelete={canDeleteComment(comment)}
               canEdit={canEditComment(comment)}
-              canStartEditing={canStartEditingComment(comment)}
               comment={comment}
-              editBodyError={editErrors.body?.message}
-              editBodyField={registerEditComment}
               isDeleting={isSubmittingDelete(comment.id)}
               isEditing={isEditingComment(comment.id)}
               isOwner={isCommentOwner(comment)}
               isUpdating={isSubmittingUpdate(comment.id)}
               onCancelEditing={() => {
                 setEditingCommentId(null);
-                resetEditComment(TICKET_COMMENT_FORM_DEFAULT_VALUES);
               }}
               onDelete={() => {
                 setCommentToDelete(comment);
               }}
               onStartEditing={() => {
                 setEditingCommentId(comment.id);
-                resetEditComment({ body: comment.body });
               }}
-              onSubmitEdit={submitUpdatedCommentForm}
+              onSubmitEdit={(values) => {
+                submitUpdatedComment(comment.id, values);
+              }}
             />
           ))}
         </Stack>

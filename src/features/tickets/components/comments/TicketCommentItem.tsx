@@ -1,30 +1,30 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button, Group, Paper, Stack, Text } from '@mantine/core';
 import { IconCheck, IconPencil, IconTrash, IconX } from '@tabler/icons-react';
-import type { ComponentPropsWithoutRef } from 'react';
-import type { UseFormRegister } from 'react-hook-form';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { TicketActorInfo } from '#/features/tickets/components/detail/TicketActorInfo.tsx';
-import type { TicketCommentFormInput } from '#/features/tickets/schema/form.ts';
+import {
+  TICKET_COMMENT_FORM_DEFAULT_VALUES,
+  type TicketCommentFormOutput,
+  ticketCommentFormValuesSchema,
+} from '#/features/tickets/schema/form.ts';
 import type { TicketComment } from '#/features/tickets/schema/index.ts';
 import { formatDateTime } from '#/shared/utils/date.ts';
 import { TicketCommentForm } from './TicketCommentForm.tsx';
-
-type FormOnSubmit = NonNullable<ComponentPropsWithoutRef<'form'>['onSubmit']>;
 
 type TicketCommentItemProps = {
   comment: TicketComment;
   isOwner: boolean;
   isEditing: boolean;
   canEdit: boolean;
-  canStartEditing: boolean;
   canDelete: boolean;
   isDeleting: boolean;
   isUpdating: boolean;
-  editBodyError?: string;
-  editBodyField: UseFormRegister<TicketCommentFormInput>;
   onStartEditing: () => void;
   onDelete: () => void;
   onCancelEditing: () => void;
-  onSubmitEdit: FormOnSubmit;
+  onSubmitEdit: (values: TicketCommentFormOutput) => void;
 };
 
 export function TicketCommentItem({
@@ -32,17 +32,32 @@ export function TicketCommentItem({
   isOwner,
   isEditing,
   canEdit,
-  canStartEditing,
   canDelete,
   isDeleting,
   isUpdating,
-  editBodyError,
-  editBodyField,
   onStartEditing,
   onDelete,
   onCancelEditing,
   onSubmitEdit,
 }: TicketCommentItemProps) {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<TicketCommentFormOutput, unknown, TicketCommentFormOutput>({
+    defaultValues: TICKET_COMMENT_FORM_DEFAULT_VALUES,
+    resolver: zodResolver(ticketCommentFormValuesSchema),
+  });
+
+  useEffect(() => {
+    if (!isEditing) {
+      return;
+    }
+
+    reset({ body: comment.body });
+  }, [comment.body, isEditing, reset]);
+
   return (
     <Paper p="md" radius="md" withBorder>
       <Stack gap="sm">
@@ -62,13 +77,7 @@ export function TicketCommentItem({
                 leftSection={<IconPencil size={14} />}
                 size="xs"
                 variant="subtle"
-                onClick={() => {
-                  if (!canStartEditing) {
-                    return;
-                  }
-
-                  onStartEditing();
-                }}
+                onClick={onStartEditing}
               >
                 編集
               </Button>
@@ -89,15 +98,18 @@ export function TicketCommentItem({
         </Group>
         {isEditing ? (
           <TicketCommentForm
-            bodyError={editBodyError}
-            bodyField={editBodyField('body')}
+            bodyError={errors.body?.message}
+            bodyField={register('body')}
             cancelButton={
               <Button
                 color="gray"
                 leftSection={<IconX size={16} />}
                 type="button"
                 variant="light"
-                onClick={onCancelEditing}
+                onClick={() => {
+                  reset({ body: comment.body });
+                  onCancelEditing();
+                }}
               >
                 キャンセル
               </Button>
@@ -106,7 +118,7 @@ export function TicketCommentItem({
             label="コメントを編集"
             submitIcon={<IconCheck size={16} />}
             submitLabel="更新する"
-            onSubmit={onSubmitEdit}
+            onSubmit={handleSubmit(onSubmitEdit)}
           />
         ) : (
           <Text style={{ whiteSpace: 'pre-wrap' }}>{comment.body}</Text>
