@@ -89,7 +89,6 @@ export function EditRoute({ ticketId, search }: { ticketId: number; search: Tick
           }
           initialValues={toFormValues(ticketQuery.data)}
           isSubmitting={updateTicket.isPending}
-          resetKey={ticketId}
           submitLabel="更新する"
           onSubmit={(values) => {
             updateTicket.mutate(

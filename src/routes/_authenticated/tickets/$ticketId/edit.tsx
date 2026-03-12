@@ -8,6 +8,7 @@ import { TICKETS_SEARCH_DEFAULT, ticketsSearchSchema } from '#/features/tickets/
 
 export const Route = createFileRoute('/_authenticated/tickets/$ticketId/edit')({
   component: RouteComponent,
+  remountDeps: ({ params }) => params.ticketId,
   validateSearch: ticketsSearchSchema.parse,
   search: {
     middlewares: [stripSearchParams(TICKETS_SEARCH_DEFAULT)],

@@ -28,7 +28,6 @@ export function CreateRoute({ search }: { search: TicketsSearch }) {
         }
         initialValues={TICKET_FORM_DEFAULT_VALUES}
         isSubmitting={createTicket.isPending}
-        resetKey="create-ticket"
         submitLabel="作成する"
         onSubmit={(values) => {
           createTicket.mutate(values, {
