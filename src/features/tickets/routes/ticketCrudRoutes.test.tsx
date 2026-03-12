@@ -421,13 +421,67 @@ describe('ticket CRUD routes', () => {
     await screen.findByText('Login bug');
     fireEvent.click(screen.getByRole('button', { name: '2' }));
 
-    await screen.findByText('更新中...');
+    await screen.findByRole('status', { name: '更新中' });
     expect(screen.getByText('Login bug')).toBeTruthy();
 
     await screen.findByText('Refactor filters');
     await waitFor(() => {
       expect(screen.queryByText('Login bug')).toBeNull();
     });
+  });
+
+  it('does not show the empty state while the initial page load is still pending', async () => {
+    const tickets = buildSeedTickets();
+
+    server.use(
+      http.get(`${API_BASE_URL}/api/tickets`, async ({ request }) => {
+        const url = new URL(request.url);
+        const search = ticketsSearchSchema.parse(Object.fromEntries(url.searchParams.entries()));
+
+        if (search.page === 2) {
+          await delay(200);
+        }
+
+        return HttpResponse.json(listTickets(tickets, search));
+      }),
+    );
+
+    renderRoute('/tickets?status=all&sortBy=id&sortOrder=asc&page=2&pageSize=1');
+
+    await screen.findByRole('status', { name: '読み込み中' });
+    expect(screen.queryByText('表示できるチケットがありません')).toBeNull();
+
+    await screen.findByText('Refactor filters');
+  });
+
+  it('shows the table error state when the next page fetch fails', async () => {
+    const tickets = buildSeedTickets();
+
+    server.use(
+      http.get(`${API_BASE_URL}/api/tickets`, async ({ request }) => {
+        const url = new URL(request.url);
+        const search = ticketsSearchSchema.parse(Object.fromEntries(url.searchParams.entries()));
+
+        if (search.page === 2) {
+          await delay(200);
+          return HttpResponse.json({ message: 'fetch failed' }, { status: 500 });
+        }
+
+        return HttpResponse.json(listTickets(tickets, search));
+      }),
+    );
+
+    renderRoute('/tickets?status=all&sortBy=id&sortOrder=asc&page=1&pageSize=1');
+
+    await screen.findByText('Login bug');
+    fireEvent.click(screen.getByRole('button', { name: '2' }));
+
+    await screen.findByRole('status', { name: '更新中' });
+    await within(screen.getByRole('table')).findByText('チケット一覧の取得に失敗しました');
+    expect(screen.queryByText('Login bug')).toBeNull();
+    expect(screen.getByText('total: 3')).toBeTruthy();
+    expect(screen.getByText('- / 3')).toBeTruthy();
+    expect(screen.getByRole('button', { name: '3' })).toBeTruthy();
   });
 
   it('shows operation history on the detail page', async () => {
