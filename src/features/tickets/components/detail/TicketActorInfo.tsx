@@ -1,12 +1,12 @@
 import { Stack, Text } from '@mantine/core';
 import type { TicketActor } from '#/features/tickets/schema/index.ts';
 
-type TicketActorValueProps = {
+type TicketActorInfoProps = {
   actor?: TicketActor | null;
   fallback?: string;
 };
 
-export function TicketActorValue({ actor, fallback = '未設定' }: TicketActorValueProps) {
+export function TicketActorInfo({ actor, fallback = '未設定' }: TicketActorInfoProps) {
   if (!actor) {
     return (
       <Text c="dimmed" size="sm">

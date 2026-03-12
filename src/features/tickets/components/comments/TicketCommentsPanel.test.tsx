@@ -1,10 +1,10 @@
 import { MantineProvider } from '@mantine/core';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { ToastProvider } from '#/shared/ui/toast.tsx';
-import { TicketCommentsSection } from './TicketCommentsSection.tsx';
+import { TicketCommentsPanel } from './TicketCommentsPanel.tsx';
 
 const createTestQueryClient = () =>
   new QueryClient({
@@ -31,10 +31,10 @@ afterEach(() => {
   cleanup();
 });
 
-describe('TicketCommentsSection', () => {
+describe('TicketCommentsPanel', () => {
   it('does not render ownership actions without a resolved current user and author', () => {
     renderCommentsSection(
-      <TicketCommentsSection
+      <TicketCommentsPanel
         comments={{
           items: [
             {
@@ -54,5 +54,39 @@ describe('TicketCommentsSection', () => {
     expect(screen.getByText('不明なユーザー')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'コメント 101 を編集' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'コメント 101 を削除' })).toBeNull();
+  });
+
+  it('restores the original comment body when reopening inline edit', async () => {
+    renderCommentsSection(
+      <TicketCommentsPanel
+        comments={{
+          items: [
+            {
+              id: 101,
+              body: 'Initial investigation started.',
+              createdBy: { id: 1, email: 'aki@example.com', displayName: 'Aki' },
+              createdAt: '2026-03-03T15:00:00Z',
+            },
+          ],
+        }}
+        currentUserId={1}
+        ticketId={1}
+        ticketTitle="Login bug"
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'コメント 101 を編集' }));
+    const editField = screen.getByLabelText('コメントを編集') as HTMLTextAreaElement;
+    expect(editField.value).toBe('Initial investigation started.');
+
+    fireEvent.change(editField, {
+      target: { value: 'Draft update that should be discarded.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'コメント 101 を編集' }));
+    expect((screen.getByLabelText('コメントを編集') as HTMLTextAreaElement).value).toBe(
+      'Initial investigation started.',
+    );
   });
 });

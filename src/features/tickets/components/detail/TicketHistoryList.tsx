@@ -6,7 +6,7 @@ import type {
   TicketHistoryChange,
 } from '#/features/tickets/schema/index.ts';
 import { formatDateTime } from '#/shared/utils/date.ts';
-import { TicketActorValue } from './TicketActorValue.tsx';
+import { TicketActorInfo } from './TicketActorInfo.tsx';
 import { TicketStatusBadge } from './TicketStatusBadge.tsx';
 
 const FIELD_LABELS: Record<string, string> = {
@@ -66,7 +66,7 @@ export function TicketHistoryList({ history }: { history: TicketHistory }) {
                     <ThemeIcon color="gray" radius="xl" size="sm" variant="light">
                       <IconUser size={14} />
                     </ThemeIcon>
-                    <TicketActorValue actor={item.actor} fallback="不明なユーザー" />
+                    <TicketActorInfo actor={item.actor} fallback="不明なユーザー" />
                   </Group>
                 </Group>
 

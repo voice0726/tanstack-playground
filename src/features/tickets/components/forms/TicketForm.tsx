@@ -1,7 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert, Button, Group, Select, Stack, TextInput } from '@mantine/core';
 import type { ReactNode } from 'react';
-import { useEffect, useMemo } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
   type TicketFormInput,
@@ -10,7 +9,7 @@ import {
 } from '#/features/tickets/schema/form.ts';
 
 type TicketFormProps = {
-  resetKey?: string | number;
+  // This form reads initial values on mount. Callers should remount it when switching records.
   initialValues: TicketFormInput;
   submitLabel: string;
   isSubmitting: boolean;
@@ -25,7 +24,6 @@ const statusOptions = [
 ];
 
 export function TicketForm({
-  resetKey,
   initialValues,
   submitLabel,
   isSubmitting,
@@ -33,28 +31,15 @@ export function TicketForm({
   cancelButton,
   onSubmit,
 }: TicketFormProps) {
-  const { assignee, status, title } = initialValues;
-  const syncTarget = useMemo(
-    () => ({
-      formValues: { assignee, status, title },
-      resetKey,
-    }),
-    [assignee, resetKey, status, title],
-  );
   const {
     control,
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<TicketFormInput, unknown, TicketFormOutput>({
-    defaultValues: syncTarget.formValues,
+    defaultValues: initialValues,
     resolver: zodResolver(ticketFormValuesSchema),
   });
-
-  useEffect(() => {
-    reset(syncTarget.formValues);
-  }, [reset, syncTarget]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>

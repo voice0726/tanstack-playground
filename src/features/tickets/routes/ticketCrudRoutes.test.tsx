@@ -647,6 +647,62 @@ describe('ticket CRUD routes', () => {
     });
   });
 
+  it('remounts the edit page when ticketId changes so a new form starts from fetched values', async () => {
+    const { router } = renderRoute(
+      '/tickets/1/edit?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=20',
+    );
+
+    await screen.findByDisplayValue('Login bug');
+    fireEvent.change(screen.getByLabelText('タイトル'), {
+      target: { value: 'draft title for ticket 1' },
+    });
+
+    await router.navigate({
+      to: '/tickets/$ticketId/edit',
+      params: { ticketId: '2' },
+      search: {
+        status: 'open',
+        sortBy: 'id',
+        sortOrder: 'asc',
+        page: 1,
+        pageSize: 20,
+      },
+    });
+
+    await screen.findByText('チケット #2 を編集');
+    await waitFor(() => {
+      expect((screen.getByLabelText('タイトル') as HTMLInputElement).value).toBe(
+        'Refactor filters',
+      );
+    });
+  });
+
+  it('remounts the detail page when ticketId changes so comment draft state is reset', async () => {
+    const { router } = renderRoute(
+      '/tickets/1?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=20',
+    );
+
+    await screen.findByText('Initial investigation started.');
+    fireEvent.change(screen.getByLabelText('コメントを追加'), {
+      target: { value: 'draft comment for ticket 1' },
+    });
+
+    await router.navigate({
+      to: '/tickets/$ticketId',
+      params: { ticketId: '2' },
+      search: {
+        status: 'open',
+        sortBy: 'id',
+        sortOrder: 'asc',
+        page: 1,
+        pageSize: 20,
+      },
+    });
+
+    await screen.findByText('Refactor filters');
+    expect((screen.getByLabelText('コメントを追加') as HTMLTextAreaElement).value).toBe('');
+  });
+
   it('keeps unsaved search input when opening the delete modal', async () => {
     renderRoute('/tickets?status=open&sortBy=id&sortOrder=asc&page=1&pageSize=10');
 
