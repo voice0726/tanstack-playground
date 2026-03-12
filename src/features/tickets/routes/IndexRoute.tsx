@@ -114,26 +114,29 @@ export function IndexRoute() {
     setDeleteTarget(null);
   };
 
-  const confirmDelete = async () => {
+  const confirmDelete = () => {
     if (!deleteTarget) {
       return;
     }
 
-    try {
-      await deleteTicket.mutateAsync(deleteTarget.id);
-      showToast({
-        title: 'チケットを削除しました',
-        message: `#${deleteTarget.id} ${deleteTarget.title}`,
-      });
-      setDeleteTarget(null);
-    } catch (error) {
-      showToast({
-        title: '削除に失敗しました',
-        message: getErrorMessage(error, '再試行してください'),
-        color: 'red',
-      });
-      throw error;
-    }
+    const ticket = deleteTarget;
+
+    deleteTicket.mutate(ticket.id, {
+      onError: (error) => {
+        showToast({
+          title: '削除に失敗しました',
+          message: getErrorMessage(error, '再試行してください'),
+          color: 'red',
+        });
+      },
+      onSuccess: () => {
+        showToast({
+          title: 'チケットを削除しました',
+          message: `#${ticket.id} ${ticket.title}`,
+        });
+        setDeleteTarget(null);
+      },
+    });
   };
 
   return (
@@ -165,9 +168,7 @@ export function IndexRoute() {
         opened={deleteTarget !== null}
         ticket={deleteTarget}
         onClose={closeDeleteModal}
-        onConfirm={() => {
-          void confirmDelete();
-        }}
+        onConfirm={confirmDelete}
       />
     </Stack>
   );
