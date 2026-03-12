@@ -1,19 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Group, Paper, Stack, Text, ThemeIcon } from '@mantine/core';
-import {
-  IconCheck,
-  IconMessageCircle,
-  IconPencil,
-  IconSend,
-  IconTrash,
-  IconX,
-} from '@tabler/icons-react';
+import { Group, Paper, Stack, Text, ThemeIcon } from '@mantine/core';
+import { IconMessageCircle, IconSend } from '@tabler/icons-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { TicketActorInfo } from '#/features/tickets/components/detail/TicketActorInfo.tsx';
-import { useCreateTicketComment } from '#/features/tickets/hooks/useCreateTicketComment.ts';
-import { useDeleteTicketComment } from '#/features/tickets/hooks/useDeleteTicketComment.ts';
-import { useUpdateTicketComment } from '#/features/tickets/hooks/useUpdateTicketComment.ts';
 import {
   TICKET_COMMENT_FORM_DEFAULT_VALUES,
   type TicketCommentFormInput,
@@ -21,10 +10,10 @@ import {
   ticketCommentFormValuesSchema,
 } from '#/features/tickets/schema/form.ts';
 import type { TicketComment, TicketComments } from '#/features/tickets/schema/index.ts';
-import { useToast } from '#/shared/ui/toast.tsx';
-import { formatDateTime } from '#/shared/utils/date.ts';
 import { TicketCommentDeleteModal } from './TicketCommentDeleteModal.tsx';
 import { TicketCommentForm } from './TicketCommentForm.tsx';
+import { TicketCommentItem } from './TicketCommentItem.tsx';
+import { useTicketCommentActions } from './useTicketCommentActions.ts';
 
 type TicketCommentsPanelProps = {
   ticketId: number;
@@ -33,16 +22,12 @@ type TicketCommentsPanelProps = {
   currentUserId?: number;
 };
 
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
-
 export function TicketCommentsPanel({
   ticketId,
   ticketTitle,
   comments,
   currentUserId,
 }: TicketCommentsPanelProps) {
-  const { showToast } = useToast();
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [commentToDelete, setCommentToDelete] = useState<TicketComment | null>(null);
 
@@ -67,22 +52,31 @@ export function TicketCommentsPanel({
     resolver: zodResolver(ticketCommentFormValuesSchema),
   });
 
-  const createTicketComment = useCreateTicketComment();
-  const updateTicketComment = useUpdateTicketComment();
-  const deleteTicketComment = useDeleteTicketComment();
-
-  const isDeleteModalBusy = commentToDelete !== null && deleteTicketComment.isPending;
   const isEditingComment = (commentId: number) => editingCommentId === commentId;
 
-  const submittingDeleteCommentId = deleteTicketComment.isPending
-    ? deleteTicketComment.variables?.commentId
-    : undefined;
-  const submittingUpdateCommentId = updateTicketComment.isPending
-    ? updateTicketComment.variables?.commentId
-    : undefined;
-
-  const isSubmittingDelete = (commentId: number) => submittingDeleteCommentId === commentId;
-  const isSubmittingUpdate = (commentId: number) => submittingUpdateCommentId === commentId;
+  const {
+    createTicketComment,
+    updateTicketComment,
+    createErrorMessage,
+    isDeleteModalBusy,
+    isSubmittingDelete,
+    isSubmittingUpdate,
+    submitComment,
+    submitUpdatedComment,
+    confirmDeleteComment,
+  } = useTicketCommentActions({
+    ticketId,
+    ticketTitle,
+    editingCommentId,
+    resetCreateForm: reset,
+    resetEditForm: resetEditComment,
+    clearEditingComment: () => {
+      setEditingCommentId(null);
+    },
+    clearDeleteTarget: () => {
+      setCommentToDelete(null);
+    },
+  });
 
   const isCommentOwner = (comment: TicketComment) =>
     currentUserId != null &&
@@ -99,54 +93,8 @@ export function TicketCommentsPanel({
   const canDeleteComment = (comment: TicketComment) =>
     isCommentOwner(comment) && !isSubmittingUpdate(comment.id);
 
-  const submitComment = handleSubmit((values) => {
-    createTicketComment.mutate(
-      {
-        ticketId,
-        body: values.body,
-      },
-      {
-        onSuccess: () => {
-          reset(TICKET_COMMENT_FORM_DEFAULT_VALUES);
-          showToast({
-            title: 'コメントを投稿しました',
-            message: `#${ticketId} ${ticketTitle}`,
-          });
-        },
-      },
-    );
-  });
-
-  const submitUpdatedComment = handleEditCommentSubmit((values) => {
-    if (editingCommentId === null) {
-      return;
-    }
-
-    updateTicketComment.mutate(
-      {
-        ticketId,
-        commentId: editingCommentId,
-        body: values.body,
-      },
-      {
-        onError: (error) => {
-          showToast({
-            title: 'コメントの更新に失敗しました',
-            message: getErrorMessage(error, '再試行してください'),
-            color: 'red',
-          });
-        },
-        onSuccess: () => {
-          setEditingCommentId(null);
-          resetEditComment(TICKET_COMMENT_FORM_DEFAULT_VALUES);
-          showToast({
-            title: 'コメントを更新しました',
-            message: `#${ticketId} ${ticketTitle}`,
-          });
-        },
-      },
-    );
-  });
+  const submitCommentForm = handleSubmit(submitComment);
+  const submitUpdatedCommentForm = handleEditCommentSubmit(submitUpdatedComment);
 
   return (
     <Stack gap="md">
@@ -162,36 +110,7 @@ export function TicketCommentsPanel({
           setCommentToDelete(null);
         }}
         onConfirm={() => {
-          if (!commentToDelete) {
-            return;
-          }
-
-          deleteTicketComment.mutate(
-            {
-              ticketId,
-              commentId: commentToDelete.id,
-            },
-            {
-              onError: (error) => {
-                showToast({
-                  title: 'コメントの削除に失敗しました',
-                  message: getErrorMessage(error, '再試行してください'),
-                  color: 'red',
-                });
-              },
-              onSuccess: () => {
-                showToast({
-                  title: 'コメントを削除しました',
-                  message: `#${ticketId} ${ticketTitle}`,
-                });
-                if (editingCommentId === commentToDelete.id) {
-                  setEditingCommentId(null);
-                  resetEditComment(TICKET_COMMENT_FORM_DEFAULT_VALUES);
-                }
-                setCommentToDelete(null);
-              },
-            },
-          );
+          confirmDeleteComment(commentToDelete);
         }}
       />
 
@@ -206,18 +125,14 @@ export function TicketCommentsPanel({
         <TicketCommentForm
           bodyError={errors.body?.message}
           bodyField={register('body')}
-          errorMessage={
-            createTicketComment.isError
-              ? getErrorMessage(createTicketComment.error, '再試行してください')
-              : undefined
-          }
+          errorMessage={createErrorMessage}
           errorTitle="コメントを投稿できませんでした"
           isSubmitting={createTicketComment.isPending}
           label="コメントを追加"
           placeholder="調査状況や対応内容を共有できます"
           submitIcon={<IconSend size={16} />}
           submitLabel="投稿する"
-          onSubmit={submitComment}
+          onSubmit={submitCommentForm}
         />
       </Paper>
 
@@ -230,81 +145,31 @@ export function TicketCommentsPanel({
       ) : (
         <Stack gap="sm">
           {comments.items.map((comment) => (
-            <Paper key={comment.id} p="md" radius="md" withBorder>
-              <Stack gap="sm">
-                <Group align="flex-start" justify="space-between" wrap="wrap">
-                  <Group align="flex-start" flex="1" justify="space-between">
-                    <TicketActorInfo actor={comment.createdBy} fallback="不明なユーザー" />
-                    <Text c="dimmed" size="sm">
-                      {formatDateTime(comment.createdAt)}
-                    </Text>
-                  </Group>
-                  {isCommentOwner(comment) ? (
-                    <Group gap="xs">
-                      <Button
-                        aria-label={`コメント ${comment.id} を編集`}
-                        color="gray"
-                        disabled={!canEditComment(comment)}
-                        leftSection={<IconPencil size={14} />}
-                        size="xs"
-                        variant="subtle"
-                        onClick={() => {
-                          if (!canStartEditingComment(comment)) {
-                            return;
-                          }
-
-                          setEditingCommentId(comment.id);
-                          resetEditComment({ body: comment.body });
-                        }}
-                      >
-                        編集
-                      </Button>
-                      <Button
-                        aria-label={`コメント ${comment.id} を削除`}
-                        color="red"
-                        disabled={!canDeleteComment(comment)}
-                        leftSection={<IconTrash size={14} />}
-                        loading={isSubmittingDelete(comment.id)}
-                        size="xs"
-                        variant="subtle"
-                        onClick={() => {
-                          setCommentToDelete(comment);
-                        }}
-                      >
-                        削除
-                      </Button>
-                    </Group>
-                  ) : null}
-                </Group>
-                {isEditingComment(comment.id) ? (
-                  <TicketCommentForm
-                    bodyError={editErrors.body?.message}
-                    bodyField={registerEditComment('body')}
-                    cancelButton={
-                      <Button
-                        color="gray"
-                        leftSection={<IconX size={16} />}
-                        type="button"
-                        variant="light"
-                        onClick={() => {
-                          setEditingCommentId(null);
-                          resetEditComment(TICKET_COMMENT_FORM_DEFAULT_VALUES);
-                        }}
-                      >
-                        キャンセル
-                      </Button>
-                    }
-                    isSubmitting={isSubmittingUpdate(comment.id)}
-                    label="コメントを編集"
-                    submitIcon={<IconCheck size={16} />}
-                    submitLabel="更新する"
-                    onSubmit={submitUpdatedComment}
-                  />
-                ) : (
-                  <Text style={{ whiteSpace: 'pre-wrap' }}>{comment.body}</Text>
-                )}
-              </Stack>
-            </Paper>
+            <TicketCommentItem
+              key={comment.id}
+              canDelete={canDeleteComment(comment)}
+              canEdit={canEditComment(comment)}
+              canStartEditing={canStartEditingComment(comment)}
+              comment={comment}
+              editBodyError={editErrors.body?.message}
+              editBodyField={registerEditComment}
+              isDeleting={isSubmittingDelete(comment.id)}
+              isEditing={isEditingComment(comment.id)}
+              isOwner={isCommentOwner(comment)}
+              isUpdating={isSubmittingUpdate(comment.id)}
+              onCancelEditing={() => {
+                setEditingCommentId(null);
+                resetEditComment(TICKET_COMMENT_FORM_DEFAULT_VALUES);
+              }}
+              onDelete={() => {
+                setCommentToDelete(comment);
+              }}
+              onStartEditing={() => {
+                setEditingCommentId(comment.id);
+                resetEditComment({ body: comment.body });
+              }}
+              onSubmitEdit={submitUpdatedCommentForm}
+            />
           ))}
         </Stack>
       )}
