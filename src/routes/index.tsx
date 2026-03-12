@@ -13,11 +13,11 @@ import {
 import { IconArrowRight, IconLock, IconTicket } from '@tabler/icons-react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
-import { useAuthSession } from '#/features/auth/hooks/useAuthSession.ts';
-import { useLogin } from '#/features/auth/hooks/useLogin.ts';
-import { useLogout } from '#/features/auth/hooks/useLogout.ts';
-import { type LoginRequest, loginRequestSchema } from '#/features/auth/schema.ts';
-import { TICKETS_SEARCH_DEFAULT } from '#/features/tickets/schema/search.ts';
+import { useAuthSession } from '@/features/auth/hooks/useAuthSession.ts';
+import { useLogin } from '@/features/auth/hooks/useLogin.ts';
+import { useLogout } from '@/features/auth/hooks/useLogout.ts';
+import { type LoginRequest, loginRequestSchema } from '@/features/auth/schema.ts';
+import { TICKETS_SEARCH_DEFAULT } from '@/features/tickets/schema/search.ts';
 
 export const Route = createFileRoute('/')({ component: App });
 

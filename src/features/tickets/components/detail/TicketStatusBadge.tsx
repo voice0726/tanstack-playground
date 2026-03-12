@@ -1,5 +1,5 @@
 import { Badge } from '@mantine/core';
-import type { Ticket } from '#/features/tickets/schema/index.ts';
+import type { Ticket } from '@/features/tickets/schema/index.ts';
 
 const STATUS_LABEL: Record<Ticket['status'], string> = {
   open: 'Open',

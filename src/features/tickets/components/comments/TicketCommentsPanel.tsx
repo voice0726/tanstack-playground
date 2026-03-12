@@ -7,8 +7,8 @@ import {
   TICKET_COMMENT_FORM_DEFAULT_VALUES,
   type TicketCommentFormOutput,
   ticketCommentFormValuesSchema,
-} from '#/features/tickets/schema/form.ts';
-import type { TicketComment, TicketComments } from '#/features/tickets/schema/index.ts';
+} from '@/features/tickets/schema/form.ts';
+import type { TicketComment, TicketComments } from '@/features/tickets/schema/index.ts';
 import { TicketCommentDeleteModal } from './TicketCommentDeleteModal.tsx';
 import { TicketCommentForm } from './TicketCommentForm.tsx';
 import { TicketCommentItem } from './TicketCommentItem.tsx';

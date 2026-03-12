@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { updateTicketComment } from '#/features/tickets/api.ts';
-import { ticketsQueryKey } from '#/features/tickets/queryKeys.ts';
+import { updateTicketComment } from '@/features/tickets/api.ts';
+import { ticketsQueryKey } from '@/features/tickets/queryKeys.ts';
 
 export const useUpdateTicketComment = () => {
   const queryClient = useQueryClient();

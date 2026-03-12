@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type TicketsSearch, ticketsSearchSchema } from '#/features/tickets/schema/search.ts';
+import { type TicketsSearch, ticketsSearchSchema } from '@/features/tickets/schema/search.ts';
 import { TICKET_ADMIN, TICKET_CREATOR, TICKET_EDITOR } from '@/test/fixtures/ticketActors.ts';
 import {
   createTicketCommentItem,

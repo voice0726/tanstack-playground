@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchTicket } from '#/features/tickets/api.ts';
-import { ticketsQueryKey } from '#/features/tickets/queryKeys.ts';
-import type { Ticket } from '#/features/tickets/schema/index.ts';
+import { fetchTicket } from '@/features/tickets/api.ts';
+import { ticketsQueryKey } from '@/features/tickets/queryKeys.ts';
+import type { Ticket } from '@/features/tickets/schema/index.ts';
 
 const TICKET_STALE_TIME = 30_000;
 const TICKET_GC_TIME = 5 * 60_000;

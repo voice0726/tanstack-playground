@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
-import { login } from '#/features/auth/api.ts';
-import { authSessionQueryOptions } from '#/features/auth/hooks/useAuthSession.ts';
+import { login } from '@/features/auth/api.ts';
+import { authSessionQueryOptions } from '@/features/auth/hooks/useAuthSession.ts';
 
 export const useLogin = () => {
   const queryClient = useQueryClient();

@@ -11,20 +11,20 @@ import {
 import { IconChevronLeft, IconEdit, IconTrash } from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
 import { type ReactNode, useState } from 'react';
-import { useAuthSession } from '#/features/auth/hooks/useAuthSession.ts';
-import { TicketCommentsPanel } from '#/features/tickets/components/comments/TicketCommentsPanel.tsx';
-import { TicketActorInfo } from '#/features/tickets/components/detail/TicketActorInfo.tsx';
-import { TicketHistoryList } from '#/features/tickets/components/detail/TicketHistoryList.tsx';
-import { TicketStatusBadge } from '#/features/tickets/components/detail/TicketStatusBadge.tsx';
-import { TicketDeleteModal } from '#/features/tickets/components/dialogs/TicketDeleteModal.tsx';
-import { TicketRequestError } from '#/features/tickets/components/feedback/TicketRequestError.tsx';
-import { TicketPageLayout } from '#/features/tickets/components/layout/TicketPageLayout.tsx';
-import { TicketsBackButton } from '#/features/tickets/components/layout/TicketsBackButton.tsx';
-import { useDeleteTicket } from '#/features/tickets/hooks/useDeleteTicket.ts';
-import { useTicket } from '#/features/tickets/hooks/useTicket.ts';
-import type { TicketsSearch } from '#/features/tickets/schema/search.ts';
-import { useToast } from '#/shared/ui/toast.tsx';
-import { formatDateTime } from '#/shared/utils/date.ts';
+import { useAuthSession } from '@/features/auth/hooks/useAuthSession.ts';
+import { TicketCommentsPanel } from '@/features/tickets/components/comments/TicketCommentsPanel.tsx';
+import { TicketActorInfo } from '@/features/tickets/components/detail/TicketActorInfo.tsx';
+import { TicketHistoryList } from '@/features/tickets/components/detail/TicketHistoryList.tsx';
+import { TicketStatusBadge } from '@/features/tickets/components/detail/TicketStatusBadge.tsx';
+import { TicketDeleteModal } from '@/features/tickets/components/dialogs/TicketDeleteModal.tsx';
+import { TicketRequestError } from '@/features/tickets/components/feedback/TicketRequestError.tsx';
+import { TicketPageLayout } from '@/features/tickets/components/layout/TicketPageLayout.tsx';
+import { TicketsBackButton } from '@/features/tickets/components/layout/TicketsBackButton.tsx';
+import { useDeleteTicket } from '@/features/tickets/hooks/useDeleteTicket.ts';
+import { useTicket } from '@/features/tickets/hooks/useTicket.ts';
+import type { TicketsSearch } from '@/features/tickets/schema/search.ts';
+import { useToast } from '@/shared/ui/toast.tsx';
+import { formatDateTime } from '@/shared/utils/date.ts';
 import { getErrorMessage } from './helpers.tsx';
 
 function DetailItem({ label, value }: { label: string; value: ReactNode }) {

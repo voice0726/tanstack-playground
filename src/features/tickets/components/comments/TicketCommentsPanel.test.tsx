@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { ToastProvider } from '#/shared/ui/toast.tsx';
+import { ToastProvider } from '@/shared/ui/toast.tsx';
 import { TicketCommentsPanel } from './TicketCommentsPanel.tsx';
 
 const createTestQueryClient = () =>

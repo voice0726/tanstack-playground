@@ -14,13 +14,13 @@ import { TanStackDevtools } from '@tanstack/react-devtools';
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
 import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
-import { AuthRedirectController } from '#/features/auth/components/AuthRedirectController.tsx';
-import { useAuthSession } from '#/features/auth/hooks/useAuthSession.ts';
-import { useLogout } from '#/features/auth/hooks/useLogout.ts';
-import { TICKETS_SEARCH_DEFAULT } from '#/features/tickets/schema/search.ts';
-import { env } from '#/shared/config/env.ts';
-import { ToastProvider } from '#/shared/ui/toast.tsx';
+import { AuthRedirectController } from '@/features/auth/components/AuthRedirectController.tsx';
+import { useAuthSession } from '@/features/auth/hooks/useAuthSession.ts';
+import { useLogout } from '@/features/auth/hooks/useLogout.ts';
+import { TICKETS_SEARCH_DEFAULT } from '@/features/tickets/schema/search.ts';
 import type { RouterContext } from '@/router';
+import { env } from '@/shared/config/env.ts';
+import { ToastProvider } from '@/shared/ui/toast.tsx';
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,

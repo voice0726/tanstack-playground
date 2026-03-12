@@ -1,5 +1,5 @@
-import type { Ticket } from '#/features/tickets/schema/index.ts';
-import type { TicketsSearch } from '#/features/tickets/schema/search.ts';
+import type { Ticket } from '@/features/tickets/schema/index.ts';
+import type { TicketsSearch } from '@/features/tickets/schema/search.ts';
 
 export const ticketsQueryKey = {
   all: ['tickets'] as const,

@@ -9,10 +9,10 @@ import {
   ticketsSchema,
   UpdateTicketRequest,
   type UpdateTicketRequest as UpdateTicketRequestType,
-} from '#/features/tickets/schema/index.ts';
-import type { TicketsSearch } from '#/features/tickets/schema/search.ts';
-import { createApiUrl, ensureSuccess, JSON_HEADERS } from '#/shared/api/http.ts';
-import { withQuery } from '#/shared/utils/url.ts';
+} from '@/features/tickets/schema/index.ts';
+import type { TicketsSearch } from '@/features/tickets/schema/search.ts';
+import { createApiUrl, ensureSuccess, JSON_HEADERS } from '@/shared/api/http.ts';
+import { withQuery } from '@/shared/utils/url.ts';
 
 const deleteTicketResponseSchema = ticketsSchema.pick({ id: true });
 
