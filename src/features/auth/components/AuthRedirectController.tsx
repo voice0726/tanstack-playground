@@ -40,10 +40,7 @@ export function AuthRedirectController() {
       }
 
       const sessionKey = authSessionQueryOptions().queryKey;
-      if (
-        event.query.queryKey.length === sessionKey.length &&
-        sessionKey.every((k, i) => k === event.query.queryKey[i])
-      ) {
+      if (JSON.stringify(event.query.queryKey) === JSON.stringify(sessionKey)) {
         return;
       }
 
