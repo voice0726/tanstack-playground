@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll, beforeEach } from 'vitest';
-import { resetTicketsStore } from './src/mocks/handlers';
+import { resetMockState } from './src/mocks/handlers';
 import { server } from './src/mocks/node';
 
 Object.defineProperty(window, 'matchMedia', {
@@ -37,7 +37,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-  resetTicketsStore();
+  resetMockState();
 });
 
 afterEach(() => {

@@ -6,15 +6,14 @@ import {
   type Ticket,
   ticketDetailSchema,
   ticketsResponseSchema,
-  ticketsSchema,
+  UpdateTicketCommentRequest,
+  type UpdateTicketCommentRequest as UpdateTicketCommentRequestType,
   UpdateTicketRequest,
   type UpdateTicketRequest as UpdateTicketRequestType,
-} from '#/features/tickets/schema/index.ts';
-import type { TicketsSearch } from '#/features/tickets/schema/search.ts';
-import { createApiUrl, ensureSuccess, JSON_HEADERS } from '#/shared/api/http.ts';
-import { withQuery } from '#/shared/utils/url.ts';
-
-const deleteTicketResponseSchema = ticketsSchema.pick({ id: true });
+} from '@/features/tickets/schema/index.ts';
+import type { TicketsSearch } from '@/features/tickets/schema/search.ts';
+import { createApiUrl, ensureSuccess, JSON_HEADERS } from '@/shared/api/http.ts';
+import { withQuery } from '@/shared/utils/url.ts';
 
 const createTicketsApiUrl = (path: string, search?: TicketsSearch) =>
   createApiUrl(withQuery(path, search));
@@ -69,7 +68,7 @@ export const updateTicket = async (body: UpdateTicketRequestType) => {
   return ticketDetailSchema.parse(await response.json());
 };
 
-export const deleteTicket = async (id: Ticket['id']) => {
+export const deleteTicket = async (id: Ticket['id']): Promise<void> => {
   const response = await fetch(createTicketsApiUrl(`/api/tickets/${id}`), {
     method: 'DELETE',
     credentials: 'include',
@@ -77,8 +76,6 @@ export const deleteTicket = async (id: Ticket['id']) => {
   });
 
   await ensureSuccess(response, 'チケットの削除に失敗しました。');
-
-  return deleteTicketResponseSchema.parse({ id });
 };
 
 export const createTicketComment = async ({
@@ -108,9 +105,9 @@ export const updateTicketComment = async ({
 }: {
   ticketId: Ticket['id'];
   commentId: number;
-  body: CreateTicketCommentRequestType['body'];
+  body: UpdateTicketCommentRequestType['body'];
 }) => {
-  const payload = CreateTicketCommentRequest.parse({ body });
+  const payload = UpdateTicketCommentRequest.parse({ body });
   const response = await fetch(
     createTicketsApiUrl(`/api/tickets/${ticketId}/comments/${commentId}`),
     {

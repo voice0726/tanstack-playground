@@ -1,8 +1,9 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { authSessionQueryOptions } from '#/features/auth/hooks/useAuthSession.ts';
+import { authSessionQueryOptions } from '@/features/auth/hooks/useAuthSession.ts';
 
 export const Route = createFileRoute('/_authenticated')({
   beforeLoad: async ({ context }) => {
+    // Always verify session on navigation to ensure server-side validity
     const user = await context.queryClient.fetchQuery({
       ...authSessionQueryOptions(),
       staleTime: 0,

@@ -4,8 +4,8 @@ import type {
   Ticket,
   TicketHistory,
   TicketHistoryChange,
-} from '#/features/tickets/schema/index.ts';
-import { formatDateTime } from '#/shared/utils/date.ts';
+} from '@/features/tickets/schema/index.ts';
+import { formatDateTime } from '@/shared/utils/date.ts';
 import { TicketActorInfo } from './TicketActorInfo.tsx';
 import { TicketStatusBadge } from './TicketStatusBadge.tsx';
 
@@ -15,13 +15,15 @@ const FIELD_LABELS: Record<string, string> = {
   title: 'タイトル',
 };
 
-const STATUS_VALUES: Ticket['status'][] = ['open', 'closed'];
+const STATUS_VALUES: ReadonlySet<string> = new Set<Ticket['status']>(['open', 'closed']);
+
+const isTicketStatus = (value: string): value is Ticket['status'] => STATUS_VALUES.has(value);
 
 const getFieldLabel = (field: string) => FIELD_LABELS[field] ?? field;
 
 function HistoryValue({ change, value }: { change: TicketHistoryChange; value: string | null }) {
-  if (change.field === 'status' && value && STATUS_VALUES.includes(value as Ticket['status'])) {
-    return <TicketStatusBadge status={value as Ticket['status']} />;
+  if (change.field === 'status' && value && isTicketStatus(value)) {
+    return <TicketStatusBadge status={value} />;
   }
 
   return (

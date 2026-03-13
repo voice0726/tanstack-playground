@@ -1,9 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { useEffect, useEffectEvent, useRef } from 'react';
-import { authSessionQueryOptions } from '#/features/auth/hooks/useAuthSession.ts';
-import { ticketsQueryKey } from '#/features/tickets/queryKeys.ts';
-import { UnauthorizedError } from '#/shared/api/http.ts';
+import { authSessionQueryOptions } from '@/features/auth/hooks/useAuthSession.ts';
+import { authQueryKey } from '@/features/auth/queryKeys.ts';
+import { UnauthorizedError } from '@/shared/api/http.ts';
 
 export function AuthRedirectController() {
   const queryClient = useQueryClient();
@@ -19,7 +19,9 @@ export function AuthRedirectController() {
 
     try {
       queryClient.setQueryData(authSessionQueryOptions().queryKey, null);
-      queryClient.removeQueries({ queryKey: ticketsQueryKey.all });
+      queryClient.removeQueries({
+        predicate: (query) => query.queryKey[0] !== authQueryKey.all[0],
+      });
 
       if (router.state.location.pathname !== '/') {
         await router.navigate({ to: '/' });
@@ -37,7 +39,8 @@ export function AuthRedirectController() {
         return;
       }
 
-      if (event.query.queryKey[0] === authSessionQueryOptions().queryKey[0]) {
+      const sessionKey = authSessionQueryOptions().queryKey;
+      if (JSON.stringify(event.query.queryKey) === JSON.stringify(sessionKey)) {
         return;
       }
 

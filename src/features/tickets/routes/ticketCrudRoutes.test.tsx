@@ -1,17 +1,18 @@
+import { notifications } from '@mantine/notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryHistory, RouterProvider } from '@tanstack/react-router';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { delay, HttpResponse, http } from 'msw';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { AuthUser } from '#/features/auth/schema.ts';
+import type { AuthUser } from '@/features/auth/schema.ts';
 import {
   CreateTicketCommentRequest,
   type CreateTicketRequest,
   type TicketComments,
   type TicketHistory,
   type UpdateTicketRequest,
-} from '#/features/tickets/schema/index.ts';
-import { ticketsSearchSchema } from '#/features/tickets/schema/search.ts';
+} from '@/features/tickets/schema/index.ts';
+import { ticketsSearchSchema } from '@/features/tickets/schema/search.ts';
 import {
   createTicketCommentItem,
   createTicketItem,
@@ -21,10 +22,10 @@ import {
   listTickets,
   updateTicketCommentItem,
   updateTicketItem,
-} from '#/mocks/handlers.ts';
-import { server } from '#/mocks/node.ts';
-import { createRouter } from '#/router.tsx';
-import { env } from '#/shared/config/env.ts';
+} from '@/mocks/handlers.ts';
+import { server } from '@/mocks/node.ts';
+import { createRouter } from '@/router.tsx';
+import { env } from '@/shared/config/env.ts';
 import { TICKET_ADMIN, TICKET_CREATOR, TICKET_EDITOR } from '@/test/fixtures/ticketActors.ts';
 
 const API_BASE_URL = env.VITE_API_BASE_URL;
@@ -346,6 +347,7 @@ describe('ticket CRUD routes', () => {
   });
 
   afterEach(() => {
+    notifications.clean();
     cleanup();
   });
 
