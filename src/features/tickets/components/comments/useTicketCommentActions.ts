@@ -2,6 +2,7 @@ import type { UseFormReset } from 'react-hook-form';
 import { useCreateTicketComment } from '@/features/tickets/hooks/useCreateTicketComment.ts';
 import { useDeleteTicketComment } from '@/features/tickets/hooks/useDeleteTicketComment.ts';
 import { useUpdateTicketComment } from '@/features/tickets/hooks/useUpdateTicketComment.ts';
+import { getErrorMessage } from '@/features/tickets/routes/helpers.tsx';
 import {
   TICKET_COMMENT_FORM_DEFAULT_VALUES,
   type TicketCommentFormOutput,
@@ -17,9 +18,6 @@ type UseTicketCommentActionsOptions = {
   clearEditingComment: () => void;
   clearDeleteTarget: () => void;
 };
-
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
 
 export function useTicketCommentActions({
   ticketId,
