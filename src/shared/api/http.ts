@@ -1,4 +1,4 @@
-import { env } from '#/shared/config/env.ts';
+import { env } from '@/shared/config/env.ts';
 
 export class HttpError extends Error {
   status: number;
@@ -25,35 +25,34 @@ export const JSON_HEADERS = {
 export const createApiUrl = (path: string) => `${env.VITE_API_BASE_URL}${path}`;
 
 const readErrorMessage = async (response: Response, fallback: string) => {
-  const contentType = response.headers.get('content-type') ?? '';
-
-  if (contentType.includes('application/json')) {
-    try {
-      const body = await response.json();
-      if (
-        typeof body === 'object' &&
-        body !== null &&
-        'message' in body &&
-        typeof body.message === 'string' &&
-        body.message.trim() !== ''
-      ) {
-        return body.message;
-      }
-    } catch {
-      // Ignore JSON parse errors and fall back to text below.
-    }
-  }
-
   try {
     const text = (await response.text()).trim();
-    if (text !== '') {
-      return text;
+    if (text === '') {
+      return fallback;
     }
-  } catch {
-    // Ignore body read errors and fall back to the caller-provided message.
-  }
 
-  return fallback;
+    const contentType = response.headers.get('content-type') ?? '';
+    if (contentType.includes('application/json')) {
+      try {
+        const body = JSON.parse(text);
+        if (
+          typeof body === 'object' &&
+          body !== null &&
+          'message' in body &&
+          typeof body.message === 'string' &&
+          body.message.trim() !== ''
+        ) {
+          return body.message;
+        }
+      } catch {
+        // JSON parse failed — fall through to return raw text.
+      }
+    }
+
+    return text;
+  } catch {
+    return fallback;
+  }
 };
 
 export const ensureSuccess = async (response: Response, fallbackMessage: string) => {
