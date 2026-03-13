@@ -1,5 +1,13 @@
 import { Box, Notification, Portal, Stack, Text } from '@mantine/core';
-import { createContext, type PropsWithChildren, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  type PropsWithChildren,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
 type ToastColor = 'teal' | 'red';
 
@@ -51,7 +59,11 @@ function ToastView({
 export function ToastProvider({ children }: PropsWithChildren) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
-  const showToast = (input: ShowToastInput) => {
+  const closeToast = useCallback((id: number) => {
+    setToasts((current) => current.filter((toast) => toast.id !== id));
+  }, []);
+
+  const showToast = useCallback((input: ShowToastInput) => {
     const id = Date.now() + Math.random();
 
     setToasts((current) => [
@@ -63,14 +75,12 @@ export function ToastProvider({ children }: PropsWithChildren) {
         color: input.color ?? 'teal',
       },
     ]);
-  };
+  }, []);
 
-  const closeToast = (id: number) => {
-    setToasts((current) => current.filter((toast) => toast.id !== id));
-  };
+  const contextValue = useMemo(() => ({ showToast }), [showToast]);
 
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
       <Portal>
         <Box
