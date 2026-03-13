@@ -31,5 +31,6 @@ export const withQuery = (path: string, query?: QueryRecord) => {
     return path;
   }
 
-  return `${path}?${queryString}`;
+  const separator = path.includes('?') ? '&' : '?';
+  return `${path}${separator}${queryString}`;
 };
