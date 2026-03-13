@@ -1,5 +1,9 @@
-import type { Ticket } from '#/features/tickets/schema/index.ts';
-import type { TicketsSearch } from '#/features/tickets/schema/search.ts';
+import type { QueryClient } from '@tanstack/react-query';
+import type { Ticket, TicketDetail } from '@/features/tickets/schema/index.ts';
+import type { TicketsSearch } from '@/features/tickets/schema/search.ts';
+
+export const TICKETS_STALE_TIME = 30_000;
+export const TICKETS_GC_TIME = 5 * 60_000;
 
 export const ticketsQueryKey = {
   all: ['tickets'] as const,
@@ -7,4 +11,9 @@ export const ticketsQueryKey = {
   list: (filter: TicketsSearch) => [...ticketsQueryKey.all, 'list', filter] as const,
   details: () => [...ticketsQueryKey.all, 'detail'] as const,
   detail: (id: Ticket['id']) => [...ticketsQueryKey.all, 'detail', id] as const,
+};
+
+export const updateTicketDetailCache = async (queryClient: QueryClient, ticket: TicketDetail) => {
+  queryClient.setQueryData(ticketsQueryKey.detail(ticket.id), ticket);
+  await queryClient.invalidateQueries({ queryKey: ticketsQueryKey.lists() });
 };
