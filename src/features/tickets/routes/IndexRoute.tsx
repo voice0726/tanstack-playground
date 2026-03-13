@@ -13,8 +13,8 @@ import {
   type TicketsSearchFormOutput,
   ticketsSearchSchema,
 } from '@/features/tickets/schema/search.ts';
+import { getErrorMessage } from '@/features/tickets/utils/getErrorMessage.ts';
 import { showToast } from '@/shared/ui/toast.tsx';
-import { getErrorMessage } from './helpers.tsx';
 
 const pageSizeOptions = [
   { label: '10', value: '10' },

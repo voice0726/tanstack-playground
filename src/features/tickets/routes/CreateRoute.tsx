@@ -5,8 +5,8 @@ import { TicketsBackButton } from '@/features/tickets/components/layout/TicketsB
 import { useCreateTicket } from '@/features/tickets/hooks/useCreateTicket.ts';
 import { TICKET_FORM_DEFAULT_VALUES } from '@/features/tickets/schema/form.ts';
 import type { TicketsSearch } from '@/features/tickets/schema/search.ts';
+import { getErrorMessage } from '@/features/tickets/utils/getErrorMessage.ts';
 import { showToast } from '@/shared/ui/toast.tsx';
-import { getErrorMessage } from './helpers.tsx';
 
 export function CreateRoute({ search }: { search: TicketsSearch }) {
   const navigate = useNavigate();

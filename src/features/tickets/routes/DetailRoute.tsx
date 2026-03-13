@@ -23,9 +23,9 @@ import { TicketsBackButton } from '@/features/tickets/components/layout/TicketsB
 import { useDeleteTicket } from '@/features/tickets/hooks/useDeleteTicket.ts';
 import { useTicket } from '@/features/tickets/hooks/useTicket.ts';
 import type { TicketsSearch } from '@/features/tickets/schema/search.ts';
+import { getErrorMessage } from '@/features/tickets/utils/getErrorMessage.ts';
 import { showToast } from '@/shared/ui/toast.tsx';
 import { formatDateTime } from '@/shared/utils/date.ts';
-import { getErrorMessage } from './helpers.tsx';
 
 function DetailItem({ label, value }: { label: string; value: ReactNode }) {
   return (

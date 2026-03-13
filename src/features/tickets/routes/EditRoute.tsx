@@ -8,8 +8,8 @@ import { useTicket } from '@/features/tickets/hooks/useTicket.ts';
 import { useUpdateTicket } from '@/features/tickets/hooks/useUpdateTicket.ts';
 import type { TicketFormInput } from '@/features/tickets/schema/form.ts';
 import type { TicketsSearch } from '@/features/tickets/schema/search.ts';
+import { getErrorMessage } from '@/features/tickets/utils/getErrorMessage.ts';
 import { showToast } from '@/shared/ui/toast.tsx';
-import { getErrorMessage } from './helpers.tsx';
 
 const toFormValues = (ticket: {
   title: string;
