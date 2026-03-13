@@ -3,8 +3,8 @@ import {
   authResponseSchema,
   type LoginRequest,
   loginRequestSchema,
-} from '#/features/auth/schema.ts';
-import { createApiUrl, ensureSuccess, JSON_HEADERS } from '#/shared/api/http.ts';
+} from '@/features/auth/schema.ts';
+import { createApiUrl, ensureSuccess, JSON_HEADERS } from '@/shared/api/http.ts';
 
 export const fetchCurrentUser = async (): Promise<AuthUser | null> => {
   const response = await fetch(createApiUrl('/api/auth/me'), {

@@ -5,8 +5,8 @@ import { Controller, useForm } from 'react-hook-form';
 import type {
   TicketsSearchFormInput,
   TicketsSearchFormOutput,
-} from '#/features/tickets/schema/search.ts';
-import { ticketsSearchFormValuesSchema } from '#/features/tickets/schema/search.ts';
+} from '@/features/tickets/schema/search.ts';
+import { ticketsSearchFormValuesSchema } from '@/features/tickets/schema/search.ts';
 
 type TicketsSearchFormProps = {
   initialValues: TicketsSearchFormInput;

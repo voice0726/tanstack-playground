@@ -12,11 +12,11 @@ import {
 } from '@mantine/core';
 import { IconEdit, IconEye, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
-import { TicketActorInfo } from '#/features/tickets/components/detail/TicketActorInfo.tsx';
-import { TicketStatusBadge } from '#/features/tickets/components/detail/TicketStatusBadge.tsx';
-import type { Ticket } from '#/features/tickets/schema/index.ts';
-import type { TicketsSearch } from '#/features/tickets/schema/search.ts';
-import { formatDateTime } from '#/shared/utils/date.ts';
+import { TicketActorInfo } from '@/features/tickets/components/detail/TicketActorInfo.tsx';
+import { TicketStatusBadge } from '@/features/tickets/components/detail/TicketStatusBadge.tsx';
+import type { Ticket } from '@/features/tickets/schema/index.ts';
+import type { TicketsSearch } from '@/features/tickets/schema/search.ts';
+import { formatDateTime } from '@/shared/utils/date.ts';
 
 type TicketsListPanelProps = {
   items: Ticket[];

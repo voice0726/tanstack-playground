@@ -1,5 +1,5 @@
 import { Stack, Text } from '@mantine/core';
-import type { TicketActor } from '#/features/tickets/schema/index.ts';
+import type { TicketActor } from '@/features/tickets/schema/index.ts';
 
 type TicketActorInfoProps = {
   actor?: TicketActor | null;
