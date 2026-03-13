@@ -1,11 +1,15 @@
-import { format, isValid, parseISO } from 'date-fns';
-
-const DATE_TIME_FORMAT = 'yyyy/MM/dd HH:mm';
+const formatter = new Intl.DateTimeFormat('ja', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+});
 
 export const formatDateTime = (value: string) => {
-  const date = parseISO(value);
-  if (!isValid(date)) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
     return value;
   }
-  return format(date, DATE_TIME_FORMAT);
+  return formatter.format(date);
 };
