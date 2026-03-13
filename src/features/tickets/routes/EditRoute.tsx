@@ -8,7 +8,7 @@ import { useTicket } from '@/features/tickets/hooks/useTicket.ts';
 import { useUpdateTicket } from '@/features/tickets/hooks/useUpdateTicket.ts';
 import type { TicketFormInput } from '@/features/tickets/schema/form.ts';
 import type { TicketsSearch } from '@/features/tickets/schema/search.ts';
-import { useToast } from '@/shared/ui/toast.tsx';
+import { showToast } from '@/shared/ui/toast.tsx';
 import { getErrorMessage } from './helpers.tsx';
 
 const toFormValues = (ticket: {
@@ -23,7 +23,6 @@ const toFormValues = (ticket: {
 
 export function EditRoute({ ticketId, search }: { ticketId: number; search: TicketsSearch }) {
   const navigate = useNavigate();
-  const { showToast } = useToast();
   const ticketQuery = useTicket({ id: ticketId });
   const updateTicket = useUpdateTicket();
 

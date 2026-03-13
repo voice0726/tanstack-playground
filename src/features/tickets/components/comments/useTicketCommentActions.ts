@@ -8,7 +8,7 @@ import {
   type TicketCommentFormOutput,
 } from '@/features/tickets/schema/form.ts';
 import type { TicketComment } from '@/features/tickets/schema/index.ts';
-import { useToast } from '@/shared/ui/toast.tsx';
+import { showToast } from '@/shared/ui/toast.tsx';
 
 type UseTicketCommentActionsOptions = {
   ticketId: number;
@@ -27,7 +27,6 @@ export function useTicketCommentActions({
   clearEditingComment,
   clearDeleteTarget,
 }: UseTicketCommentActionsOptions) {
-  const { showToast } = useToast();
   const createTicketComment = useCreateTicketComment();
   const updateTicketComment = useUpdateTicketComment();
   const deleteTicketComment = useDeleteTicketComment();

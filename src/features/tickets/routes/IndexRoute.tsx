@@ -13,7 +13,7 @@ import {
   type TicketsSearchFormOutput,
   ticketsSearchSchema,
 } from '@/features/tickets/schema/search.ts';
-import { useToast } from '@/shared/ui/toast.tsx';
+import { showToast } from '@/shared/ui/toast.tsx';
 import { getErrorMessage } from './helpers.tsx';
 
 const pageSizeOptions = [
@@ -25,8 +25,6 @@ const pageSizeOptions = [
 export function IndexRoute() {
   const search = useSearch({ from: '/_authenticated/tickets/' });
   const navigate = useNavigate();
-  const { showToast } = useToast();
-
   const deleteTicket = useDeleteTicket();
   const [deleteTarget, setDeleteTarget] = useState<Pick<Ticket, 'id' | 'title'> | null>(null);
 

@@ -1,3 +1,4 @@
+import { notifications } from '@mantine/notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createMemoryHistory, RouterProvider } from '@tanstack/react-router';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
@@ -346,6 +347,7 @@ describe('ticket CRUD routes', () => {
   });
 
   afterEach(() => {
+    notifications.clean();
     cleanup();
   });
 
