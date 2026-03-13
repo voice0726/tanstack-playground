@@ -20,17 +20,18 @@ export const toSearchParams = (query: QueryRecord) => {
   return params;
 };
 
+const DUMMY_BASE = 'http://localhost';
+
 export const withQuery = (path: string, query?: QueryRecord) => {
   if (!query) {
     return path;
   }
 
-  const queryString = toSearchParams(query).toString();
+  const url = new URL(path, DUMMY_BASE);
 
-  if (!queryString) {
-    return path;
+  for (const [key, value] of toSearchParams(query)) {
+    url.searchParams.append(key, value);
   }
 
-  const separator = path.includes('?') ? '&' : '?';
-  return `${path}${separator}${queryString}`;
+  return url.pathname + url.search;
 };
