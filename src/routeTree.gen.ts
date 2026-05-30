@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedDndTableRouteImport } from './routes/_authenticated/dnd-table'
 import { Route as AuthenticatedTicketsIndexRouteImport } from './routes/_authenticated/tickets/index'
 import { Route as AuthenticatedTicketsNewRouteImport } from './routes/_authenticated/tickets/new'
 import { Route as AuthenticatedTicketsTicketIdIndexRouteImport } from './routes/_authenticated/tickets/$ticketId/index'
@@ -24,6 +25,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedDndTableRoute = AuthenticatedDndTableRouteImport.update({
+  id: '/dnd-table',
+  path: '/dnd-table',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTicketsIndexRoute =
   AuthenticatedTicketsIndexRouteImport.update({
@@ -51,6 +57,7 @@ const AuthenticatedTicketsTicketIdEditRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dnd-table': typeof AuthenticatedDndTableRoute
   '/tickets/new': typeof AuthenticatedTicketsNewRoute
   '/tickets/': typeof AuthenticatedTicketsIndexRoute
   '/tickets/$ticketId/edit': typeof AuthenticatedTicketsTicketIdEditRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dnd-table': typeof AuthenticatedDndTableRoute
   '/tickets/new': typeof AuthenticatedTicketsNewRoute
   '/tickets': typeof AuthenticatedTicketsIndexRoute
   '/tickets/$ticketId/edit': typeof AuthenticatedTicketsTicketIdEditRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/_authenticated/dnd-table': typeof AuthenticatedDndTableRoute
   '/_authenticated/tickets/new': typeof AuthenticatedTicketsNewRoute
   '/_authenticated/tickets/': typeof AuthenticatedTicketsIndexRoute
   '/_authenticated/tickets/$ticketId/edit': typeof AuthenticatedTicketsTicketIdEditRoute
@@ -76,6 +85,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/dnd-table'
     | '/tickets/new'
     | '/tickets/'
     | '/tickets/$ticketId/edit'
@@ -83,6 +93,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/dnd-table'
     | '/tickets/new'
     | '/tickets'
     | '/tickets/$ticketId/edit'
@@ -91,6 +102,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/_authenticated/dnd-table'
     | '/_authenticated/tickets/new'
     | '/_authenticated/tickets/'
     | '/_authenticated/tickets/$ticketId/edit'
@@ -117,6 +129,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/dnd-table': {
+      id: '/_authenticated/dnd-table'
+      path: '/dnd-table'
+      fullPath: '/dnd-table'
+      preLoaderRoute: typeof AuthenticatedDndTableRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/tickets/': {
       id: '/_authenticated/tickets/'
@@ -150,6 +169,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedDndTableRoute: typeof AuthenticatedDndTableRoute
   AuthenticatedTicketsNewRoute: typeof AuthenticatedTicketsNewRoute
   AuthenticatedTicketsIndexRoute: typeof AuthenticatedTicketsIndexRoute
   AuthenticatedTicketsTicketIdEditRoute: typeof AuthenticatedTicketsTicketIdEditRoute
@@ -157,6 +177,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedDndTableRoute: AuthenticatedDndTableRoute,
   AuthenticatedTicketsNewRoute: AuthenticatedTicketsNewRoute,
   AuthenticatedTicketsIndexRoute: AuthenticatedTicketsIndexRoute,
   AuthenticatedTicketsTicketIdEditRoute: AuthenticatedTicketsTicketIdEditRoute,

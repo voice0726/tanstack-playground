@@ -73,6 +73,7 @@ function RootComponent() {
                     Tickets
                   </Link>
                 ) : null}
+                {currentUser ? <Link to="/dnd-table">DnD Table</Link> : null}
               </Group>
 
               {authSession.isPending ? (
