@@ -104,7 +104,7 @@ export function DndDataTable({ items, selectedId, onReorder, onSelect }: DndData
       coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
-  const itemIds = items.map((item) => item.id);
+  const itemIds = useMemo(() => items.map((item) => item.id), [items]);
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     onReorder(String(active.id), over ? String(over.id) : null);
