@@ -113,11 +113,29 @@ export function DndDataTable({ items, selectedId, onReorder, onSelect }: DndData
 
   if (items.length === 0) {
     return (
-      <Table.ScrollContainer minWidth={720}>
-        <Table withColumnBorders withRowBorders striped>
+      <Table.ScrollContainer minWidth={760}>
+        <Table highlightOnHover withColumnBorders withRowBorders>
+          <Table.Thead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <Table.Tr key={headerGroup.id}>
+                <Table.Th w={56}>
+                  <Text c="dimmed" size="xs">
+                    移動
+                  </Text>
+                </Table.Th>
+                {headerGroup.headers.map((header) => (
+                  <Table.Th key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
+                  </Table.Th>
+                ))}
+              </Table.Tr>
+            ))}
+          </Table.Thead>
           <Table.Tbody>
             <Table.Tr>
-              <Table.Td>
+              <Table.Td colSpan={columns.length + 1}>
                 <Text c="dimmed" py="lg" ta="center">
                   条件に一致するタスクはありません。
                 </Text>
