@@ -7,6 +7,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import {
   SortableContext,
   sortableKeyboardCoordinates,
@@ -129,7 +130,12 @@ export function DndDataTable({ items, selectedId, onReorder, onSelect }: DndData
   }
 
   return (
-    <DndContext collisionDetection={closestCenter} sensors={sensors} onDragEnd={handleDragEnd}>
+    <DndContext
+      collisionDetection={closestCenter}
+      modifiers={[restrictToVerticalAxis]}
+      sensors={sensors}
+      onDragEnd={handleDragEnd}
+    >
       <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
         <Table.ScrollContainer minWidth={760}>
           <Table highlightOnHover withColumnBorders withRowBorders>
