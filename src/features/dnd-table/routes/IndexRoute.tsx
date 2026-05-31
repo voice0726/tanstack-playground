@@ -32,7 +32,9 @@ export function IndexRoute() {
         : orderedItems,
     [normalizedFilter, orderedItems],
   );
-  const selectedItem = selectedId ? itemsById[selectedId] : null;
+  const selectedItem = selectedId
+    ? (visibleItems.find((item) => item.id === selectedId) ?? null)
+    : null;
 
   return (
     <Stack gap="lg">

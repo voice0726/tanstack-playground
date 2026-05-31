@@ -45,6 +45,21 @@ describe('DnD table route', () => {
     expect(useDndTableStore.getState().filter).toBe('router');
   });
 
+  it('hides the selected row summary when the filter excludes it', () => {
+    useDndTableStore.getState().selectRow('task-query-cache');
+
+    renderRoute();
+
+    expect(screen.getByText('Ren / High / 5 pt')).not.toBeNull();
+
+    fireEvent.change(screen.getByPlaceholderText('タスク、担当、状態、優先度で絞り込み'), {
+      target: { value: 'router' },
+    });
+
+    expect(screen.queryByText('Ren / High / 5 pt')).toBeNull();
+    expect(screen.getByText('行を選択すると概要が表示されます。')).not.toBeNull();
+  });
+
   it('selects a row and resets the changed order', () => {
     const initialIds = useDndTableStore.getState().orderedIds;
     useDndTableStore.getState().reorderRows(initialIds[0] ?? '', initialIds[2] ?? null);
