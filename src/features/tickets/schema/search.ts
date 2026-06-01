@@ -16,11 +16,30 @@ export const ticketsSearchSchema = z.object({
     .transform((v) => v || undefined)
     .optional()
     .catch(undefined),
-  status: z.enum(['all', 'open', 'closed']).catch(TICKETS_SEARCH_DEFAULT.status),
-  sortBy: z.enum(['id', 'created_at', 'updated_at']).catch(TICKETS_SEARCH_DEFAULT.sortBy),
-  sortOrder: z.enum(['asc', 'dsc']).catch(TICKETS_SEARCH_DEFAULT.sortOrder),
-  page: z.coerce.number().int().min(1).catch(TICKETS_SEARCH_DEFAULT.page),
-  pageSize: z.coerce.number().int().min(1).catch(TICKETS_SEARCH_DEFAULT.pageSize),
+  status: z
+    .enum(['all', 'open', 'closed'])
+    .catch(TICKETS_SEARCH_DEFAULT.status)
+    .default(TICKETS_SEARCH_DEFAULT.status),
+  sortBy: z
+    .enum(['id', 'created_at', 'updated_at'])
+    .catch(TICKETS_SEARCH_DEFAULT.sortBy)
+    .default(TICKETS_SEARCH_DEFAULT.sortBy),
+  sortOrder: z
+    .enum(['asc', 'dsc'])
+    .catch(TICKETS_SEARCH_DEFAULT.sortOrder)
+    .default(TICKETS_SEARCH_DEFAULT.sortOrder),
+  page: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .catch(TICKETS_SEARCH_DEFAULT.page)
+    .default(TICKETS_SEARCH_DEFAULT.page),
+  pageSize: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .catch(TICKETS_SEARCH_DEFAULT.pageSize)
+    .default(TICKETS_SEARCH_DEFAULT.pageSize),
 });
 
 export type TicketsSearch = z.infer<typeof ticketsSearchSchema>;
