@@ -52,16 +52,6 @@
     "vitest": "^3.2.4",
     "wrangler": "^4.87.0"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "lefthook",
-      "lightningcss",
-      "msw",
-      "sharp",
-      "workerd"
-    ]
-  },
   "msw": {
     "workerDirectory": [
       "public"
