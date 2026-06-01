@@ -12,6 +12,8 @@ dist-ssr
 .serena/
 __unconfig*
 todos.json
+.claude/
+agent-os/
 
 .idea
 
