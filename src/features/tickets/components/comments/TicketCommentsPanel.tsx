@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   TICKET_COMMENT_FORM_DEFAULT_VALUES,
+  type TicketCommentFormInput,
   type TicketCommentFormOutput,
   ticketCommentFormValuesSchema,
 } from '@/features/tickets/schema/form.ts';
@@ -35,7 +36,7 @@ export function TicketCommentsPanel({
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<TicketCommentFormOutput, unknown, TicketCommentFormOutput>({
+  } = useForm<TicketCommentFormInput, unknown, TicketCommentFormOutput>({
     defaultValues: TICKET_COMMENT_FORM_DEFAULT_VALUES,
     resolver: zodResolver(ticketCommentFormValuesSchema),
   });

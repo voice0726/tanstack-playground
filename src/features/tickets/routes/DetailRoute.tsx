@@ -23,9 +23,9 @@ import { TicketsBackButton } from '@/features/tickets/components/layout/TicketsB
 import { useDeleteTicket } from '@/features/tickets/hooks/useDeleteTicket.ts';
 import { useTicket } from '@/features/tickets/hooks/useTicket.ts';
 import type { TicketsSearch } from '@/features/tickets/schema/search.ts';
-import { useToast } from '@/shared/ui/toast.tsx';
+import { getErrorMessage } from '@/features/tickets/utils/getErrorMessage.ts';
+import { showToast } from '@/shared/ui/toast.tsx';
 import { formatDateTime } from '@/shared/utils/date.ts';
-import { getErrorMessage } from './helpers.tsx';
 
 function DetailItem({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -40,7 +40,6 @@ function DetailItem({ label, value }: { label: string; value: ReactNode }) {
 
 export function DetailRoute({ ticketId, search }: { ticketId: number; search: TicketsSearch }) {
   const navigate = useNavigate();
-  const { showToast } = useToast();
   const [deleteOpened, setDeleteOpened] = useState(false);
   const authSession = useAuthSession();
   const ticketQuery = useTicket({ id: ticketId });

@@ -58,7 +58,7 @@ const TICKETS: MockTicket[] = [
 const parseSearch = (input: Record<string, string>): TicketsSearch =>
   ticketsSearchSchema.parse(input);
 
-describe('listTickets', () => {
+describe('mock ticket store', () => {
   it('filters by q and status', () => {
     const result = listTickets(
       TICKETS,

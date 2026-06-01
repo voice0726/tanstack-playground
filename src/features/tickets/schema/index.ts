@@ -93,3 +93,7 @@ export const CreateTicketCommentRequest = z.object({
 });
 
 export type CreateTicketCommentRequest = z.infer<typeof CreateTicketCommentRequest>;
+
+export const UpdateTicketCommentRequest = CreateTicketCommentRequest;
+
+export type UpdateTicketCommentRequest = z.infer<typeof UpdateTicketCommentRequest>;

@@ -7,7 +7,8 @@ import {
   type TicketCommentFormOutput,
 } from '@/features/tickets/schema/form.ts';
 import type { TicketComment } from '@/features/tickets/schema/index.ts';
-import { useToast } from '@/shared/ui/toast.tsx';
+import { getErrorMessage } from '@/features/tickets/utils/getErrorMessage.ts';
+import { showToast } from '@/shared/ui/toast.tsx';
 
 type UseTicketCommentActionsOptions = {
   ticketId: number;
@@ -18,9 +19,6 @@ type UseTicketCommentActionsOptions = {
   clearDeleteTarget: () => void;
 };
 
-const getErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof Error ? error.message : fallback;
-
 export function useTicketCommentActions({
   ticketId,
   ticketTitle,
@@ -29,7 +27,6 @@ export function useTicketCommentActions({
   clearEditingComment,
   clearDeleteTarget,
 }: UseTicketCommentActionsOptions) {
-  const { showToast } = useToast();
   const createTicketComment = useCreateTicketComment();
   const updateTicketComment = useUpdateTicketComment();
   const deleteTicketComment = useDeleteTicketComment();

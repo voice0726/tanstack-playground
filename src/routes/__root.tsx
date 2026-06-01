@@ -1,4 +1,5 @@
 import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
 
 import {
   AppShell,
@@ -10,6 +11,7 @@ import {
   Text,
   Title,
 } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
 import { TanStackDevtools } from '@tanstack/react-devtools';
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
 import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router';
@@ -20,7 +22,6 @@ import { useLogout } from '@/features/auth/hooks/useLogout.ts';
 import { TICKETS_SEARCH_DEFAULT } from '@/features/tickets/schema/search.ts';
 import type { RouterContext } from '@/router';
 import { env } from '@/shared/config/env.ts';
-import { ToastProvider } from '@/shared/ui/toast.tsx';
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
@@ -42,87 +43,90 @@ function RootComponent() {
   const currentUser = authSession.data;
 
   return (
-    <MantineProvider theme={theme} defaultColorScheme="light">
-      <ToastProvider>
-        <AuthRedirectController />
-        <AppShell
-          header={{ height: 72 }}
-          mih="100dvh"
-          padding="lg"
-          style={{ background: appShellBackground }}
-        >
-          <AppShell.Header>
-            <Group h="100%" justify="space-between" px="lg">
-              <Group gap="sm">
-                <Badge color="teal" variant="light">
-                  Migration
-                </Badge>
-                <Title order={4}>TanStack Playground</Title>
-              </Group>
-
-              <Group gap="lg">
-                <Group gap="md">
-                  <Link to="/">Home</Link>
-                  {currentUser ? (
-                    <Link to="/tickets" search={TICKETS_SEARCH_DEFAULT}>
-                      Tickets
-                    </Link>
-                  ) : null}
-                </Group>
-
-                {authSession.isPending ? (
-                  <Text c="dimmed" size="sm">
-                    認証状態を確認中...
-                  </Text>
-                ) : currentUser ? (
-                  <Group gap="sm">
-                    <Text size="sm">{currentUser.displayName}</Text>
-                    <Button
-                      loading={logout.isPending}
-                      size="xs"
-                      variant="light"
-                      onClick={() => {
-                        logout.mutate();
-                      }}
-                    >
-                      ログアウト
-                    </Button>
-                  </Group>
-                ) : (
-                  <Text c="dimmed" size="sm">
-                    トップページからログインできます
-                  </Text>
-                )}
-              </Group>
+    <MantineProvider
+      theme={theme}
+      defaultColorScheme="light"
+      env={env.MODE === 'test' ? 'test' : undefined}
+    >
+      <Notifications position="top-right" zIndex={400} transitionDuration={0} />
+      <AuthRedirectController />
+      <AppShell
+        header={{ height: 72 }}
+        mih="100dvh"
+        padding="lg"
+        style={{ background: appShellBackground }}
+      >
+        <AppShell.Header>
+          <Group h="100%" justify="space-between" px="lg">
+            <Group gap="sm">
+              <Badge color="teal" variant="light">
+                Migration
+              </Badge>
+              <Title order={4}>TanStack Playground</Title>
             </Group>
-          </AppShell.Header>
 
-          <AppShell.Main>
-            <Outlet />
-            <Text c="dimmed" mt="xl" size="sm">
-              Tailwind pages were replaced with temporary Mantine pages.
-            </Text>
-          </AppShell.Main>
-        </AppShell>
+            <Group gap="lg">
+              <Group gap="md">
+                <Link to="/">Home</Link>
+                {currentUser ? (
+                  <Link to="/tickets" search={TICKETS_SEARCH_DEFAULT}>
+                    Tickets
+                  </Link>
+                ) : null}
+              </Group>
 
-        {shouldRenderDevtools ? (
-          <TanStackDevtools
-            config={{
-              position: 'bottom-right',
-            }}
-            plugins={[
-              {
-                name: 'TanStack Query',
-                render: <ReactQueryDevtoolsPanel />,
-              },
-              {
-                name: 'TanStack Router',
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-            ]}
-          />
-        ) : null}
-      </ToastProvider>
+              {authSession.isPending ? (
+                <Text c="dimmed" size="sm">
+                  認証状態を確認中...
+                </Text>
+              ) : currentUser ? (
+                <Group gap="sm">
+                  <Text size="sm">{currentUser.displayName}</Text>
+                  <Button
+                    loading={logout.isPending}
+                    size="xs"
+                    variant="light"
+                    onClick={() => {
+                      logout.mutate();
+                    }}
+                  >
+                    ログアウト
+                  </Button>
+                </Group>
+              ) : (
+                <Text c="dimmed" size="sm">
+                  トップページからログインできます
+                </Text>
+              )}
+            </Group>
+          </Group>
+        </AppShell.Header>
+
+        <AppShell.Main>
+          <Outlet />
+          <Text c="dimmed" mt="xl" size="sm">
+            Tailwind pages were replaced with temporary Mantine pages.
+          </Text>
+        </AppShell.Main>
+      </AppShell>
+
+      {shouldRenderDevtools ? (
+        <TanStackDevtools
+          config={{
+            position: 'bottom-right',
+          }}
+          plugins={[
+            {
+              name: 'TanStack Query',
+              render: <ReactQueryDevtoolsPanel />,
+            },
+            {
+              name: 'TanStack Router',
+              render: <TanStackRouterDevtoolsPanel />,
+            },
+          ]}
+        />
+      ) : null}
     </MantineProvider>
   );
 }

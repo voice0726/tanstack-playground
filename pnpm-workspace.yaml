@@ -1,0 +1,7 @@
+allowBuilds:
+  esbuild: true
+  lefthook: true
+  lightningcss: true
+  msw: true
+  sharp: true
+  workerd: true

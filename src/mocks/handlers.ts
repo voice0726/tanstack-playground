@@ -132,7 +132,7 @@ const createTicketStore = () => [...cloneTickets(BASE_TICKETS), ...cloneTickets(
 let ticketsStore: MockTicket[] = createTicketStore();
 let isAuthenticated = false;
 
-export const resetTicketsStore = () => {
+export const resetMockState = () => {
   ticketsStore = createTicketStore();
   isAuthenticated = false;
 };

@@ -7,7 +7,7 @@ export const useDeleteTicket = () => {
 
   return useMutation({
     mutationFn: deleteTicket,
-    onSuccess: async ({ id }) => {
+    onSuccess: async (_result, id) => {
       queryClient.removeQueries({ queryKey: ticketsQueryKey.detail(id) });
       await queryClient.invalidateQueries({ queryKey: ticketsQueryKey.lists() });
     },

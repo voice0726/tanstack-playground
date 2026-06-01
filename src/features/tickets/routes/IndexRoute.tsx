@@ -1,6 +1,6 @@
 import { Paper, Stack } from '@mantine/core';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { TicketDeleteModal } from '@/features/tickets/components/dialogs/TicketDeleteModal.tsx';
 import { TicketsListPanel } from '@/features/tickets/components/list/TicketsListPanel.tsx';
 import { TicketsSearchForm } from '@/features/tickets/components/list/TicketsSearchForm.tsx';
@@ -13,8 +13,8 @@ import {
   type TicketsSearchFormOutput,
   ticketsSearchSchema,
 } from '@/features/tickets/schema/search.ts';
-import { useToast } from '@/shared/ui/toast.tsx';
-import { getErrorMessage } from './helpers.tsx';
+import { getErrorMessage } from '@/features/tickets/utils/getErrorMessage.ts';
+import { showToast } from '@/shared/ui/toast.tsx';
 
 const pageSizeOptions = [
   { label: '10', value: '10' },
@@ -25,8 +25,6 @@ const pageSizeOptions = [
 export function IndexRoute() {
   const search = useSearch({ from: '/_authenticated/tickets/' });
   const navigate = useNavigate();
-  const { showToast } = useToast();
-
   const deleteTicket = useDeleteTicket();
   const [deleteTarget, setDeleteTarget] = useState<Pick<Ticket, 'id' | 'title'> | null>(null);
 
@@ -50,19 +48,31 @@ export function IndexRoute() {
     ],
   );
 
-  // TODO: keepPreviousData
-  const { data, isLoading, isError } = useTickets({
+  const { data, isError, isFetching, isPending, isPlaceholderData } = useTickets({
     filters: normalizedSearch,
   });
-  const isTableLoading = isLoading;
-  const hasTableError = isError || (!isLoading && !data);
-  const items = data?.items ?? [];
-  const total = data?.total ?? 0;
-
-  const totalPages = Math.max(1, Math.ceil(total / normalizedSearch.pageSize));
+  const isTableLoading = isPending;
+  const isTableFetching = isFetching && !isPending;
+  const hasTableError = isError && (!data || isPlaceholderData);
+  const items = hasTableError ? [] : (data?.items ?? []);
+  const computedTotal = data?.total ?? 0;
+  const computedTotalPages = Math.max(1, Math.ceil(computedTotal / normalizedSearch.pageSize));
+  const lastListMetaRef = useRef({
+    total: computedTotal,
+    totalPages: computedTotalPages,
+  });
+  if (!hasTableError) {
+    lastListMetaRef.current = {
+      total: computedTotal,
+      totalPages: computedTotalPages,
+    };
+  }
+  const total = hasTableError ? lastListMetaRef.current.total : computedTotal;
+  const totalPages = hasTableError ? lastListMetaRef.current.totalPages : computedTotalPages;
   const from =
     total === 0 ? 0 : Math.min((normalizedSearch.page - 1) * normalizedSearch.pageSize + 1, total);
   const to = Math.min(total, normalizedSearch.page * normalizedSearch.pageSize);
+  const rangeLabel = hasTableError && total > 0 ? `- / ${total}` : `${from}-${to} / ${total}`;
 
   const navigateToTicketDetail = (ticketId: number) => {
     void navigate({
@@ -146,13 +156,13 @@ export function IndexRoute() {
       </Paper>
 
       <TicketsListPanel
-        from={from}
         hasError={hasTableError}
+        isFetching={isTableFetching}
         isLoading={isTableLoading}
         items={items}
         pageSizeOptions={pageSizeOptions}
+        rangeLabel={rangeLabel}
         search={normalizedSearch}
-        to={to}
         total={total}
         totalPages={totalPages}
         onCreate={navigateToTicketCreate}
