@@ -83,7 +83,7 @@ importers:
         version: 7.0.0-dev.20260422.1
       '@vitejs/plugin-react':
         specifier: ^6.0.1
-        version: 6.0.1(vite@8.0.16(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1))
+        version: 6.0.2(vite@8.0.16(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1))
       jsdom:
         specifier: ^27.4.0
         version: 27.4.0
@@ -1067,9 +1067,6 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@rolldown/pluginutils@1.0.0-rc.7':
-    resolution: {integrity: sha512-qujRfC8sFVInYSPPMLQByRh7zhwkGFS4+tyMQ83srV1qrxL4g8E2tyxVVyxd0+8QeBM1mIk9KbWxkegRr76XzA==}
-
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
@@ -1496,8 +1493,8 @@ packages:
     resolution: {integrity: sha512-8CR8zHFlLpSL5OXY4Wbz2DmiDOoat1JBMkydZUHwQIS4cpoTN7SHjk2BN8i51XHUy0jMF5airL0TlY3GOfZmKg==}
     hasBin: true
 
-  '@vitejs/plugin-react@6.0.1':
-    resolution: {integrity: sha512-l9X/E3cDb+xY3SWzlG1MOGt2usfEHGMNIaegaUGFsLkb3RCn/k8/TOXBcab+OndDI4TBtktT8/9BwwW8Vi9KUQ==}
+  '@vitejs/plugin-react@6.0.2':
+    resolution: {integrity: sha512-DlSMqo4WhThw4vB8Mpn0Woe9J+Jfq1geJ61AKW0QEgLzGMNwtIMdxbDUzLxcun8W7NbJO0e2Jg/Nxm3cCSVzzg==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
       '@rolldown/plugin-babel': ^0.1.7 || ^0.2.0
@@ -3377,8 +3374,6 @@ snapshots:
   '@rolldown/binding-win32-x64-msvc@1.0.3':
     optional: true
 
-  '@rolldown/pluginutils@1.0.0-rc.7': {}
-
   '@rolldown/pluginutils@1.0.1': {}
 
   '@rollup/rollup-android-arm-eabi@4.60.2':
@@ -3774,9 +3769,9 @@ snapshots:
       '@typescript/native-preview-win32-arm64': 7.0.0-dev.20260422.1
       '@typescript/native-preview-win32-x64': 7.0.0-dev.20260422.1
 
-  '@vitejs/plugin-react@6.0.1(vite@8.0.16(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1))':
+  '@vitejs/plugin-react@6.0.2(vite@8.0.16(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1))':
     dependencies:
-      '@rolldown/pluginutils': 1.0.0-rc.7
+      '@rolldown/pluginutils': 1.0.1
       vite: 8.0.16(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)
 
   '@vitest/expect@3.2.4':
