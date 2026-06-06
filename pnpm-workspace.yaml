@@ -5,3 +5,6 @@ allowBuilds:
   msw: true
   sharp: true
   workerd: true
+
+settings:
+  minimumReleaseAge: 1440
