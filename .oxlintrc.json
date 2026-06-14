@@ -1,8 +1,16 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript"],
+  "plugins": ["react", "typescript", "react-perf", "vitest"],
   "categories": {
-    "correctness": "error"
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "vitest/expect-expect": "off",
+    "typescript/consistent-type-imports": "warn",
+    "typescript/no-explicit-any": "error"
   },
   "ignorePatterns": ["src/routeTree.gen.ts"],
   "env": {
