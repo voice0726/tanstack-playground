@@ -45,6 +45,7 @@ Testing uses Vitest + Testing Library + jsdom.
 
 ## Commit & Pull Request Guidelines
 Follow the existing commit style visible in history: `feat:`, `fix:`, `refactor:`, `chore:` with concise scopes.
+- **Branch policy**: Never push directly to `main`. Always work on a feature branch and open a PR.
 - Example: `feat: add ticket pagination controls`.
 - Keep commits small and focused.
 - PRs should include: purpose, key changes, test evidence (command results), linked issue (if any), and screenshots for UI updates.

@@ -70,6 +70,7 @@ Each feature follows this structure:
 
 ## Coding Conventions
 
+- **Branch policy**: Never push directly to `main`. Always work on a feature branch and open a PR.
 - Biome is the formatter/linter (not ESLint/Prettier). See `biome.json` for config.
 - Single quotes, semicolons, trailing commas, 2-space indent, max line width 100
 - Prefer named React imports (no default `React` import)
