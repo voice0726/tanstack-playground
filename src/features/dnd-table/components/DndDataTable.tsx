@@ -220,8 +220,15 @@ function SortableTableRow({ isSelected, row, onSelect }: SortableTableRowProps) 
         transition,
         zIndex: isDragging ? 1 : undefined,
       }}
+      tabIndex={0}
       onClick={() => {
         onSelect(row.original.id);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect(row.original.id);
+        }
       }}
     >
       <Table.Td>
@@ -235,6 +242,9 @@ function SortableTableRow({ isSelected, row, onSelect }: SortableTableRowProps) 
               variant="subtle"
               {...attributes}
               {...listeners}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
             >
               <IconGripVertical size={16} />
             </ActionIcon>

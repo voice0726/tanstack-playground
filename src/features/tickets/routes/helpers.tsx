@@ -1,5 +1,9 @@
 export const parseTicketId = (ticketIdParam: string) => {
+  if (!/^\d+$/.test(ticketIdParam)) {
+    return null;
+  }
+
   const ticketId = Number(ticketIdParam);
 
-  return Number.isInteger(ticketId) && ticketId > 0 ? ticketId : null;
+  return ticketId > 0 ? ticketId : null;
 };

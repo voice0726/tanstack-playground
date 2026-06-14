@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 export const ticketActorSchema = z.object({
   id: z.number().int().positive(),
-  email: z.string().email(),
+  email: z.email(),
   displayName: z.string().min(1),
 });
 

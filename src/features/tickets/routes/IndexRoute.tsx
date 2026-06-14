@@ -1,6 +1,6 @@
 import { Paper, Stack } from '@mantine/core';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { TicketDeleteModal } from '@/features/tickets/components/dialogs/TicketDeleteModal.tsx';
 import { TicketsListPanel } from '@/features/tickets/components/list/TicketsListPanel.tsx';
 import { TicketsSearchForm } from '@/features/tickets/components/list/TicketsSearchForm.tsx';
@@ -28,57 +28,52 @@ export function IndexRoute() {
   const deleteTicket = useDeleteTicket();
   const [deleteTarget, setDeleteTarget] = useState<Pick<Ticket, 'id' | 'title'> | null>(null);
 
-  const normalizedSearch = ticketsSearchSchema.parse(search);
   const updateSearch = (patch: Partial<TicketsSearch>) =>
-    ticketsSearchSchema.parse({ ...normalizedSearch, ...patch });
+    ticketsSearchSchema.parse({ ...search, ...patch });
 
   const searchFormValues = useMemo(
     () =>
       ({
-        q: normalizedSearch.q ?? '',
-        status: normalizedSearch.status,
-        sortBy: normalizedSearch.sortBy,
-        sortOrder: normalizedSearch.sortOrder,
+        q: search.q ?? '',
+        status: search.status,
+        sortBy: search.sortBy,
+        sortOrder: search.sortOrder,
       }) satisfies TicketsSearchFormInput,
-    [
-      normalizedSearch.q,
-      normalizedSearch.sortBy,
-      normalizedSearch.sortOrder,
-      normalizedSearch.status,
-    ],
+    [search.q, search.sortBy, search.sortOrder, search.status],
   );
 
   const { data, isError, isFetching, isPending, isPlaceholderData } = useTickets({
-    filters: normalizedSearch,
+    filters: search,
   });
   const isTableLoading = isPending;
   const isTableFetching = isFetching && !isPending;
   const hasTableError = isError && (!data || isPlaceholderData);
   const items = hasTableError ? [] : (data?.items ?? []);
   const computedTotal = data?.total ?? 0;
-  const computedTotalPages = Math.max(1, Math.ceil(computedTotal / normalizedSearch.pageSize));
+  const computedTotalPages = Math.max(1, Math.ceil(computedTotal / search.pageSize));
   const lastListMetaRef = useRef({
     total: computedTotal,
     totalPages: computedTotalPages,
   });
-  if (!hasTableError) {
-    lastListMetaRef.current = {
-      total: computedTotal,
-      totalPages: computedTotalPages,
-    };
-  }
+  useEffect(() => {
+    if (!hasTableError) {
+      lastListMetaRef.current = {
+        total: computedTotal,
+        totalPages: computedTotalPages,
+      };
+    }
+  }, [hasTableError, computedTotal, computedTotalPages]);
   const total = hasTableError ? lastListMetaRef.current.total : computedTotal;
   const totalPages = hasTableError ? lastListMetaRef.current.totalPages : computedTotalPages;
-  const from =
-    total === 0 ? 0 : Math.min((normalizedSearch.page - 1) * normalizedSearch.pageSize + 1, total);
-  const to = Math.min(total, normalizedSearch.page * normalizedSearch.pageSize);
+  const from = total === 0 ? 0 : Math.min((search.page - 1) * search.pageSize + 1, total);
+  const to = Math.min(total, search.page * search.pageSize);
   const rangeLabel = hasTableError && total > 0 ? `- / ${total}` : `${from}-${to} / ${total}`;
 
   const navigateToTicketDetail = (ticketId: number) => {
     void navigate({
       to: '/tickets/$ticketId',
       params: { ticketId: String(ticketId) },
-      search: normalizedSearch,
+      search,
     });
   };
 
@@ -86,12 +81,12 @@ export function IndexRoute() {
     void navigate({
       to: '/tickets/$ticketId/edit',
       params: { ticketId: String(ticketId) },
-      search: normalizedSearch,
+      search,
     });
   };
 
   const navigateToTicketCreate = () => {
-    void navigate({ to: '/tickets/new', search: normalizedSearch });
+    void navigate({ to: '/tickets/new', search });
   };
 
   const submitSearchForm = (values: TicketsSearchFormOutput) => {
@@ -162,7 +157,7 @@ export function IndexRoute() {
         items={items}
         pageSizeOptions={pageSizeOptions}
         rangeLabel={rangeLabel}
-        search={normalizedSearch}
+        search={search}
         total={total}
         totalPages={totalPages}
         onCreate={navigateToTicketCreate}

@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { hashKey, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { useEffect, useEffectEvent, useRef } from 'react';
 import { authSessionQueryOptions } from '@/features/auth/hooks/useAuthSession.ts';
@@ -40,7 +40,7 @@ export function AuthRedirectController() {
       }
 
       const sessionKey = authSessionQueryOptions().queryKey;
-      if (JSON.stringify(event.query.queryKey) === JSON.stringify(sessionKey)) {
+      if (hashKey(event.query.queryKey) === hashKey(sessionKey)) {
         return;
       }
 
