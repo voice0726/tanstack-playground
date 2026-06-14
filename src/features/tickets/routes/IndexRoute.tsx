@@ -51,20 +51,20 @@ export function IndexRoute() {
   const items = hasTableError ? [] : (data?.items ?? []);
   const computedTotal = data?.total ?? 0;
   const computedTotalPages = Math.max(1, Math.ceil(computedTotal / search.pageSize));
-  const lastListMetaRef = useRef({
+  const fallbackPaginationRef = useRef({
     total: computedTotal,
     totalPages: computedTotalPages,
   });
   useEffect(() => {
     if (!hasTableError) {
-      lastListMetaRef.current = {
+      fallbackPaginationRef.current = {
         total: computedTotal,
         totalPages: computedTotalPages,
       };
     }
   }, [hasTableError, computedTotal, computedTotalPages]);
-  const total = hasTableError ? lastListMetaRef.current.total : computedTotal;
-  const totalPages = hasTableError ? lastListMetaRef.current.totalPages : computedTotalPages;
+  const total = hasTableError ? fallbackPaginationRef.current.total : computedTotal;
+  const totalPages = hasTableError ? fallbackPaginationRef.current.totalPages : computedTotalPages;
   const from = total === 0 ? 0 : Math.min((search.page - 1) * search.pageSize + 1, total);
   const to = Math.min(total, search.page * search.pageSize);
   const rangeLabel = hasTableError && total > 0 ? `- / ${total}` : `${from}-${to} / ${total}`;
