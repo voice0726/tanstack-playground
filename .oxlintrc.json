@@ -1,9 +1,28 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript"],
+  "plugins": ["react", "typescript", "react-perf", "vitest"],
   "categories": {
-    "correctness": "error"
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
   },
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "vitest/expect-expect": "off",
+    "react-perf/jsx-no-new-object-as-prop": "off",
+    "typescript/consistent-type-imports": "warn",
+    "typescript/no-explicit-any": "error"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.{ts,tsx}"],
+      "rules": {
+        "react-perf/jsx-no-new-function-as-prop": "off",
+        "react-perf/jsx-no-new-array-as-prop": "off",
+        "react-perf/jsx-no-jsx-as-prop": "off"
+      }
+    }
+  ],
   "ignorePatterns": ["src/routeTree.gen.ts"],
   "env": {
     "browser": true,
