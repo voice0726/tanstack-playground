@@ -43,7 +43,7 @@
     "@types/react-dom": "19.2.3",
     "@typescript/native-preview": "7.0.0-dev.20260613.1",
     "@vitejs/plugin-react": "6.0.2",
-    "jsdom": "27.4.0",
+    "jsdom": "29.1.1",
     "lefthook": "1.13.6",
     "msw": "2.14.6",
     "oxlint": "1.69.0",
