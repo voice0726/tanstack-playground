@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@hookform/resolvers':
         specifier: 5.4.0
-        version: 5.4.0(react-hook-form@7.75.0(react@19.2.7))
+        version: 5.4.0(react-hook-form@7.84.0(react@19.2.7))
       '@mantine/core':
         specifier: 8.3.18
         version: 8.3.18(@mantine/hooks@8.3.18(react@19.2.7))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -48,8 +48,8 @@ importers:
         specifier: 19.2.7
         version: 19.2.7(react@19.2.7)
       react-hook-form:
-        specifier: 7.75.0
-        version: 7.75.0(react@19.2.7)
+        specifier: 7.84.0
+        version: 7.84.0(react@19.2.7)
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -2284,8 +2284,8 @@ packages:
     peerDependencies:
       react: ^19.2.7
 
-  react-hook-form@7.75.0:
-    resolution: {integrity: sha512-Ovv94H+0p3sJ7B9B5QxPuCP1u8V/cHuVGyH55cSwodYDtoJwK+fqk3vjfIgSX59I2U/bU4z0nRJ9HMLpNiWEmw==}
+  react-hook-form@7.84.0:
+    resolution: {integrity: sha512-+hWvQP6GLco56mDwrbU4XnHix8t1z90ltZsDIrREl+jnQFQxYLX8oAzqe/Xn8nHpmoXTY5M6oEXrAhbP1qevNQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -3222,10 +3222,10 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@hookform/resolvers@5.4.0(react-hook-form@7.75.0(react@19.2.7))':
+  '@hookform/resolvers@5.4.0(react-hook-form@7.84.0(react@19.2.7))':
     dependencies:
       '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.75.0(react@19.2.7)
+      react-hook-form: 7.84.0(react@19.2.7)
 
   '@img/colour@1.1.0': {}
 
@@ -4575,7 +4575,7 @@ snapshots:
       react: 19.2.7
       scheduler: 0.27.0
 
-  react-hook-form@7.75.0(react@19.2.7):
+  react-hook-form@7.84.0(react@19.2.7):
     dependencies:
       react: 19.2.7
 
