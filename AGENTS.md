@@ -23,7 +23,7 @@ Use `pnpm` for all project commands.
 - `pnpm test`: run Vitest (`src/**/*.test.{ts,tsx}` in jsdom).
 - `pnpm lint`: run Biome checks.
 - `pnpm lint:fix`: apply Biome fixes.
-- `pnpm typecheck`: run TypeScript check (`tsgo --noEmit`).
+- `pnpm typecheck`: run TypeScript check (`tsc --noEmit`).
 - `pnpm run ci`: run Biome CI checks.
 - `pnpm build`: create production bundle.
 - `pnpm preview`: build and serve the app locally with Wrangler.

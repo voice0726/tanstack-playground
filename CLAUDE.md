@@ -15,7 +15,7 @@ The backend lives in a sibling directory ending with `-backend`. When implementa
 - `pnpm test -- src/path/to/file.test.ts` — run a single test file
 - `pnpm lint` — Biome check
 - `pnpm lint:fix` — Biome auto-fix
-- `pnpm typecheck` — TypeScript check via `tsgo --noEmit`
+- `pnpm typecheck` — TypeScript check via `tsc --noEmit`
 - `pnpm build` — production build
 - `pnpm preview` — build + serve locally with Wrangler
 
