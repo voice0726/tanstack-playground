@@ -18,6 +18,7 @@ import { useLogin } from '@/features/auth/hooks/useLogin.ts';
 import { useLogout } from '@/features/auth/hooks/useLogout.ts';
 import { type LoginRequest, loginRequestSchema } from '@/features/auth/schema.ts';
 import { TICKETS_SEARCH_DEFAULT } from '@/features/tickets/schema/search.ts';
+import { showToast } from '@/shared/ui/toast.tsx';
 
 export const Route = createFileRoute('/')({ component: App });
 
@@ -88,7 +89,18 @@ function App() {
                   loading={logout.isPending}
                   variant="light"
                   onClick={() => {
-                    logout.mutate();
+                    logout.mutate(undefined, {
+                      onError: (error) => {
+                        showToast({
+                          title: 'ログアウトに失敗しました',
+                          message:
+                            error instanceof Error
+                              ? error.message
+                              : '時間を置いて再試行してください。',
+                          color: 'red',
+                        });
+                      },
+                    });
                   }}
                 >
                   ログアウト
