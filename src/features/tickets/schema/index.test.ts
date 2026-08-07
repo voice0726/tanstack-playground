@@ -16,7 +16,7 @@ describe('ticket response schema', () => {
         ],
         total: 1,
       }),
-    ).toThrow("Invalid ticket response id");
+    ).toThrow(/expected int/);
   });
 });
 
