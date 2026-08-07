@@ -1,6 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import { ticketDetailSchema, ticketsResponseSchema } from './index.ts';
 
+describe('ticket response schema', () => {
+  it('rejects non-positive or non-integer ticket ids', () => {
+    expect(() =>
+      ticketsResponseSchema.parse({
+        items: [
+          {
+            id: 1.5,
+            title: 'Invalid ticket',
+            status: 'open',
+            createdAt: '2026-03-01T10:00:00Z',
+            updatedAt: '2026-03-03T15:00:00Z',
+          },
+        ],
+        total: 1,
+      }),
+    ).toThrow("Invalid ticket response id");
+  });
+});
+
 describe('ticket actor schema compatibility', () => {
   it('accepts null and omitted createdBy/updatedBy in ticket summaries', () => {
     expect(() =>

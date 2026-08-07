@@ -9,7 +9,7 @@ export const ticketActorSchema = z.object({
 export type TicketActor = z.infer<typeof ticketActorSchema>;
 
 export const ticketsSchema = z.object({
-  id: z.number(),
+  id: z.number().int().positive(),
   title: z.string(),
   status: z.enum(['open', 'closed']),
   assignee: z.string().nullable().optional(),
