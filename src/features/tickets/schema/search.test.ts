@@ -64,6 +64,15 @@ describe('validateAndNormalizeSearch', () => {
     expect(result).toEqual(TICKETS_SEARCH_DEFAULT);
   });
 
+  it('falls back to defaults when numeric params exceed the upper bounds', () => {
+    const result = ticketsSearchSchema.parse({
+      page: '1000001',
+      pageSize: '101',
+    });
+
+    expect(result).toEqual(TICKETS_SEARCH_DEFAULT);
+  });
+
   it('falls back to defaults when numeric params are below min', () => {
     const result = ticketsSearchSchema.parse({
       page: '0',
