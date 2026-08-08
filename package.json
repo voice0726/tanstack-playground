@@ -7,7 +7,7 @@
     "dev": "vite dev --port 3000",
     "build": "vite build",
     "lint": "oxlint src/ vite.config.ts",
-    "ci": "biome check . && oxlint src/ vite.config.ts",
+    "ci": "pnpm lint",
     "lint:fix": "oxlint src/ vite.config.ts --fix",
     "typecheck": "tsc --project tsconfig.json --noEmit",
     "prepare": "lefthook install",
@@ -33,7 +33,6 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.16",
     "@tanstack/devtools-vite": "0.3.12",
     "@tanstack/router-plugin": "1.168.18",
     "@testing-library/dom": "10.4.1",
