@@ -21,16 +21,16 @@ Use `pnpm` for all project commands.
 - `pnpm prepare`: install lefthook git hooks.
 - `pnpm dev`: start Vite dev server on port `3000`.
 - `pnpm test`: run Vitest (`src/**/*.test.{ts,tsx}` in jsdom).
-- `pnpm lint`: run Biome checks.
-- `pnpm lint:fix`: apply Biome fixes.
+- `pnpm lint`: run Oxlint checks.
+- `pnpm lint:fix`: apply Oxlint fixes.
 - `pnpm typecheck`: run TypeScript check (`tsc --noEmit`).
-- `pnpm run ci`: run Biome CI checks.
+- `pnpm run ci`: run the CI lint command.
 - `pnpm build`: create production bundle.
 - `pnpm preview`: build and serve the app locally with Wrangler.
 - `pnpm deploy`: build and deploy with Wrangler.
 
 ## Coding Style & Naming Conventions
-Biome is the source of truth for formatting and linting.
+Oxlint is the source of truth for linting. Keep the existing TypeScript formatting conventions.
 - 2-space indentation, LF, max line width 100.
 - Single quotes, semicolons required, trailing commas enabled.
 - Prefer named React imports (avoid default `React` import).
