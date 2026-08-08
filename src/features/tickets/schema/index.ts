@@ -10,6 +10,14 @@ export type TicketActor = z.infer<typeof ticketActorSchema>;
 
 export const ticketIdSchema = z.number().int().positive();
 
+export const ticketTitleFieldSchema = z.string().trim().min(1, 'タイトルは必須です');
+export const ticketAssigneeFieldSchema = z
+  .string()
+  .trim()
+  .transform((value) => value || null)
+  .nullable();
+export const ticketCommentBodyFieldSchema = z.string().trim().min(1, 'コメントは必須です');
+
 export const ticketsSchema = z.object({
   id: ticketIdSchema,
   title: z.string(),
@@ -75,23 +83,23 @@ export const ticketsResponseSchema = z.object({
 
 export type TicketsResponse = z.infer<typeof ticketsResponseSchema>;
 
-export const CreateTicketRequest = ticketsSchema.pick({
-  title: true,
-  status: true,
-  assignee: true,
+export const CreateTicketRequest = z.object({
+  title: ticketTitleFieldSchema,
+  status: z.enum(['open', 'closed']),
+  assignee: ticketAssigneeFieldSchema.optional(),
 });
 export type CreateTicketRequest = z.infer<typeof CreateTicketRequest>;
 
-export const UpdateTicketRequest = ticketsSchema.pick({
-  id: true,
-  title: true,
-  status: true,
-  assignee: true,
+export const UpdateTicketRequest = z.object({
+  id: ticketIdSchema,
+  title: ticketTitleFieldSchema,
+  status: z.enum(['open', 'closed']),
+  assignee: ticketAssigneeFieldSchema.optional(),
 });
 export type UpdateTicketRequest = z.infer<typeof UpdateTicketRequest>;
 
 export const CreateTicketCommentRequest = z.object({
-  body: z.string().trim().min(1),
+  body: ticketCommentBodyFieldSchema,
 });
 
 export type CreateTicketCommentRequest = z.infer<typeof CreateTicketCommentRequest>;
