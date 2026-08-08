@@ -8,7 +8,7 @@ import {
   fetchTickets,
   updateTicket,
   updateTicketComment,
-} from './api.ts';
+} from '@/features/tickets/api.ts';
 
 const summary = {
   id: 1,
@@ -59,6 +59,18 @@ describe('ticket API', () => {
     await expect(deleteTicket(1.5)).rejects.toThrow(/expected int/);
     await expect(createTicketComment({ ticketId: Number.NaN, body: 'Comment' })).rejects.toThrow(
       /expected number/,
+    );
+    await expect(
+      updateTicketComment({ ticketId: 0, commentId: 1, body: 'Comment' }),
+    ).rejects.toThrow(/expected number to be >0/);
+    await expect(
+      updateTicketComment({ ticketId: 1, commentId: 0, body: 'Comment' }),
+    ).rejects.toThrow(/expected number to be >0/);
+    await expect(deleteTicketComment({ ticketId: -1, commentId: 1 })).rejects.toThrow(
+      /expected number to be >0/,
+    );
+    await expect(deleteTicketComment({ ticketId: 1, commentId: -1 })).rejects.toThrow(
+      /expected number to be >0/,
     );
     expect(fetchMock).not.toHaveBeenCalled();
   });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createApiUrl, ensureSuccess, HttpError, UnauthorizedError } from './http.ts';
+import { createApiUrl, ensureSuccess, HttpError, UnauthorizedError } from '@/shared/api/http.ts';
 
 describe('ensureSuccess', () => {
   it('allows successful responses', async () => {
