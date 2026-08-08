@@ -13,8 +13,8 @@ The backend lives in a sibling directory ending with `-backend`. When implementa
 - `pnpm dev` — start dev server on port 3000
 - `pnpm test` — run Vitest (jsdom, `src/**/*.test.{ts,tsx}`)
 - `pnpm test -- src/path/to/file.test.ts` — run a single test file
-- `pnpm lint` — Biome check
-- `pnpm lint:fix` — Biome auto-fix
+- `pnpm lint` — Oxlint check
+- `pnpm lint:fix` — Oxlint auto-fix
 - `pnpm typecheck` — TypeScript check via `tsc --noEmit`
 - `pnpm build` — production build
 - `pnpm preview` — build + serve locally with Wrangler
@@ -71,7 +71,7 @@ Each feature follows this structure:
 ## Coding Conventions
 
 - **Branch policy**: Never push directly to `main`. Always work on a feature branch and open a PR.
-- Biome is the formatter/linter (not ESLint/Prettier). See `biome.json` for config.
+- Oxlint is the linter. Preserve the repository's existing TypeScript formatting conventions.
 - Single quotes, semicolons, trailing commas, 2-space indent, max line width 100
 - Prefer named React imports (no default `React` import)
 - Commit style: `feat:`, `fix:`, `refactor:`, `chore:` with concise scopes
