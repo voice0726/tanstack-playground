@@ -17,6 +17,30 @@ export class UnauthorizedError extends HttpError {
   }
 }
 
+export class NetworkError extends Error {
+  endpoint: string;
+  cause: unknown;
+
+  constructor(message: string, endpoint: string, cause: unknown) {
+    super(message);
+    this.name = 'NetworkError';
+    this.endpoint = endpoint;
+    this.cause = cause;
+  }
+}
+
+export class ApiContractError extends Error {
+  endpoint: string;
+  cause: unknown;
+
+  constructor(endpoint: string, cause: unknown) {
+    super('APIレスポンスの形式が不正です。');
+    this.name = 'ApiContractError';
+    this.endpoint = endpoint;
+    this.cause = cause;
+  }
+}
+
 export const JSON_HEADERS = {
   Accept: 'application/json',
   'Content-Type': 'application/json',
@@ -61,4 +85,24 @@ export const ensureSuccess = async (response: Response, fallbackMessage: string)
   }
 
   throw new HttpError(message, response.status);
+};
+
+export const fetchApi = async (endpoint: string, options: RequestInit, fallbackMessage: string) => {
+  try {
+    return await fetch(createApiUrl(endpoint), options);
+  } catch (error) {
+    throw new NetworkError(fallbackMessage, endpoint, error);
+  }
+};
+
+export const parseJsonResponse = async <T>(
+  response: Response,
+  endpoint: string,
+  parse: (value: unknown) => T,
+): Promise<T> => {
+  try {
+    return parse(await response.json());
+  } catch (error) {
+    throw new ApiContractError(endpoint, error);
+  }
 };

@@ -4,13 +4,22 @@ import {
   type LoginRequest,
   loginRequestSchema,
 } from '@/features/auth/schema.ts';
-import { createApiUrl, ensureSuccess, JSON_HEADERS } from '@/shared/api/http.ts';
+import {
+  ensureSuccess,
+  fetchApi,
+  JSON_HEADERS,
+  parseJsonResponse,
+} from '@/shared/api/http.ts';
 
 export const fetchCurrentUser = async (): Promise<AuthUser | null> => {
-  const response = await fetch(createApiUrl('/api/auth/me'), {
-    credentials: 'include',
-    headers: JSON_HEADERS,
-  });
+  const response = await fetchApi(
+    '/api/auth/me',
+    {
+      credentials: 'include',
+      headers: JSON_HEADERS,
+    },
+    'ログイン状態の確認に失敗しました。',
+  );
 
   if (response.status === 401) {
     return null;
@@ -18,31 +27,39 @@ export const fetchCurrentUser = async (): Promise<AuthUser | null> => {
 
   await ensureSuccess(response, 'ログイン状態の確認に失敗しました。');
 
-  return authResponseSchema.parse(await response.json()).user;
+  return (await parseJsonResponse(response, '/api/auth/me', authResponseSchema.parse)).user;
 };
 
 export const login = async (input: LoginRequest) => {
   const payload = loginRequestSchema.parse(input);
-  const response = await fetch(createApiUrl('/api/auth/login'), {
-    method: 'POST',
-    credentials: 'include',
-    headers: JSON_HEADERS,
-    body: JSON.stringify(payload),
-  });
+  const response = await fetchApi(
+    '/api/auth/login',
+    {
+      method: 'POST',
+      credentials: 'include',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(payload),
+    },
+    'ログインに失敗しました。',
+  );
 
   await ensureSuccess(response, 'ログインに失敗しました。');
 
-  return authResponseSchema.parse(await response.json()).user;
+  return (await parseJsonResponse(response, '/api/auth/login', authResponseSchema.parse)).user;
 };
 
 export const logout = async () => {
-  const response = await fetch(createApiUrl('/api/auth/logout'), {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      Accept: JSON_HEADERS.Accept,
+  const response = await fetchApi(
+    '/api/auth/logout',
+    {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        Accept: JSON_HEADERS.Accept,
+      },
     },
-  });
+    'ログアウトに失敗しました。',
+  );
 
   await ensureSuccess(response, 'ログアウトに失敗しました。');
 };
