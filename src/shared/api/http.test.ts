@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { NetworkError } from './http.ts';
 import {
+  type NetworkError,
   ApiContractError,
   createApiUrl,
   ensureSuccess,
@@ -8,7 +8,7 @@ import {
   HttpError,
   parseJsonResponse,
   UnauthorizedError,
-} from './http.ts';
+} from '@/shared/api/http.ts';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -92,6 +92,19 @@ describe('shared request helpers', () => {
       message: '取得に失敗しました。',
       endpoint: '/api/tickets',
     } satisfies Partial<NetworkError>);
+  });
+
+  it('preserves parser failures as contract errors', async () => {
+    const parserError = new Error('invalid ticket shape');
+
+    await expect(
+      parseJsonResponse(Response.json({ id: 'not-a-number' }), '/api/tickets', () => {
+        throw parserError;
+      }),
+    ).rejects.toMatchObject({
+      endpoint: '/api/tickets',
+      cause: parserError,
+    } satisfies Partial<ApiContractError>);
   });
 
   it('wraps malformed JSON and parser failures as contract errors', async () => {

@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { ticketDetailSchema, ticketsResponseSchema } from './index.ts';
 
 describe('ticket response schema', () => {
-  it('rejects non-positive or non-integer ticket ids', () => {
+  it.each([0, -1, 1.5])('rejects invalid ticket id %s', (id) => {
     expect(() =>
       ticketsResponseSchema.parse({
         items: [
           {
-            id: 1.5,
+            id,
             title: 'Invalid ticket',
             status: 'open',
             createdAt: '2026-03-01T10:00:00Z',
@@ -16,7 +16,7 @@ describe('ticket response schema', () => {
         ],
         total: 1,
       }),
-    ).toThrow(/expected int/);
+    ).toThrow(/expected (number to be >0|int)/);
   });
 });
 

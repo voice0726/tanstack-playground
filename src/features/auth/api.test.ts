@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fetchCurrentUser, login, logout } from './api.ts';
+import { fetchCurrentUser, login, logout } from '@/features/auth/api.ts';
 
 const user = {
   id: 1,
