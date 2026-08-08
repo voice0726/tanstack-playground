@@ -49,6 +49,16 @@ describe('ticket API', () => {
     );
   });
 
+  it('rejects invalid ids before making a request', async () => {
+    const fetchMock = vi.fn<typeof fetch>();
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(fetchTicket(0)).rejects.toThrow(/expected number to be >0/);
+    await expect(deleteTicket(1.5)).rejects.toThrow(/expected int/);
+    await expect(createTicketComment({ ticketId: Number.NaN, body: 'Comment' })).rejects.toThrow(/expected number/);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('fetches a ticket detail', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(response(detail));
     vi.stubGlobal('fetch', fetchMock);

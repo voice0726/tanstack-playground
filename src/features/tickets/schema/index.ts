@@ -8,8 +8,10 @@ export const ticketActorSchema = z.object({
 
 export type TicketActor = z.infer<typeof ticketActorSchema>;
 
+export const ticketIdSchema = z.number().int().positive();
+
 export const ticketsSchema = z.object({
-  id: z.number().int().positive(),
+  id: ticketIdSchema,
   title: z.string(),
   status: z.enum(['open', 'closed']),
   assignee: z.string().nullable().optional(),
@@ -45,7 +47,7 @@ export const ticketHistorySchema = z.object({
 export type TicketHistory = z.infer<typeof ticketHistorySchema>;
 
 export const ticketCommentSchema = z.object({
-  id: z.number().int().positive(),
+  id: ticketIdSchema,
   body: z.string(),
   createdBy: ticketActorSchema.nullish(),
   createdAt: z.iso.datetime(),
