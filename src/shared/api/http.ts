@@ -87,13 +87,21 @@ export const ensureSuccess = async (response: Response, fallbackMessage: string)
   throw new HttpError(message, response.status);
 };
 
-export const fetchApi = async (endpoint: string, options: RequestInit, fallbackMessage: string) => {
+export const fetchApiUrl = async (
+  url: string,
+  endpoint: string,
+  options: RequestInit,
+  fallbackMessage: string,
+) => {
   try {
-    return await fetch(createApiUrl(endpoint), options);
+    return await fetch(url, options);
   } catch (error) {
     throw new NetworkError(fallbackMessage, endpoint, error);
   }
 };
+
+export const fetchApi = (endpoint: string, options: RequestInit, fallbackMessage: string) =>
+  fetchApiUrl(createApiUrl(endpoint), endpoint, options, fallbackMessage);
 
 export const parseJsonResponse = async <T>(
   response: Response,
