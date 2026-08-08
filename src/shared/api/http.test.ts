@@ -3,7 +3,9 @@ import { createApiUrl, ensureSuccess, HttpError, UnauthorizedError } from './htt
 
 describe('ensureSuccess', () => {
   it('allows successful responses', async () => {
-    await expect(ensureSuccess(new Response(null, { status: 204 }), 'fallback')).resolves.toBeUndefined();
+    await expect(
+      ensureSuccess(new Response(null, { status: 204 }), 'fallback'),
+    ).resolves.toBeUndefined();
   });
 
   it('uses a JSON message when available', async () => {
@@ -25,7 +27,9 @@ describe('ensureSuccess', () => {
   });
 
   it('uses the fallback for empty or malformed error bodies', async () => {
-    await expect(ensureSuccess(new Response('', { status: 500 }), 'fallback')).rejects.toMatchObject({
+    await expect(
+      ensureSuccess(new Response('', { status: 500 }), 'fallback'),
+    ).rejects.toMatchObject({
       message: 'fallback',
       status: 500,
     });
@@ -53,9 +57,9 @@ describe('ensureSuccess', () => {
   });
 
   it('returns HttpError for non-401 failures', async () => {
-    await expect(ensureSuccess(new Response(null, { status: 422 }), 'fallback')).rejects.toBeInstanceOf(
-      HttpError,
-    );
+    await expect(
+      ensureSuccess(new Response(null, { status: 422 }), 'fallback'),
+    ).rejects.toBeInstanceOf(HttpError);
   });
 });
 
