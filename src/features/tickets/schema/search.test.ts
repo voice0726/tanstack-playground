@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { TICKETS_SEARCH_DEFAULT, ticketsSearchSchema } from './search';
+import {
+  TICKETS_SEARCH_DEFAULT,
+  TICKETS_SEARCH_MAX_PAGE,
+  TICKETS_SEARCH_MAX_PAGE_SIZE,
+  ticketsSearchSchema,
+} from './search';
 
 describe('validateAndNormalizeSearch', () => {
   it('passes and normalize valid URL params', () => {
@@ -62,6 +67,16 @@ describe('validateAndNormalizeSearch', () => {
     });
 
     expect(result).toEqual(TICKETS_SEARCH_DEFAULT);
+  });
+
+  it('accepts numeric params at the upper bounds', () => {
+    const result = ticketsSearchSchema.parse({
+      page: TICKETS_SEARCH_MAX_PAGE,
+      pageSize: TICKETS_SEARCH_MAX_PAGE_SIZE,
+    });
+
+    expect(result.page).toBe(TICKETS_SEARCH_MAX_PAGE);
+    expect(result.pageSize).toBe(TICKETS_SEARCH_MAX_PAGE_SIZE);
   });
 
   it('falls back to defaults when numeric params exceed the upper bounds', () => {

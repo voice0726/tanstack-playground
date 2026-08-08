@@ -1,5 +1,18 @@
-import { describe, expect, it } from 'vitest';
-import { createApiUrl, ensureSuccess, HttpError, UnauthorizedError } from './http.ts';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  type NetworkError,
+  ApiContractError,
+  createApiUrl,
+  ensureSuccess,
+  fetchApi,
+  HttpError,
+  parseJsonResponse,
+  UnauthorizedError,
+} from '@/shared/api/http.ts';
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe('ensureSuccess', () => {
   it('allows successful responses', async () => {
@@ -66,5 +79,41 @@ describe('ensureSuccess', () => {
 describe('createApiUrl', () => {
   it('joins the configured API base URL and path', () => {
     expect(createApiUrl('/api/health')).toBe('http://localhost:8787/api/health');
+  });
+});
+
+describe('shared request helpers', () => {
+  it('wraps network failures with endpoint diagnostics', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockRejectedValue(new TypeError('offline'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(fetchApi('/api/tickets', {}, '取得に失敗しました。')).rejects.toMatchObject({
+      name: 'NetworkError',
+      message: '取得に失敗しました。',
+      endpoint: '/api/tickets',
+    } satisfies Partial<NetworkError>);
+  });
+
+  it('preserves parser failures as contract errors', async () => {
+    const parserError = new Error('invalid ticket shape');
+
+    await expect(
+      parseJsonResponse(Response.json({ id: 'not-a-number' }), '/api/tickets', () => {
+        throw parserError;
+      }),
+    ).rejects.toMatchObject({
+      endpoint: '/api/tickets',
+      cause: parserError,
+    } satisfies Partial<ApiContractError>);
+  });
+
+  it('wraps malformed JSON and parser failures as contract errors', async () => {
+    await expect(
+      parseJsonResponse(
+        new Response('{invalid', { headers: { 'content-type': 'application/json' } }),
+        '/api/tickets',
+        (value) => value,
+      ),
+    ).rejects.toBeInstanceOf(ApiContractError);
   });
 });
