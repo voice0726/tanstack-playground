@@ -9,6 +9,7 @@ import {
   updateTicket,
   updateTicketComment,
 } from '@/features/tickets/api.ts';
+import { ApiContractError, NetworkError } from '@/shared/api/http.ts';
 
 const summary = {
   id: 1,
@@ -49,6 +50,49 @@ describe('ticket API', () => {
     expect(fetchMock.mock.calls[0]?.[0]).toBe(
       'http://localhost:8787/api/tickets?q=bug&status=open&sortBy=id&sortOrder=asc&page=2&pageSize=10',
     );
+  });
+
+  it('classifies network failures with the ticket endpoint', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockRejectedValue(new TypeError('offline'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      fetchTickets({
+        q: undefined,
+        status: 'all',
+        sortBy: 'id',
+        sortOrder: 'asc',
+        page: 1,
+        pageSize: 10,
+      }),
+    ).rejects.toMatchObject({
+      name: 'NetworkError',
+      endpoint: '/api/tickets?status=all&sortBy=id&sortOrder=asc&page=1&pageSize=10',
+    } satisfies Partial<NetworkError>);
+  });
+
+  it('classifies malformed and schema-invalid ticket responses', async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response('{invalid', { headers: { 'content-type': 'application/json' } }),
+      )
+      .mockResolvedValueOnce(response({ items: [summary] }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(fetchTicket(1)).rejects.toMatchObject({
+      endpoint: '/api/tickets/1',
+    } satisfies Partial<ApiContractError>);
+    await expect(
+      fetchTickets({
+        q: undefined,
+        status: 'all',
+        sortBy: 'id',
+        sortOrder: 'asc',
+        page: 1,
+        pageSize: 10,
+      }),
+    ).rejects.toBeInstanceOf(ApiContractError);
   });
 
   it('rejects invalid ids before making a request', async () => {
