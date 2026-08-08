@@ -27,9 +27,9 @@ describe('fetchCurrentUser', () => {
   });
 
   it('parses the authenticated user response', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
-      Response.json({ user }, { status: 200 }),
-    );
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(Response.json({ user }, { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(fetchCurrentUser()).resolves.toEqual(user);
@@ -38,10 +38,14 @@ describe('fetchCurrentUser', () => {
 
 describe('login', () => {
   it('normalizes the email before sending the request', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(Response.json({ user }, { status: 200 }));
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(Response.json({ user }, { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(login({ email: '  admin@example.com  ', password: 'secret' })).resolves.toEqual(user);
+    await expect(login({ email: '  admin@example.com  ', password: 'secret' })).resolves.toEqual(
+      user,
+    );
     expect(fetchMock).toHaveBeenCalledWith('http://localhost:8787/api/auth/login', {
       method: 'POST',
       credentials: 'include',

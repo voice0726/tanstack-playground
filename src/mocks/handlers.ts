@@ -1,8 +1,8 @@
 import { delay, HttpResponse, http } from 'msw';
 import {
   type AuthUser,
-  type LoginRequest,
   authUserSchema,
+  type LoginRequest,
   loginRequestSchema,
 } from '@/features/auth/schema.ts';
 import {

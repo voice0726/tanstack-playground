@@ -31,7 +31,9 @@ afterEach(() => {
 
 describe('ticket API', () => {
   it('fetches a filtered ticket list', async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(response({ items: [summary], total: 1 }));
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(response({ items: [summary], total: 1 }));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(
@@ -55,7 +57,9 @@ describe('ticket API', () => {
 
     await expect(fetchTicket(0)).rejects.toThrow(/expected number to be >0/);
     await expect(deleteTicket(1.5)).rejects.toThrow(/expected int/);
-    await expect(createTicketComment({ ticketId: Number.NaN, body: 'Comment' })).rejects.toThrow(/expected number/);
+    await expect(createTicketComment({ ticketId: Number.NaN, body: 'Comment' })).rejects.toThrow(
+      /expected number/,
+    );
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -68,7 +72,8 @@ describe('ticket API', () => {
   });
 
   it('creates and updates tickets with schema-shaped JSON bodies', async () => {
-    const fetchMock = vi.fn<typeof fetch>()
+    const fetchMock = vi
+      .fn<typeof fetch>()
       .mockResolvedValueOnce(response(detail, 201))
       .mockResolvedValueOnce(response(detail));
     vi.stubGlobal('fetch', fetchMock);
@@ -93,11 +98,15 @@ describe('ticket API', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(deleteTicket(1)).resolves.toBeUndefined();
-    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: 'DELETE', credentials: 'include' });
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
+      method: 'DELETE',
+      credentials: 'include',
+    });
   });
 
   it('maps comment create, update, and delete endpoints', async () => {
-    const fetchMock = vi.fn<typeof fetch>()
+    const fetchMock = vi
+      .fn<typeof fetch>()
       .mockResolvedValueOnce(response(detail, 201))
       .mockResolvedValueOnce(response(detail))
       .mockResolvedValueOnce(response(detail));

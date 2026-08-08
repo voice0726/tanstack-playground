@@ -4,12 +4,7 @@ import {
   type LoginRequest,
   loginRequestSchema,
 } from '@/features/auth/schema.ts';
-import {
-  ensureSuccess,
-  fetchApi,
-  JSON_HEADERS,
-  parseJsonResponse,
-} from '@/shared/api/http.ts';
+import { ensureSuccess, fetchApi, JSON_HEADERS, parseJsonResponse } from '@/shared/api/http.ts';
 
 export const fetchCurrentUser = async (): Promise<AuthUser | null> => {
   const response = await fetchApi(

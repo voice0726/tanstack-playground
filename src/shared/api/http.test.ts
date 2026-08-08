@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { NetworkError } from './http.ts';
 import {
   ApiContractError,
   createApiUrl,
   ensureSuccess,
   fetchApi,
   HttpError,
-  NetworkError,
   parseJsonResponse,
   UnauthorizedError,
 } from './http.ts';
@@ -16,7 +16,9 @@ afterEach(() => {
 
 describe('ensureSuccess', () => {
   it('allows successful responses', async () => {
-    await expect(ensureSuccess(new Response(null, { status: 204 }), 'fallback')).resolves.toBeUndefined();
+    await expect(
+      ensureSuccess(new Response(null, { status: 204 }), 'fallback'),
+    ).resolves.toBeUndefined();
   });
 
   it('uses a JSON message when available', async () => {
@@ -38,7 +40,9 @@ describe('ensureSuccess', () => {
   });
 
   it('uses the fallback for empty or malformed error bodies', async () => {
-    await expect(ensureSuccess(new Response('', { status: 500 }), 'fallback')).rejects.toMatchObject({
+    await expect(
+      ensureSuccess(new Response('', { status: 500 }), 'fallback'),
+    ).rejects.toMatchObject({
       message: 'fallback',
       status: 500,
     });
@@ -66,9 +70,9 @@ describe('ensureSuccess', () => {
   });
 
   it('returns HttpError for non-401 failures', async () => {
-    await expect(ensureSuccess(new Response(null, { status: 422 }), 'fallback')).rejects.toBeInstanceOf(
-      HttpError,
-    );
+    await expect(
+      ensureSuccess(new Response(null, { status: 422 }), 'fallback'),
+    ).rejects.toBeInstanceOf(HttpError);
   });
 });
 
@@ -77,7 +81,6 @@ describe('createApiUrl', () => {
     expect(createApiUrl('/api/health')).toBe('http://localhost:8787/api/health');
   });
 });
-
 
 describe('shared request helpers', () => {
   it('wraps network failures with endpoint diagnostics', async () => {
