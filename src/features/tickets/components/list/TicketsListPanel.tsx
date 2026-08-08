@@ -34,6 +34,7 @@ type TicketsListPanelProps = {
   onDelete: (ticket: Pick<Ticket, 'id' | 'title'>) => void;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  onRetry: () => void;
 };
 
 const TABLE_BODY_MIN_HEIGHT = 200;
@@ -54,6 +55,7 @@ export function TicketsListPanel({
   onDelete,
   onPageChange,
   onPageSizeChange,
+  onRetry,
 }: TicketsListPanelProps) {
   const headerRef = useRef<HTMLTableSectionElement | null>(null);
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -149,9 +151,14 @@ export function TicketsListPanel({
                 {hasError ? (
                   <Table.Tr>
                     <Table.Td colSpan={9}>
-                      <Text c="red" ta="center">
-                        チケット一覧の取得に失敗しました
-                      </Text>
+                      <Stack align="center" gap="xs">
+                        <Text c="red" ta="center">
+                          チケット一覧の取得に失敗しました
+                        </Text>
+                        <Button size="xs" variant="light" onClick={onRetry}>
+                          再試行
+                        </Button>
+                      </Stack>
                     </Table.Td>
                   </Table.Tr>
                 ) : isLoading ? null : items.length > 0 ? (

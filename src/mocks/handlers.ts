@@ -1,5 +1,10 @@
 import { delay, HttpResponse, http } from 'msw';
-import { type AuthUser, authUserSchema } from '@/features/auth/schema.ts';
+import {
+  type AuthUser,
+  authUserSchema,
+  type LoginRequest,
+  loginRequestSchema,
+} from '@/features/auth/schema.ts';
 import {
   CreateTicketCommentRequest,
   type CreateTicketCommentRequest as CreateTicketCommentRequestType,
@@ -18,11 +23,6 @@ import {
 import { type TicketsSearch, ticketsSearchSchema } from '@/features/tickets/schema/search.ts';
 
 type MockTicket = TicketDetail;
-type MockCredentials = {
-  email: string;
-  password: string;
-};
-
 const createEmptyHistory = (): TicketHistory => ({ items: [] });
 const createEmptyComments = (): TicketComments => ({ items: [] });
 const MOCK_DELAY_MS = 1500;
@@ -41,7 +41,7 @@ const TICKET_EDITOR: TicketActor = ticketActorSchema.parse({
   email: 'editor@example.com',
   displayName: 'Editor User',
 });
-const MOCK_CREDENTIALS: MockCredentials = {
+const MOCK_CREDENTIALS: LoginRequest = {
   email: 'admin@example.com',
   password: 'secret-password',
 };
@@ -370,7 +370,21 @@ export const handlers = [
   http.post('/api/auth/login', async ({ request }) => {
     await delay(MOCK_DELAY_MS);
 
-    const body = (await request.json()) as MockCredentials;
+    let requestBody: unknown;
+
+    try {
+      requestBody = await request.json();
+    } catch {
+      return HttpResponse.json({ message: 'Invalid request body' }, { status: 400 });
+    }
+
+    const result = loginRequestSchema.safeParse(requestBody);
+
+    if (!result.success) {
+      return HttpResponse.json({ message: 'Invalid request body' }, { status: 400 });
+    }
+
+    const body = result.data;
 
     if (body.email !== MOCK_CREDENTIALS.email || body.password !== MOCK_CREDENTIALS.password) {
       return HttpResponse.json({ message: 'invalid email or password' }, { status: 401 });

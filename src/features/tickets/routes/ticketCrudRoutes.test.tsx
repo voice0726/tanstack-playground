@@ -458,13 +458,14 @@ describe('ticket CRUD routes', () => {
 
   it('shows the table error state when the next page fetch fails', async () => {
     const tickets = buildSeedTickets();
+    let pageTwoRequestCount = 0;
 
     server.use(
       http.get(`${API_BASE_URL}/api/tickets`, async ({ request }) => {
         const url = new URL(request.url);
         const search = ticketsSearchSchema.parse(Object.fromEntries(url.searchParams.entries()));
 
-        if (search.page === 2) {
+        if (search.page === 2 && pageTwoRequestCount++ === 0) {
           await delay(200);
           return HttpResponse.json({ message: 'fetch failed' }, { status: 500 });
         }
@@ -484,6 +485,10 @@ describe('ticket CRUD routes', () => {
     expect(screen.getByText('total: 3')).toBeTruthy();
     expect(screen.getByText('- / 3')).toBeTruthy();
     expect(screen.getByRole('button', { name: '3' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: '再試行' }));
+    await screen.findByText('Refactor filters');
+    expect(screen.queryByText('チケット一覧の取得に失敗しました')).toBeNull();
   });
 
   it('shows operation history on the detail page', async () => {

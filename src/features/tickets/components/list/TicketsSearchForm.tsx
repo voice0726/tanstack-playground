@@ -43,6 +43,7 @@ export function TicketsSearchForm({ initialValues, onSubmit }: TicketsSearchForm
                 { label: 'Open', value: 'open' },
                 { label: 'Closed', value: 'closed' },
               ]}
+              error={errors.status?.message}
               label="ステータス"
               {...field}
             />
@@ -59,6 +60,7 @@ export function TicketsSearchForm({ initialValues, onSubmit }: TicketsSearchForm
                   { label: '作成日', value: 'created_at' },
                   { label: '更新日', value: 'updated_at' },
                 ]}
+                error={errors.sortBy?.message}
                 label="ソート項目"
                 {...field}
               />
@@ -73,6 +75,7 @@ export function TicketsSearchForm({ initialValues, onSubmit }: TicketsSearchForm
                   { label: '昇順', value: 'asc' },
                   { label: '降順', value: 'dsc' },
                 ]}
+                error={errors.sortOrder?.message}
                 label="順序"
                 {...field}
               />

@@ -5,6 +5,7 @@ import {
   type CreateTicketRequest as CreateTicketRequestType,
   type Ticket,
   ticketDetailSchema,
+  ticketIdSchema,
   ticketsResponseSchema,
   UpdateTicketCommentRequest,
   type UpdateTicketCommentRequest as UpdateTicketCommentRequestType,
@@ -18,6 +19,8 @@ import { withQuery } from '@/shared/utils/url.ts';
 const createTicketsApiUrl = (path: string, search?: TicketsSearch) =>
   createApiUrl(withQuery(path, search));
 
+const parseTicketId = (id: Ticket['id']) => ticketIdSchema.parse(id);
+
 export const fetchTickets = async (filters: TicketsSearch) => {
   const response = await fetch(createTicketsApiUrl('/api/tickets', filters), {
     credentials: 'include',
@@ -30,7 +33,8 @@ export const fetchTickets = async (filters: TicketsSearch) => {
 };
 
 export const fetchTicket = async (id: Ticket['id']) => {
-  const response = await fetch(createTicketsApiUrl(`/api/tickets/${id}`), {
+  const ticketId = parseTicketId(id);
+  const response = await fetch(createTicketsApiUrl(`/api/tickets/${ticketId}`), {
     credentials: 'include',
     headers: JSON_HEADERS,
   });
@@ -69,7 +73,8 @@ export const updateTicket = async (body: UpdateTicketRequestType) => {
 };
 
 export const deleteTicket = async (id: Ticket['id']): Promise<void> => {
-  const response = await fetch(createTicketsApiUrl(`/api/tickets/${id}`), {
+  const ticketId = parseTicketId(id);
+  const response = await fetch(createTicketsApiUrl(`/api/tickets/${ticketId}`), {
     method: 'DELETE',
     credentials: 'include',
     headers: JSON_HEADERS,
@@ -85,8 +90,9 @@ export const createTicketComment = async ({
   ticketId: Ticket['id'];
   body: CreateTicketCommentRequestType['body'];
 }) => {
+  const parsedTicketId = parseTicketId(ticketId);
   const payload = CreateTicketCommentRequest.parse({ body });
-  const response = await fetch(createTicketsApiUrl(`/api/tickets/${ticketId}/comments`), {
+  const response = await fetch(createTicketsApiUrl(`/api/tickets/${parsedTicketId}/comments`), {
     method: 'POST',
     credentials: 'include',
     headers: JSON_HEADERS,
@@ -107,9 +113,11 @@ export const updateTicketComment = async ({
   commentId: number;
   body: UpdateTicketCommentRequestType['body'];
 }) => {
+  const parsedTicketId = parseTicketId(ticketId);
+  const parsedCommentId = ticketIdSchema.parse(commentId);
   const payload = UpdateTicketCommentRequest.parse({ body });
   const response = await fetch(
-    createTicketsApiUrl(`/api/tickets/${ticketId}/comments/${commentId}`),
+    createTicketsApiUrl(`/api/tickets/${parsedTicketId}/comments/${parsedCommentId}`),
     {
       method: 'PUT',
       credentials: 'include',
@@ -130,8 +138,10 @@ export const deleteTicketComment = async ({
   ticketId: Ticket['id'];
   commentId: number;
 }) => {
+  const parsedTicketId = parseTicketId(ticketId);
+  const parsedCommentId = ticketIdSchema.parse(commentId);
   const response = await fetch(
-    createTicketsApiUrl(`/api/tickets/${ticketId}/comments/${commentId}`),
+    createTicketsApiUrl(`/api/tickets/${parsedTicketId}/comments/${parsedCommentId}`),
     {
       method: 'DELETE',
       credentials: 'include',

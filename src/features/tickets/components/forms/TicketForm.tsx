@@ -56,7 +56,13 @@ export function TicketForm({
           control={control}
           name="status"
           render={({ field }) => (
-            <Select allowDeselect={false} data={statusOptions} label="ステータス" {...field} />
+            <Select
+              allowDeselect={false}
+              data={statusOptions}
+              error={errors.status?.message}
+              label="ステータス"
+              {...field}
+            />
           )}
         />
 

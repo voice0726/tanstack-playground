@@ -48,7 +48,7 @@ export function IndexRoute() {
     ],
   );
 
-  const { data, isError, isFetching, isPending, isPlaceholderData } = useTickets({
+  const { data, isError, isFetching, isPending, isPlaceholderData, refetch } = useTickets({
     filters: normalizedSearch,
   });
   const isTableLoading = isPending;
@@ -170,6 +170,9 @@ export function IndexRoute() {
         onEdit={navigateToTicketEdit}
         onPageChange={changePage}
         onPageSizeChange={changePageSize}
+        onRetry={() => {
+          void refetch();
+        }}
         onView={navigateToTicketDetail}
       />
 

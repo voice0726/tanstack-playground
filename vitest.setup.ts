@@ -33,7 +33,7 @@ Object.defineProperty(window, 'ResizeObserver', {
 });
 
 beforeAll(() => {
-  server.listen({ onUnhandledRequest: 'bypass' });
+  server.listen({ onUnhandledRequest: 'error' });
 });
 
 beforeEach(() => {
