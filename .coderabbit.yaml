@@ -9,14 +9,11 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
-  tools:
-    biome:
-      enabled: true
   path_instructions:
     - path: "src/**/*.{ts,tsx,js,jsx}"
       instructions: |
         Follow repository conventions for TypeScript and React:
-        - Keep imports sorted according to Biome settings.
+        - Keep imports consistently ordered.
         - Prefer Mantine components over adding new global CSS.
         - Use absolute imports via the `@/` alias when possible.
     - path: ".github/workflows/**/*.yml"
