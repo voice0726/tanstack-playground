@@ -140,6 +140,15 @@ export function IndexRoute() {
         });
       },
       onSuccess: () => {
+        const pageAfterDelete = Math.max(
+          1,
+          Math.ceil((computedTotal - 1) / normalizedSearch.pageSize),
+        );
+
+        if (normalizedSearch.page > pageAfterDelete) {
+          void navigate({ to: '/tickets', search: updateSearch({ page: pageAfterDelete }) });
+        }
+
         showToast({
           title: 'チケットを削除しました',
           message: `#${ticket.id} ${ticket.title}`,

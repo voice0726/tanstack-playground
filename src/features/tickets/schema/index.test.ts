@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { ticketDetailSchema, ticketsResponseSchema } from './index.ts';
+import {
+  ticketActorSchema,
+  ticketCommentSchema,
+  ticketDetailSchema,
+  ticketIdSchema,
+  ticketsResponseSchema,
+} from './index.ts';
 
 describe('ticket response schema', () => {
-  it.each([0, -1, 1.5])('rejects invalid ticket id %s', (id) => {
+  it.each([0, -1, 1.5, Number.MAX_SAFE_INTEGER + 1])('rejects invalid ticket id %s', (id) => {
     expect(() =>
       ticketsResponseSchema.parse({
         items: [
@@ -17,6 +23,28 @@ describe('ticket response schema', () => {
         total: 1,
       }),
     ).toThrow(/expected (number to be >0|int)/);
+  });
+});
+
+describe('ticket ID schemas', () => {
+  const unsafeId = Number.MAX_SAFE_INTEGER + 1;
+
+  it('rejects unsafe ticket, actor, and comment IDs', () => {
+    expect(ticketIdSchema.safeParse(unsafeId).success).toBe(false);
+    expect(
+      ticketActorSchema.safeParse({
+        id: unsafeId,
+        email: 'actor@example.com',
+        displayName: 'Actor User',
+      }).success,
+    ).toBe(false);
+    expect(
+      ticketCommentSchema.safeParse({
+        id: unsafeId,
+        body: 'Comment',
+        createdAt: '2026-03-01T10:00:00Z',
+      }).success,
+    ).toBe(false);
   });
 });
 
