@@ -1,14 +1,14 @@
 import * as z from 'zod';
 
+export const ticketIdSchema = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
+
 export const ticketActorSchema = z.object({
-  id: z.number().int().positive(),
+  id: ticketIdSchema,
   email: z.string().email(),
   displayName: z.string().min(1),
 });
 
 export type TicketActor = z.infer<typeof ticketActorSchema>;
-
-export const ticketIdSchema = z.number().int().positive();
 
 export const ticketsSchema = z.object({
   id: ticketIdSchema,

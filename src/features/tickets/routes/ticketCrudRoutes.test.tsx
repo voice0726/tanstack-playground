@@ -827,4 +827,20 @@ describe('ticket CRUD routes', () => {
       status: 'open',
     });
   });
+
+  it('moves to the new last page after deleting its final ticket', async () => {
+    const { router } = renderRoute(
+      '/tickets?status=all&sortBy=id&sortOrder=asc&page=3&pageSize=1',
+    );
+
+    await screen.findByText('Add pagination');
+    fireEvent.click(screen.getByRole('button', { name: '削除' }));
+    await screen.findByText('この操作は取り消せません。削除対象を確認してください。');
+    fireEvent.click(screen.getByRole('button', { name: '削除する' }));
+
+    await screen.findByText('チケットを削除しました');
+    await screen.findByText('Refactor filters');
+    expect(router.state.location.search).toMatchObject({ page: 2, pageSize: 1 });
+    expect(screen.queryByText('表示できるチケットがありません')).toBeNull();
+  });
 });
