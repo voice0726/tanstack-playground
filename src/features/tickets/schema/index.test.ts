@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { ticketDetailSchema, ticketsResponseSchema } from './index.ts';
+import {
+  CreateTicketCommentRequest,
+  CreateTicketRequest,
+  ticketDetailSchema,
+  ticketsResponseSchema,
+} from './index.ts';
+import { ticketCommentFormValuesSchema, ticketFormValuesSchema } from './form.ts';
 
 describe('ticket response schema', () => {
   it.each([0, -1, 1.5])('rejects invalid ticket id %s', (id) => {
@@ -92,5 +98,42 @@ describe('ticket actor schema compatibility', () => {
         },
       }),
     ).not.toThrow();
+  });
+});
+
+describe('ticket input schema normalization', () => {
+  it('normalizes title and assignee consistently for form and API requests', () => {
+    const input = { title: '  Login bug  ', status: 'open' as const, assignee: '  ' };
+
+    expect(ticketFormValuesSchema.parse(input)).toEqual({
+      title: 'Login bug',
+      status: 'open',
+      assignee: null,
+    });
+    expect(CreateTicketRequest.parse(input)).toEqual({
+      title: 'Login bug',
+      status: 'open',
+      assignee: null,
+    });
+  });
+
+  it('rejects whitespace-only titles and comment bodies in form and API paths', () => {
+    expect(() => ticketFormValuesSchema.parse({ title: '  ', status: 'open', assignee: '' })).toThrow(
+      'タイトルは必須です',
+    );
+    expect(() => CreateTicketRequest.parse({ title: '  ', status: 'open', assignee: null })).toThrow(
+      'タイトルは必須です',
+    );
+    expect(() => ticketCommentFormValuesSchema.parse({ body: '  ' })).toThrow('コメントは必須です');
+    expect(() => CreateTicketCommentRequest.parse({ body: '  ' })).toThrow('コメントは必須です');
+  });
+
+  it('normalizes comment bodies consistently for form and API requests', () => {
+    expect(ticketCommentFormValuesSchema.parse({ body: '  Looks good  ' })).toEqual({
+      body: 'Looks good',
+    });
+    expect(CreateTicketCommentRequest.parse({ body: '  Looks good  ' })).toEqual({
+      body: 'Looks good',
+    });
   });
 });
