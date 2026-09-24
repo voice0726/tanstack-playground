@@ -402,6 +402,27 @@ describe('ticket CRUD routes', () => {
     });
   });
 
+  it('clears search filters from the first page', async () => {
+    const { router } = renderRoute(
+      '/tickets?q=Login&status=open&sortBy=updated_at&sortOrder=dsc&page=1&pageSize=10',
+    );
+
+    await screen.findByText('Login bug');
+    fireEvent.click(screen.getByRole('button', { name: '検索条件をクリア' }));
+
+    await waitFor(() => {
+      expect(ticketsSearchSchema.parse(router.state.location.search)).toMatchObject({
+        status: 'all',
+        sortBy: 'id',
+        sortOrder: 'asc',
+        page: 1,
+        pageSize: 10,
+      });
+    });
+    await screen.findByText('Refactor filters');
+    expect(router.state.location.search.q).toBeUndefined();
+  });
+
   it('keeps the previous page rows visible while the next page is fetching', async () => {
     const tickets = buildSeedTickets();
 

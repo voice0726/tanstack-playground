@@ -6,14 +6,18 @@ import type {
   TicketsSearchFormInput,
   TicketsSearchFormOutput,
 } from '@/features/tickets/schema/search.ts';
-import { ticketsSearchFormValuesSchema } from '@/features/tickets/schema/search.ts';
+import {
+  TICKETS_SEARCH_FORM_VALUES_DEFAULT,
+  ticketsSearchFormValuesSchema,
+} from '@/features/tickets/schema/search.ts';
 
 type TicketsSearchFormProps = {
   initialValues: TicketsSearchFormInput;
   onSubmit: (values: TicketsSearchFormOutput) => void;
+  onClear: () => void;
 };
 
-export function TicketsSearchForm({ initialValues, onSubmit }: TicketsSearchFormProps) {
+export function TicketsSearchForm({ initialValues, onSubmit, onClear }: TicketsSearchFormProps) {
   const {
     control,
     register,
@@ -82,7 +86,19 @@ export function TicketsSearchForm({ initialValues, onSubmit }: TicketsSearchForm
             )}
           />
         </Group>
-        <Button type="submit">検索する</Button>
+        <Group grow>
+          <Button
+            type="button"
+            variant="light"
+            onClick={() => {
+              reset(TICKETS_SEARCH_FORM_VALUES_DEFAULT);
+              onClear();
+            }}
+          >
+            検索条件をクリア
+          </Button>
+          <Button type="submit">検索する</Button>
+        </Group>
       </Stack>
     </form>
   );

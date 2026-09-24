@@ -11,9 +11,10 @@ afterEach(cleanup);
 describe('TicketsSearchForm', () => {
   it('submits a normalized query', async () => {
     const onSubmit = vi.fn<(values: TicketsSearchFormOutput) => void>();
+    const onClear = vi.fn<() => void>();
     render(
       <MantineProvider>
-        <TicketsSearchForm initialValues={initialValues} onSubmit={onSubmit} />
+        <TicketsSearchForm initialValues={initialValues} onClear={onClear} onSubmit={onSubmit} />
       </MantineProvider>,
     );
 
@@ -27,5 +28,22 @@ describe('TicketsSearchForm', () => {
       sortBy: 'id',
       sortOrder: 'asc',
     });
+  });
+
+  it('clears edited form values without submitting a search', () => {
+    const onSubmit = vi.fn<(values: TicketsSearchFormOutput) => void>();
+    const onClear = vi.fn<() => void>();
+    render(
+      <MantineProvider>
+        <TicketsSearchForm initialValues={initialValues} onClear={onClear} onSubmit={onSubmit} />
+      </MantineProvider>,
+    );
+
+    fireEvent.change(screen.getByLabelText('タイトル'), { target: { value: 'draft' } });
+    fireEvent.click(screen.getByRole('button', { name: '検索条件をクリア' }));
+
+    expect(screen.getByLabelText('タイトル')).toHaveProperty('value', '');
+    expect(onClear).toHaveBeenCalledOnce();
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 });

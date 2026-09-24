@@ -11,6 +11,7 @@ import {
   type TicketsSearch,
   type TicketsSearchFormInput,
   type TicketsSearchFormOutput,
+  TICKETS_SEARCH_FORM_VALUES_DEFAULT,
   ticketsSearchSchema,
 } from '@/features/tickets/schema/search.ts';
 import { getErrorMessage } from '@/features/tickets/utils/getErrorMessage.ts';
@@ -101,6 +102,13 @@ export function IndexRoute() {
     });
   };
 
+  const clearSearchForm = () => {
+    void navigate({
+      to: '/tickets',
+      search: updateSearch(TICKETS_SEARCH_FORM_VALUES_DEFAULT),
+    });
+  };
+
   const changePage = (page: number) => {
     void navigate({ to: '/tickets', search: updateSearch({ page }) });
   };
@@ -152,7 +160,11 @@ export function IndexRoute() {
   return (
     <Stack gap="lg">
       <Paper p="lg" shadow="sm">
-        <TicketsSearchForm initialValues={searchFormValues} onSubmit={submitSearchForm} />
+        <TicketsSearchForm
+          initialValues={searchFormValues}
+          onClear={clearSearchForm}
+          onSubmit={submitSearchForm}
+        />
       </Paper>
 
       <TicketsListPanel
