@@ -402,6 +402,31 @@ describe('ticket CRUD routes', () => {
     });
   });
 
+  it('removes a selected search condition and keeps the others in the URL and list', async () => {
+    const { router } = renderRoute(
+      '/tickets?q=Login&status=open&sortBy=updated_at&sortOrder=dsc&page=1&pageSize=10',
+    );
+
+    await screen.findByText('Login bug');
+    expect(screen.getByRole('button', { name: 'タイトル条件を解除' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'ステータス条件を解除' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'タイトル条件を解除' }));
+
+    await screen.findByText('Add pagination');
+    await waitFor(() => {
+      expect(ticketsSearchSchema.parse(router.state.location.search)).toMatchObject({
+        status: 'open',
+        sortBy: 'updated_at',
+        sortOrder: 'dsc',
+        page: 1,
+      });
+    });
+    expect(ticketsSearchSchema.parse(router.state.location.search).q).toBeUndefined();
+    expect(screen.queryByRole('button', { name: 'タイトル条件を解除' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'ステータス条件を解除' })).toBeTruthy();
+  });
+
   it('keeps the previous page rows visible while the next page is fetching', async () => {
     const tickets = buildSeedTickets();
 

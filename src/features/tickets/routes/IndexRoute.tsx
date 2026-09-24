@@ -2,6 +2,10 @@ import { Paper, Stack } from '@mantine/core';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useMemo, useRef, useState } from 'react';
 import { TicketDeleteModal } from '@/features/tickets/components/dialogs/TicketDeleteModal.tsx';
+import {
+  ActiveTicketFilters,
+  type ActiveTicketFilter,
+} from '@/features/tickets/components/list/ActiveTicketFilters.tsx';
 import { TicketsListPanel } from '@/features/tickets/components/list/TicketsListPanel.tsx';
 import { TicketsSearchForm } from '@/features/tickets/components/list/TicketsSearchForm.tsx';
 import { useDeleteTicket } from '@/features/tickets/hooks/useDeleteTicket.ts';
@@ -101,6 +105,20 @@ export function IndexRoute() {
     });
   };
 
+  const removeActiveFilter = (filter: ActiveTicketFilter) => {
+    const patch: Partial<TicketsSearch> =
+      filter === 'q'
+        ? { q: undefined }
+        : filter === 'status'
+          ? { status: 'all' }
+          : { sortBy: 'id', sortOrder: 'asc' };
+
+    void navigate({
+      to: '/tickets',
+      search: updateSearch({ ...patch, page: 1 }),
+    });
+  };
+
   const changePage = (page: number) => {
     void navigate({ to: '/tickets', search: updateSearch({ page }) });
   };
@@ -154,6 +172,8 @@ export function IndexRoute() {
       <Paper p="lg" shadow="sm">
         <TicketsSearchForm initialValues={searchFormValues} onSubmit={submitSearchForm} />
       </Paper>
+
+      <ActiveTicketFilters filters={normalizedSearch} onRemove={removeActiveFilter} />
 
       <TicketsListPanel
         hasError={hasTableError}
